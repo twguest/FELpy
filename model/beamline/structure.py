@@ -10,24 +10,29 @@ import sys
 sys.path.append("/opt/WPG/")
 sys.path.append("/opt/spb_model")
 
+from os.path import exists
+
 import numpy as np
 
 from wpg import srwlpy
  
 from wpg.beamline import Beamline
-
+from wpg import srwlib
 from wpg.srwlib import SRWLOptD as Drift
 from wpg.srwlib import SRWLOptA as Aperture
-from wpg.srwlib import SRWLOptMirEl as MirEl
 
+from wpg.optical_elements import Mirror_elliptical as MirEl
+from wpg.optical_elements import Screen
 
-from wpg.optical_elements import Mirror_plane_2d as MirPl
 
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity 
 from model.src.coherent import coherentSource
 
 from wpg.misc import get_wavelength, sampling
 from wpg.wpg_uti_wf import check_sampling
+
+from wpg.srwlib import srwl_opt_setup_surf_height_2d as MirPl
+
 def propParams(sx, zx, sy, zy, mode = "normal"):
     """
     wrapper for propagation parameters
@@ -53,21 +58,21 @@ def propParams(sx, zx, sy, zy, mode = "normal"):
     return [0,0,1,m,0,sx,zx/sx,sy,zy/sy,0,0,0]
 
 
-def genMirrorSurface(wfr, outdir, mode = 'Flat'):
+def genMirrorSurface(nx, ny, mirDim, outdir, mode = 'Flat'):
     
     if mode == 'Flat':
         
-        nx, ny = wfr.params.Mesh.nx, wfr.params.Mesh.ny
+        mirLen = mirDim[0]
+        mirWid = mirDim[1]
         
-        surface = np.zeros((max(nx,ny),3))
-        surface[:,0] = np.linspace(wfr.params.Mesh.xMin, wfr.params.Mesh.xMax,
-                                   nx)
-        surface[:,1] = np.linspace(wfr.params.Mesh.yMin, wfr.params.Mesh.yMax,
-                                   ny)
+        surface = np.zeros((nx,ny))
         
-    np.savetxt(outdir+"mir_"+ mode +".txt", surface)
+        surface[1:, 0] = np.linspace(-mirLen/2, mirLen/2, nx-1) 
+        surface[0, 1:] = np.linspace(-mirWid/2, mirWid/2, ny-1) 
         
-
+    np.savetxt(outdir+"mir_"+ mode +".dat", surface, delimiter='\t')
+        
+    ## genMirrorSurface(200, 200, [1000e-03, 80e-03], "/opt/spb_model/data/", mode = 'Flat')
 
 def NyquistFreq(wfr, z, scaler, axisName = 'x'):
     """
@@ -98,42 +103,107 @@ def NyquistFreq(wfr, z, scaler, axisName = 'x'):
     
 def config(beamline = "micro", screens = True):
     
+   
+    ### generate hom1 mirror surface
+    if exists("/opt/spb_model/data/hom1_mir_Flat.dat"):
+        hom1_profile = "/opt/spb_model/data/hom1_mir_Flat.dat"
+    else:
+        genMirrorSurface(200, 200, [1000e-03, 25e-03], "/opt/spb_model/data/hom1_", mode = 'Flat')
+ 
+    ### generate hom1 mirror surface
+    if exists("/opt/spb_model/data/hom2_mir_Flat.dat"):
+        hom2_profile = "/opt/spb_model/data/hom2_mir_Flat.dat"
+    else:
+        genMirrorSurface(200, 200, [1000e-03, 25e-03], "/opt/spb_model/data/hom2_", mode = 'Flat')
+ 
+    if exists("/opt/spb_model/data/mhp_mir_Flat.dat"):
+        mhp_profile = "/opt/spb_model/data/mhp_mir_Flat.dat"
+    else:
+        genMirrorSurface(200, 200, [1000e-03, 25e-03], "/opt/spb_model/data/mhp_", mode = 'Flat')
+        
+    if exists("/opt/spb_model/data/mvp_mir_Flat.dat"):
+        mvp_profile = "/opt/spb_model/data/mvp_mir_Flat.dat"
+    else:
+        genMirrorSurface(200, 200, [25e-03, 1000e-03], "/opt/spb_model/data/mvp_", mode = 'Flat')
+    
+    d1 =  Drift(246.5)
+    
+    HOM1 = MirPl(srwlib.srwl_uti_read_data_cols(hom1_profile, "\t"),
+                 _dim = 'x',
+                 _ang = 2.1e-03, 
+                 _amp_coef = 1,
+                 _x = 0, _y = 0) 
+    
+    d2 = Drift(11.36)
+    
+    HOM2 = MirPl(srwlib.srwl_uti_read_data_cols(hom2_profile, "\t"),
+                 _dim = 'x',
+                 _ang = 2.4e-03, 
+                 _amp_coef = 1,
+                 _x = 0, _y = 0) 
+    
+    d3 = Drift(634.669)
+        
+    MKB_pslit = Aperture(_shape="r", _ap_or_ob="a", _Dx= 0.100, _Dy= 0.100, _x=0, _y=0)
+    
+    d4 = Drift(1.200)
+    
+    ap_MHE = Aperture(_shape="r", _ap_or_ob="a", _Dx= 0.950, _Dy= 0.025, _x=0, _y=0)
+    
+    MHP = MirPl(srwlib.srwl_uti_read_data_cols(mhp_profile, "\t"),
+                _dim = 'x',
+                _ang = 1.1e-03,
+                _amp_coef = 1,
+                _x = 0,
+                _y = 0)
+    
+    
+    d5 =  Drift(1.050)
+
+    
+    MHE = MirEl(orient = 'x', p = 894.779, q = 23.905, thetaE = 0, theta0 = 0,
+                length= 1.000, roll = 0, yaw = 0, _x = 0, _y = 0, _refl = 1,
+                _ext_in = 0.500, _ext_out = 0.500) 
+    
+    
+    
+    ap_MVE = Aperture(_shape="r", _ap_or_ob="a", _Dx= 0.025, _Dy= 0.950, _x=0, _y=0)
+    
+    d6 = Drift(0.36)
+    
+    MKB_scr = Screen()
+    
+    d7 = Drift(1.320)
+    
+    MVE = MirEl(orient = 'y', p = 896.459, q = 22.225, thetaE = 0, theta0 = 0,
+                length= 1.000, roll = 0, yaw = 0, _x = 0, _y = 0, _refl = 1,
+                _ext_in = 0.500, _ext_out = 0.500) 
+    
+    d8 = Drift(1.050)
+    
+    MVP = MirPl(srwlib.srwl_uti_read_data_cols(mvp_profile, "\t"),
+                _dim = 'y',
+                _ang = 1.1e-03,
+                _amp_coef = 1,
+                _x = 0,
+                _y = 0)
+    
+    df = Drift(21.175)
+    
     bl = Beamline()
+    bl.append(d1, propParams( 75, 10,75 10))
+    #bl.append(HOM1, propParams(1, 1, 1, 1))
     
-    
-    HOM1 = MirPl('x', 1.0e-03, 1, 1, "/opt/spb_model/data/hom1_mir_Flat",
-                 x0 = 0, y0 = 0, bPlot = True)
-
-    pass
-    
-
-class spb:
-    
-    def __init__(self):
-        """
-        """
-        pass
-    
-    def setup(self):
-        """
-        setup beamline elements, can be micro or nano
-        """
-        pass
+    return bl
+ 
 
 if __name__ == '__main__':
     
-    config()
-# =============================================================================
-#     wfr = coherentSource(1048, 1048, 9.2, 0.1)
-#     print(check_sampling(wfr))
-#     W = NyquistFreq(wfr, 1, 1)
-#     print(W)
-#     plotIntensity(wfr)
-#     d1 = Drift(246.5)
-#     bl = Beamline()
-#     bl.append(d1, propParams(5, 2.5, 5, 2.5))
-#     bl.propagate(wfr)
-#     print(check_sampling(wfr))
-#     plotIntensity(wfr)
-# =============================================================================
     
+    wfr = coherentSource(1048, 1048, 3, 1)
+    plotIntensity(wfr)
+    
+    bl = config()
+    bl.propagate(wfr)
+    print(check_sampling(wfr))
+    plotIntensity(wfr)
