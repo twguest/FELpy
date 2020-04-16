@@ -191,7 +191,7 @@ def config(beamline = "micro", screens = True):
     df = Drift(21.175)
     
     bl = Beamline()
-    bl.append(d1, propParams( 75, 10,75 10))
+    bl.append(d1, propParams(30,4,30, 4))
     #bl.append(HOM1, propParams(1, 1, 1, 1))
     
     return bl
@@ -200,7 +200,7 @@ def config(beamline = "micro", screens = True):
 if __name__ == '__main__':
     
     
-    wfr = coherentSource(1048, 1048, 3, 1)
+    wfr = coherentSource(1048, 1048, 3, 1.0)
     plotIntensity(wfr)
     
     bl = config()
