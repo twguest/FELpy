@@ -111,26 +111,26 @@ def config(beamline = "micro", screens = True):
     
    
     ### generate hom1 mirror surface
-    if exists("/opt/spb_model/data/hom1_mir_Flat.dat"):
-        hom1_profile = "/opt/spb_model/data/hom1_mir_Flat.dat"
+    if exists("../../data/hom1_mir_Flat.dat"):
+        hom1_profile = "../../data/hom1_mir_Flat.dat"
     else:
-        genMirrorSurface(200, 200, [1000e-03, 25e-03], "/opt/spb_model/data/hom1_", mode = 'Flat')
+        genMirrorSurface(200, 200, [1000e-03, 25e-03], "../../data/hom1_", mode = 'Flat')
  
     ### generate hom1 mirror surface
-    if exists("/opt/spb_model/data/hom2_mir_Flat.dat"):
-        hom2_profile = "/opt/spb_model/data/hom2_mir_Flat.dat"
+    if exists("../../data/hom2_mir_Flat.dat"):
+        hom2_profile = "../../data/hom2_mir_Flat.dat"
     else:
-        genMirrorSurface(200, 200, [1000e-03, 25e-03], "/opt/spb_model/data/hom2_", mode = 'Flat')
+        genMirrorSurface(200, 200, [1000e-03, 25e-03], "../../data/hom2_", mode = 'Flat')
  
-    if exists("/opt/spb_model/data/mhp_mir_Flat.dat"):
-        mhp_profile = "/opt/spb_model/data/mhp_mir_Flat.dat"
+    if exists("../../data/mhp_mir_Flat.dat"):
+        mhp_profile = "../../data/mhp_mir_Flat.dat"
     else:
-        genMirrorSurface(200, 200, [1000e-03, 25e-03], "/opt/spb_model/data/mhp_", mode = 'Flat')
+        genMirrorSurface(200, 200, [1000e-03, 25e-03], "../../data/mhp_", mode = 'Flat')
         
-    if exists("/opt/spb_model/data/mvp_mir_Flat.dat"):
-        mvp_profile = "/opt/spb_model/data/mvp_mir_Flat.dat"
+    if exists("../../data/mvp_mir_Flat.dat"):
+        mvp_profile = "../../data/mvp_mir_Flat.dat"
     else:
-        genMirrorSurface(200, 200, [25e-03, 1000e-03], "/opt/spb_model/data/mvp_", mode = 'Flat')
+        genMirrorSurface(200, 200, [25e-03, 1000e-03], "../../data/mvp_", mode = 'Flat')
     
     d1 =  Drift(246.5)
     
