@@ -7,7 +7,8 @@ Created on Mon Apr  6 10:29:23 2020
 """
 
 import sys
-sys.path.append("/opt/WPG/")
+sys.path.append("/opt/WPG/") # LOCAL PATH
+sys.path.append("/gpfs/exfel/data/user/guestt/WPG") # DESY MAXWELL PATH
 
 import scipy
 
