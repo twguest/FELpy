@@ -32,7 +32,7 @@ from wpg.optical_elements import Screen
 
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity 
 from model.src.coherent import coherentSource
-from model.beamline.structure import calcSampling
+from model.beamline.structure import calcSampling, propParams
 from wpg.misc import get_wavelength, sampling
 from wpg.wpg_uti_wf import check_sampling, calculate_fwhm
 
@@ -129,12 +129,59 @@ if __name__ == '__main__':
     
     df = Drift(21.175)
     
+    ##########################################################################
+    ##########################################################################
+    
+    # SAMPLING TEST BEGINS HERE
+    
+    ##########################################################################
+    ##########################################################################
+    
+    # INIT WFR.
     wfr = coherentSource(1048, 1048, 6, 1.0)
     
+    print("D1")
     bl = Beamline()
-    bl.append(d1, calcSampling(wfr, d1.L, scale = 60))
-    
-    print("Source to HOM1 Sampling Requirements: {}".format(calcSampling(wfr, d1.L, scale = 60)))
-
+    bl.append(d1, calcSampling(wfr, d1.L, scale = 50, verbose = True))
     bl.propagate(wfr)
     plotIntensity(wfr)
+    
+    print("HOM1")
+    bl = Beamline()
+    bl.append(HOM1, propParams(1,1,1,1))
+    bl.propagate(wfr)
+    plotIntensity(wfr)
+    
+    print("D2")
+    bl = Beamline()
+    bl.append(d2, calcSampling(wfr, d2.L, scale = 1, verbose = True))
+    bl.propagate(wfr)
+    plotIntensity(wfr)
+    
+    print("HOM2")
+    bl = Beamline()
+    bl.append(HOM2, propParams(1,1,1,1))
+    bl.propagate(wfr)
+    plotIntensity(wfr)
+    
+    
+    print("D3")
+    bl = Beamline()
+    bl.append(d3, calcSampling(wfr, d3.L, scale = 2, verbose = True))
+    print(calcSampling(wfr, d3.L, scale = 2, verbose = True))
+    #bl.propagate(wfr)
+    #plotIntensity(wfr)
+    
+# =============================================================================
+#     print("MKB_PSLIT")
+#     bl = Beamline()
+#     bl.append(MKB_pslit, propParams(1,1,1,1))
+#     bl.propagate(wfr)
+#     plotIntensity(wfr)
+#         
+#     print("D4")
+#     bl = Beamline()
+#     bl.append(d4, calcSampling(wfr, d4.L, scale = 1, verbose = True))
+#     bl.propagate(wfr)
+#     plotIntensity(wfr)
+# =============================================================================

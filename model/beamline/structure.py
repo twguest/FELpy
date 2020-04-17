@@ -80,7 +80,7 @@ def genMirrorSurface(nx, ny, mirDim, outdir, mode = 'Flat'):
         
     ## genMirrorSurface(200, 200, [1000e-03, 80e-03], "/opt/spb_model/data/", mode = 'Flat')
 
-def calcSampling(wfr, z, scale = 1):
+def calcSampling(wfr, z, scale = 1, verbose = False):
     """
     returns the propagation parameters required to satisfy sampling requirements 
     for CDI 
@@ -116,6 +116,9 @@ def calcSampling(wfr, z, scale = 1):
     
     pp = propParams(scale, zoom_x, scale, zoom_y)
     
+    if verbose == True:
+        print("Pixel Size in Unpropagated Plane: {} x {}".format(wfr.pixelsize()[0], wfr.pixelsize()[1]))
+        print("Pixel Size in Propagated Plane: {} x {}".format(delta_x, delta_y))
     return pp
     
     
