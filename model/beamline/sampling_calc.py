@@ -145,73 +145,85 @@ if __name__ == '__main__':
     bl.append(d1, calcSampling(wfr, d1.L, scale = 50, verbose = True))
     bl.propagate(wfr)
     plotIntensity(wfr)
+    wfr.store_hdf5("../../data/D1_6keV.hdf5")
     
     print("HOM1")
     bl = Beamline()
     bl.append(HOM1, propParams(1,1,1,1))
     bl.propagate(wfr)
     plotIntensity(wfr)
-    
+    wfr.store_hdf5("../../data/HOM1_6keV.hdf5")
+
     print("D2")
     bl = Beamline()
     bl.append(d2, propParams(1,1,1,1))
     bl.propagate(wfr)
     plotIntensity(wfr)
+    wfr.store_hdf5("../../data/D2_6keV.hdf5")
     
     print("HOM2")
     bl = Beamline()
     bl.append(HOM2, propParams(1,1,1,1))
     bl.propagate(wfr)
     plotIntensity(wfr)
-    
+    wfr.store_hdf5("../../data/HOM2_6keV.hdf5")
     
     print("D3")
     bl = Beamline()
     bl.append(d3, propParams(2,1,2,1))
-    #bl.propagate(wfr)
-    #plotIntensity(wfr)
+    bl.propagate(wfr)
+    plotIntensity(wfr)
+    wfr.store_hdf5("../../data/D3_6keV.hdf5")
     
     print("MKB_PSLIT")
     bl = Beamline()
     bl.append(MKB_pslit, propParams(1,1,1,1))
     bl.propagate(wfr)
     plotIntensity(wfr)
-        
+    wfr.store_hdf5("../../data/MKBSlit_6keV.hdf5")
+    
     print("D4")
     bl = Beamline()
     bl.append(d4, propParams(1,1,1,1))
     bl.propagate(wfr)
     plotIntensity(wfr)
-    
+    wfr.store_hdf5("../../data/D4_6keV.hdf5")
+
     print("MHP")
     bl = Beamline()
     bl.append(MHP, propParams(1,1,1,1))
     bl.propagate(wfr)
     plotIntensity(wfr)
+    wfr.store_hdf5("../../data/MHP_6keV.hdf5")
 
     print("D5")
     bl = Beamline()
     bl.append(d5, propParams(1,1,1,1))
     bl.propagate(wfr)
     plotIntensity(wfr)
-
+    wfr.store_hdf5("../../data/D5_6keV.hdf5")
+    
     print("ap_MHE")
     bl = Beamline()
     bl.append(ap_MHE, propParams(1,1,1,1))
     bl.propagate(wfr)
     plotIntensity(wfr)
+    wfr.store_hdf5("../../data/apMHE_6keV.hdf5")
     
     print("MHE")
     bl = Beamline()
     bl.append(MHE, propParams(1,1,1,1))
     bl.propagate(wfr)
     plotIntensity(wfr)
-        
+    wfr.store_hdf5("../../data/MHE_6keV.hdf5")
+    
     print("D6")
     bl = Beamline()
     bl.append(d6, propParams(1,1,1,1))
     bl.propagate(wfr)
     plotIntensity(wfr)
+    wfr.store_hdf5("../../data/D6_6keV.hdf5")
+    
     
         
     print("MKB_Screen")
@@ -219,40 +231,47 @@ if __name__ == '__main__':
     bl.append(MKB_scr, propParams(1,1,1,1))
     bl.propagate(wfr)
     plotIntensity(wfr)
+    wfr.store_hdf5("../../data/MKBSCRN_6keV.hdf5")
     
     print("D7")
     bl = Beamline()
     bl.append(d7, propParams(1,1,1,1))
     bl.propagate(wfr)
     plotIntensity(wfr)
-    
+    wfr.store_hdf5("../../data/D7_6keV.hdf5")
     
     print("ap_MVE")
     bl = Beamline()
     bl.append(ap_MVE, propParams(1,1,1,1))
     bl.propagate(wfr)
     plotIntensity(wfr)
+    wfr.store_hdf5("../../data/apMVE_6keV.hdf5")
+    
     
     print("MVE")
     bl = Beamline()
     bl.append(MVE, propParams(1,1,1,1))
     bl.propagate(wfr)
     plotIntensity(wfr)
- 
+    wfr.store_hdf5("../../data/MVE_6keV.hdf5")
+    
     print("D8")
     bl = Beamline()
     bl.append(d8, propParams(1,1,1,1))
     bl.propagate(wfr)
     plotIntensity(wfr)
+    wfr.store_hdf5("../../data/D8_6keV.hdf5")
 
     print("MVP")
     bl = Beamline()
     bl.append(MVP, propParams(1,1,1,1))
     bl.propagate(wfr)
     plotIntensity(wfr)
+    wfr.store_hdf5("../../data/MVP_6keV.hdf5")
     
     print("DFocus")
     bl = Beamline()
     bl.append(d8, propParams(1/50,1,1/50,1, m ='converge'))
     bl.propagate(wfr)
     plotIntensity(wfr)
+    wfr.store_hdf5("../../data/DFoc_6keV.hdf5")
