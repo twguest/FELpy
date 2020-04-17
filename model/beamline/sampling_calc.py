@@ -154,7 +154,7 @@ if __name__ == '__main__':
     
     print("D2")
     bl = Beamline()
-    bl.append(d2, calcSampling(wfr, d2.L, scale = 1, verbose = True))
+    bl.append(d2, propParams(1,1,1,1))
     bl.propagate(wfr)
     plotIntensity(wfr)
     
@@ -167,21 +167,92 @@ if __name__ == '__main__':
     
     print("D3")
     bl = Beamline()
-    bl.append(d3, calcSampling(wfr, d3.L, scale = 2, verbose = True))
-    print(calcSampling(wfr, d3.L, scale = 2, verbose = True))
+    bl.append(d3, propParams(2,1,2,1))
     #bl.propagate(wfr)
     #plotIntensity(wfr)
     
-# =============================================================================
-#     print("MKB_PSLIT")
-#     bl = Beamline()
-#     bl.append(MKB_pslit, propParams(1,1,1,1))
-#     bl.propagate(wfr)
-#     plotIntensity(wfr)
-#         
-#     print("D4")
-#     bl = Beamline()
-#     bl.append(d4, calcSampling(wfr, d4.L, scale = 1, verbose = True))
-#     bl.propagate(wfr)
-#     plotIntensity(wfr)
-# =============================================================================
+    print("MKB_PSLIT")
+    bl = Beamline()
+    bl.append(MKB_pslit, propParams(1,1,1,1))
+    bl.propagate(wfr)
+    plotIntensity(wfr)
+        
+    print("D4")
+    bl = Beamline()
+    bl.append(d4, propParams(1,1,1,1))
+    bl.propagate(wfr)
+    plotIntensity(wfr)
+    
+    print("MHP")
+    bl = Beamline()
+    bl.append(MHP, propParams(1,1,1,1))
+    bl.propagate(wfr)
+    plotIntensity(wfr)
+
+    print("D5")
+    bl = Beamline()
+    bl.append(d5, propParams(1,1,1,1))
+    bl.propagate(wfr)
+    plotIntensity(wfr)
+
+    print("ap_MHE")
+    bl = Beamline()
+    bl.append(ap_MHE, propParams(1,1,1,1))
+    bl.propagate(wfr)
+    plotIntensity(wfr)
+    
+    print("MHE")
+    bl = Beamline()
+    bl.append(MHE, propParams(1,1,1,1))
+    bl.propagate(wfr)
+    plotIntensity(wfr)
+        
+    print("D6")
+    bl = Beamline()
+    bl.append(d6, propParams(1,1,1,1))
+    bl.propagate(wfr)
+    plotIntensity(wfr)
+    
+        
+    print("MKB_Screen")
+    bl = Beamline()
+    bl.append(MKB_scr, propParams(1,1,1,1))
+    bl.propagate(wfr)
+    plotIntensity(wfr)
+    
+    print("D7")
+    bl = Beamline()
+    bl.append(d7, propParams(1,1,1,1))
+    bl.propagate(wfr)
+    plotIntensity(wfr)
+    
+    
+    print("ap_MVE")
+    bl = Beamline()
+    bl.append(ap_MVE, propParams(1,1,1,1))
+    bl.propagate(wfr)
+    plotIntensity(wfr)
+    
+    print("MVE")
+    bl = Beamline()
+    bl.append(MVE, propParams(1,1,1,1))
+    bl.propagate(wfr)
+    plotIntensity(wfr)
+ 
+    print("D8")
+    bl = Beamline()
+    bl.append(d8, propParams(1,1,1,1))
+    bl.propagate(wfr)
+    plotIntensity(wfr)
+
+    print("MVP")
+    bl = Beamline()
+    bl.append(MVP, propParams(1,1,1,1))
+    bl.propagate(wfr)
+    plotIntensity(wfr)
+    
+    print("DFocus")
+    bl = Beamline()
+    bl.append(d8, propParams(1/50,1,1/50,1, m ='converge'))
+    bl.propagate(wfr)
+    plotIntensity(wfr)

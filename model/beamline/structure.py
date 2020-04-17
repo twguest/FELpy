@@ -188,10 +188,12 @@ def config(beamline = "micro", screens = True):
                 _ext_in = 0.500, _ext_out = 0.500) 
     
     
+    d6 = Drift(0.36)
+    
     
     ap_MVE = Aperture(_shape="r", _ap_or_ob="a", _Dx= 0.025, _Dy= 0.950, _x=0, _y=0)
     
-    d6 = Drift(0.36)
+    
     
     MKB_scr = Screen()
     
