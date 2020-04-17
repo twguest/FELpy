@@ -163,7 +163,7 @@ def coherentSource(nx, ny, ekev, q, xoff = 0, yoff = 0, modDivergence = True):
     gsnBm = buildGaussian(nx, ny, ekev, xMin, xMax, yMin, yMax, sigX, sigY, 1, pulseTau = tau)
     
     wfr = Wavefront(gsnBm)
-
+    wfr.params.wavelength = wavelength
     modDiv(wfr,f)
     
 
