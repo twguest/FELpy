@@ -149,28 +149,35 @@ def config(beamline = "micro", screens = True):
         genMirrorSurface(200, 200, [25e-03, 1000e-03], "../../data/mvp_", mode = 'Flat')
     
     d1 =  Drift(246.5)
-    
+    d1.name = "Drift1"
     HOM1 = MirPl(srwlib.srwl_uti_read_data_cols(hom1_profile, "\t"),
                  _dim = 'x',
                  _ang = 2.1e-03, 
                  _amp_coef = 1,
                  _x = 0, _y = 0) 
+    HOM1.name = "HOM1"
     
     d2 = Drift(11.36)
+    d2.name = "Drift2"
     
     HOM2 = MirPl(srwlib.srwl_uti_read_data_cols(hom2_profile, "\t"),
                  _dim = 'x',
                  _ang = 2.4e-03, 
                  _amp_coef = 1,
                  _x = 0, _y = 0) 
+    HOM2.name = "HOM2"
     
     d3 = Drift(634.669)
-        
+    d3.name = "Drift3"
+    
     MKB_pslit = Aperture(_shape="r", _ap_or_ob="a", _Dx= 0.100, _Dy= 0.100, _x=0, _y=0)
+    MKB_pslit.name = "MKB-Pslit"
     
     d4 = Drift(1.200)
+    d4.name = "Drift4"
     
     ap_MHE = Aperture(_shape="r", _ap_or_ob="a", _Dx= 0.950, _Dy= 0.025, _x=0, _y=0)
+    ap_MHE.name = "MHE_ap"
     
     MHP = MirPl(srwlib.srwl_uti_read_data_cols(mhp_profile, "\t"),
                 _dim = 'x',
@@ -178,32 +185,38 @@ def config(beamline = "micro", screens = True):
                 _amp_coef = 1,
                 _x = 0,
                 _y = 0)
-    
+    MHP.name = "MHP"    
     
     d5 =  Drift(1.050)
-
+    d5.name = "Drift5"
     
-    MHE = MirEl(orient = 'x', p = 894.779, q = 23.905, thetaE = 0, theta0 = 0,
-                length= 1.000, roll = 0, yaw = 0, _x = 0, _y = 0, _refl = 1,
-                _ext_in = 0.500, _ext_out = 0.500) 
+    MHE = MirEl(orient = 'x', p = 1, q = 1, thetaE = 0.5e-06, theta0 = 0.5e-06,
+                distance = 0, length = 1, roll = 1, yaw = 1,   _refl = 1,
+                _ext_in = 0.5, _ext_out = 0.5) 
     
+    MHE.name = "MHE"
     
     d6 = Drift(0.36)
-    
-    
-    ap_MVE = Aperture(_shape="r", _ap_or_ob="a", _Dx= 0.025, _Dy= 0.950, _x=0, _y=0)
-    
-    
+    d6.name = "Drift6"
     
     MKB_scr = Screen()
+    MKB_scr.name = "MKB-Scr"
     
     d7 = Drift(1.320)
+    d7.name = "Drift7"
     
-    MVE = MirEl(orient = 'y', p = 896.459, q = 22.225, thetaE = 0, theta0 = 0,
-                length= 1.000, roll = 0, yaw = 0, _x = 0, _y = 0, _refl = 1,
-                _ext_in = 0.500, _ext_out = 0.500) 
+    ap_MVE = Aperture(_shape="r", _ap_or_ob="a", _Dx= 0.025, _Dy= 0.950, _x=0, _y=0)
+    ap_MVE.name = "MVE_ap"
     
+    MVE = MirEl(orient = 'y', p = 896.459, q = 22.225, thetaE = -0.5e-06, theta0 = -0.5e-06,
+            distance = 0, length = 1, roll = 0, yaw = 0,  _refl = 1,
+            _ext_in = 0.500, _ext_out = 0.500) 
+    MVE.name = "MVE"
+    
+   
     d8 = Drift(1.050)
+    d8.name = "Drift8"
+    
     
     MVP = MirPl(srwlib.srwl_uti_read_data_cols(mvp_profile, "\t"),
                 _dim = 'y',
@@ -211,24 +224,85 @@ def config(beamline = "micro", screens = True):
                 _amp_coef = 1,
                 _x = 0,
                 _y = 0)
+    MVP.name = "MVP"
     
     df = Drift(21.175)
+    df.name = "Focus"
     
     bl = Beamline()
-    bl.append(d1, calcSampling(wfr, d1.L, scale = 50))
-    #bl.append(HOM1, propParams(1, 1, 1, 1))
-    
+    bl.append(d1, [0,0,1,0,0,50,0.328,50,0.328,0,0,0])
+    bl.append(HOM1, propParams(1, 1, 1, 1))
+    bl.append(d2, propParams(1, 1, 1, 1))
+    bl.append(HOM2, propParams(1, 1, 1, 1))
+    bl.append(d3, propParams(2,1,2,1))
+    bl.append(MKB_pslit, propParams(1, 1, 1, 1))
+    bl.append(d4, propParams(1, 1, 1, 1))
+    bl.append(MHP, propParams(1, 1, 1, 1))
+    bl.append(d5, propParams(1, 1, 1, 1))
+    bl.append(ap_MHE, propParams(1, 1, 1, 1))
+    bl.append(MHE, propParams(1, 1, 1, 1))
+    bl.append(d6, propParams(1, 1, 1, 1))
+    bl.append(MKB_scr, propParams(1, 1, 1, 1))
+    bl.append(d7, propParams(1, 1, 1, 1))
+    bl.append(ap_MVE, propParams(1, 1, 1, 1))
+    bl.append(MVE, propParams(1, 1, 1, 1))
+    bl.append(d8, propParams(1, 1, 1, 1))
+    bl.append(MVP, propParams(1, 1, 1, 1))
+    bl.append(df, propParams(1/50, 1, 1/50, 1))
+
     return bl
  
+def test_mirror_setup():
+    wfr = coherentSource(1048, 1048, 6, 1)
+
+    MHE = MirEl(orient = 'x', p = 1, q = 1, thetaE =  1.1e-03, theta0 = 1.1e-03,
+                distance = 0, length = 1, roll = 1, yaw = 1,   _refl = 1,
+                _ext_in = 0.5, _ext_out = 0.5) 
+    
+    MHE.name = "mirel"
+    d6 = Drift(1)
+    d6.name = "drift6"
+    
+    mhp_profile = "../../data/mhp_mir_Flat.dat"
+
+    MVE = MirEl(orient = 'y', p = 896.459, q = 22.225, thetaE = 0, theta0 = 0,
+                distance = 0, length = 1, roll = 0, yaw = 0,  _refl = 1,
+                _ext_in = 0.500, _ext_out = 0.500) 
+
+    MHP = MirPl(srwlib.srwl_uti_read_data_cols(mhp_profile, "\t"),
+            _dim = 'x',
+            _ang = 2.5,
+            _amp_coef = 1,
+            _x = 0,
+            _y = 0)
+    bl = Beamline()
+    
+    bl.append(MHE, propParams(1,1, 1 ,1))
+    bl.append(d6, propParams(1/50,1,1/50,1))
+
+    bl.propagateSeq(wfr, "../../data")    
+    
+def testMicronProp():
+    """
+    test propagation of the micron beamline focus
+    """
+    wfr = coherentSource(1048, 1048, 6, 1)
+    
+    bl = config()
+    bl.propagateSeq(wfr, "../../data")
+    
 
 if __name__ == '__main__':
-    
-    
-    wfr = coherentSource(1048, 1048, 6, 1)
-    plotIntensity(wfr)
- 
-    bl = config()
-    #bl.propagate(wfr)
-    #print(check_sampling(wfr))
-    plotIntensity(wfr)
-    
+    testMicronProp()
+# =============================================================================
+#     
+#     wfr = coherentSource(1048, 1048, 6, 1)
+#     plotIntensity(wfr)
+#  
+#     bl = config()
+#     #bl.propagate(wfr)
+#     #print(check_sampling(wfr))
+#     plotIntensity(wfr)
+#     
+# =============================================================================
+    #test_mirror_setup()
