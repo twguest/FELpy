@@ -15,7 +15,7 @@ sys.path.append("/opt/spb_model") # LOCAL PATH
 sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
 ###############################################################################
 ###############################################################################
-
+import os
 from os.path import exists
 
 import numpy as np
@@ -150,7 +150,7 @@ def config(beamline = "micro", screens = True):
     
     d1 =  Drift(246.5)
     d1.name = "Drift1"
-    HOM1 = MirPl(srwlib.srwl_uti_read_data_cols(hom1_profile, "\t"),
+    HOM1 = MirPl(np.loadtxt(hom1_profile),
                  _dim = 'x',
                  _ang = 2.1e-03, 
                  _amp_coef = 1,
@@ -160,7 +160,7 @@ def config(beamline = "micro", screens = True):
     d2 = Drift(11.36)
     d2.name = "Drift2"
     
-    HOM2 = MirPl(srwlib.srwl_uti_read_data_cols(hom2_profile, "\t"),
+    HOM2 = MirPl(np.loadtxt(hom2_profile),
                  _dim = 'x',
                  _ang = 2.4e-03, 
                  _amp_coef = 1,
@@ -179,7 +179,7 @@ def config(beamline = "micro", screens = True):
     ap_MHE = Aperture(_shape="r", _ap_or_ob="a", _Dx= 0.950, _Dy= 0.025, _x=0, _y=0)
     ap_MHE.name = "MHE_ap"
     
-    MHP = MirPl(srwlib.srwl_uti_read_data_cols(mhp_profile, "\t"),
+    MHP = MirPl(np.loadtxt(mhp_profile),
                 _dim = 'x',
                 _ang = 1.1e-03,
                 _amp_coef = 1,
@@ -218,7 +218,7 @@ def config(beamline = "micro", screens = True):
     d8.name = "Drift8"
     
     
-    MVP = MirPl(srwlib.srwl_uti_read_data_cols(mvp_profile, "\t"),
+    MVP = MirPl(np.loadtxt(mvp_profile),
                 _dim = 'y',
                 _ang = 1.1e-03,
                 _amp_coef = 1,
@@ -254,12 +254,32 @@ def config(beamline = "micro", screens = True):
     return bl
 
     
-
+def testPropEnergies(outdir):
+    
+    erange = [6.0, 9.2, 12.0]
+    
+    if os.path.exists(outdir):
+        pass
+    else: 
+        os.mkdir(outdir)
+    
+    for energy in erange:
+        if os.path.exists(outdir + "/{}eV_1nC/".format(energy*1000).replace(".","_")) == False:
+            os.mkdir(outdir + "/{}eV_1nC/".format(energy*1000).replace(".","_"))
+    
+    for energy in erange:
+        wfr = coherentSource(1048, 1048, energy, 1)
+        
+        bl = config()
+        bl.propagateSeq(wfr, outdir + "/{}eV_1nC/".format(energy*1000).replace(".","_"))
+        
 if __name__ == '__main__':
-
-    wfr = coherentSource(1048, 1048, 6, 1)
-
- 
-    bl = config()
-    bl.propagateSeq(wfr, "../../output/6kev_1nC")
-    #test_mirror_setup()
+    testPropEnergies("../../output")
+# =============================================================================
+#     wfr = coherentSource(1048, 1048, 6, 1)
+# 
+#  
+#     bl = config()
+#     bl.propagateSeq(wfr, "../../output")
+#     #test_mirror_setup()
+# =============================================================================
