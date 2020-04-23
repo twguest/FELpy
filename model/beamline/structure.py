@@ -130,24 +130,24 @@ def config(beamline = "micro", screens = True):
     if exists("../../data/hom1_mir_Flat.dat"):
         hom1_profile = "../../data/hom1_mir_Flat.dat"
     else:
-        genMirrorSurface(200, 200, [1000e-03, 1000e-03], "../../data/hom1_", mode = 'Flat')
- 
+        genMirrorSurface(500, 500, [10, 10], "../../data/hom1_", mode = 'Flat')
+        hom1_profile = "../../data/hom1_mir_Flat.dat"
     ### generate hom1 mirror surface
     if exists("../../data/hom2_mir_Flat.dat"):
         hom2_profile = "../../data/hom2_mir_Flat.dat"
     else:
-        genMirrorSurface(200, 200, [1000e-03, 1000e-03], "../../data/hom2_", mode = 'Flat')
- 
+        genMirrorSurface(500, 500, [10, 10], "../../data/hom2_", mode = 'Flat')
+        hom2_profile = "../../data/hom2_mir_Flat.dat"
     if exists("../../data/mhp_mir_Flat.dat"):
         mhp_profile = "../../data/mhp_mir_Flat.dat"
     else:
-        genMirrorSurface(200, 200, [1000e-03, 1000e-03], "../../data/mhp_", mode = 'Flat')
-        
+        genMirrorSurface(500, 500, [10, 10], "../../data/mhp_", mode = 'Flat')
+        mhp_profile = "../../data/mhp_mir_Flat.dat"
     if exists("../../data/mvp_mir_Flat.dat"):
         mvp_profile = "../../data/mvp_mir_Flat.dat"
     else:
-       genMirrorSurface(200, 200, [1000e-03, 1000e-03], "../../data/mvp_", mode = 'Flat')
-    
+       genMirrorSurface(500, 500, [10, 100], "../../data/mvp_", mode = 'Flat')
+       mvp_profile = "../../data/mvp_mir_Flat.dat"
     d1 =  Drift(246.5)
     d1.name = "Drift1"
     HOM1 = MirPl(np.loadtxt(hom1_profile),
@@ -234,7 +234,7 @@ def config(beamline = "micro", screens = True):
     bl.append(HOM1, propParams(1, 1, 1, 1))
     bl.append(d2, propParams(1, 1, 1, 1))
     bl.append(HOM2, propParams(1, 1, 1, 1))
-    bl.append(d3, propParams(2,1,2,1))
+    bl.append(d3, propParams(1.5,1.5,1.5,1.5))
     bl.append(MKB_pslit, propParams(1, 1, 1, 1))
     bl.append(d4, propParams(1, 1, 1, 1))
     bl.append(MHP, propParams(1, 1, 1, 1))
@@ -246,17 +246,17 @@ def config(beamline = "micro", screens = True):
     bl.append(d7, propParams(1, 1, 1, 1))
     bl.append(ap_MVE, propParams(1, 1, 1, 1))
     bl.append(MVE, propParams(1, 1, 1, 1))
-    bl.append(d8, propParams(1, 1, 1, 1,'converge'))
+    bl.append(d8, propParams(1, 1, 1, 1))
 
     bl.append(MVP, propParams(1, 1, 1, 1))
-    bl.append(df, propParams(1/500, 1, 1/500, 1,'converge'))
+    bl.append(df, propParams(1/100, 1, 1/100, 1,'converge'))
 
     return bl
 
     
 def testPropEnergies(outdir):
     
-    erange = [6.0, 9.2, 12.0]
+    erange = [6000, 9200, 12000, 16000]
     
     if os.path.exists(outdir):
         pass
@@ -264,14 +264,14 @@ def testPropEnergies(outdir):
         os.mkdir(outdir)
     
     for energy in erange:
-        if os.path.exists(outdir + "/{}eV_1nC/".format(energy*1000).replace(".","_")) == False:
-            os.mkdir(outdir + "/{}eV_1nC/".format(energy*1000).replace(".","_"))
+        if os.path.exists(outdir + "/{}eV_1nC/".format(energy).replace(".","_")) == False:
+            os.mkdir(outdir + "/{}eV_1nC/".format(energy).replace(".","_"))
     
     for energy in erange:
-        wfr = coherentSource(1048, 1048, energy, 1)
+        wfr = coherentSource(1048, 1048, energy/1000, 1)
         
         bl = config()
-        bl.propagateSeq(wfr, outdir + "/{}eV_1nC/".format(energy*1000).replace(".","_"))
+        bl.propagateSeq(wfr, outdir + "/{}eV_1nC/".format(energy).replace(".","_"))
         
 if __name__ == '__main__':
     testPropEnergies("../../output")
