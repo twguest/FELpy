@@ -38,7 +38,7 @@ from model.beamline.structure import config
 
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity 
 from wpg.misc import fresnel_sampling
-
+from wpg.srwlib import SRWLOptD
 from model.beamline.structure import propParams
 def quadratic_prop(outdir):
     
@@ -46,36 +46,38 @@ def quadratic_prop(outdir):
     D1 = wfr.params.Mesh.xMax - wfr.params.Mesh.xMin
     
     bl = config(focus = "micron")
-    
-    bl.propagation_options[0]['optical_elements'] = [bl.propagation_options[0]['optical_elements'][0]]
+    Drift = SRWLOptD(50)
+    Drift.name = 'drift'
+    bl.propagation_options[0]['optical_elements'] = [Drift]
     bl.propagation_options[0]['propagation_parameters'] = [bl.propagation_options[0]['propagation_parameters'][0]]
     
-    bl.propagateSeq(wfr)#, outdir = outdir + "quadratic/")
+    bl.propagateSeq(wfr, outdir = outdir + "quadratic/")
     D2 = wfr.params.Mesh.xMax - wfr.params.Mesh.xMin
     print(D1, D2)
     
     return wfr.pixelsize()[0], D1, D2
+
 def fresnel_prop(outdir, pp):
     wfr = coherentSource(1024,1024,6,1.0)
     
     bl = config(focus = "micron")
-    
-    bl.propagation_options[0]['optical_elements'] = [bl.propagation_options[0]['optical_elements'][0]]
+    Drift = SRWLOptD(50)
+    Drift.name = 'drift'
+    bl.propagation_options[0]['optical_elements'] = [Drift]
     bl.propagation_options[0]['propagation_parameters'] = [pp]
     
-    bl.propagateSeq(wfr)#, outdir = outdir + "fresnel/")
+    bl.propagateSeq(wfr, outdir = outdir + "fresnel/")
 
     print(wfr.params.Mesh.xMax - wfr.params.Mesh.xMin)
 if __name__ == '__main__':
 
-    #outdir = "../../output/sampling_test/d1/"
-    outdir = None
+    outdir = "../../output/sampling_test/d1/"
     wfr = coherentSource(1024,1024,6,1.0)
 
     print("Comparing Propagation Algorithms")
     dx1, D1, D2 = quadratic_prop(outdir)
     print(dx1)
-    dx2 = fresnel_sampling(246.5, wfr.params.wavelength, dx1, D2, D1)
+    dx2 = fresnel_sampling(50, wfr.params.wavelength, dx1, D2, D1)
     
     z = D2/D1
     s = dx2/(dx1)
@@ -83,6 +85,6 @@ if __name__ == '__main__':
     print("scale: {}".format(s))
     print(s/z)
     print(dx2)
-    fresnel_prop(outdir, propParams(z,s,z,s,mode = "normal"))
+    fresnel_prop(outdir, [0,0,1,0,0,z,s/z,z,s/z,0,0])
     
     #fresnel_prop(outdir)
