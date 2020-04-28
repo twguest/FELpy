@@ -17,7 +17,7 @@ sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
 ###############################################################################
 import os
 from os.path import exists
-
+import json
 import numpy as np
 
 from wpg import srwlpy
@@ -26,6 +26,7 @@ from wpg.beamline import Beamline
 from wpg import srwlib
 from wpg.srwlib import SRWLOptD as Drift
 from wpg.srwlib import SRWLOptA as Aperture
+from wpg.srwlib import SRWLOptMirEl as MirEl2
 
 from wpg.optical_elements import Mirror_elliptical as MirEl
 from wpg.optical_elements import Screen
@@ -34,7 +35,7 @@ from wpg.optical_elements import Screen
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity 
 from model.src.coherent import coherentSource
 
-from wpg.misc import get_wavelength, sampling
+from wpg.misc import get_wavelength 
 from wpg.wpg_uti_wf import check_sampling, calculate_fwhm
 
 from wpg.srwlib import srwl_opt_setup_surf_height_2d as MirPl
@@ -56,6 +57,8 @@ def propParams(sx, zx, sy, zy, mode = "normal"):
         m = 0
     elif mode == "quadratic":
         m = 1
+    elif mode == "farfield":
+        m = 2
     elif mode == "diverge":
         m = 3
     elif mode == "converge":
@@ -122,11 +125,13 @@ def calcSampling(wfr, z, scale = 1, verbose = False):
     return pp
     
     
-    
-def config(beamline = "micro", screens = True):
-    
-   
-    ### generate hom1 mirror surface
+def load_params():
+    with open("../../data/input/parameters.json", "r") as read_file:
+        params = json.load(read_file)
+    return params
+
+def buildBeamline(params, focus = "micron"):
+        ### generate hom1 mirror surface
     if exists("../../data/hom1_mir_Flat.dat"):
         hom1_profile = "../../data/hom1_mir_Flat.dat"
     else:
@@ -148,109 +153,183 @@ def config(beamline = "micro", screens = True):
     else:
        genMirrorSurface(500, 500, [10, 100], "../../data/mvp_", mode = 'Flat')
        mvp_profile = "../../data/mvp_mir_Flat.dat"
-    d1 =  Drift(246.5)
-    d1.name = "Drift1"
-    HOM1 = MirPl(np.loadtxt(hom1_profile),
-                 _dim = 'x',
-                 _ang = 2.1e-03, 
-                 _amp_coef = 1,
-                 _x = 0, _y = 0) 
-    HOM1.name = "HOM1"
+       
+    d1 =  Drift(params["d1"]['distance'])
+    d1.name = params["d1"]['name']
     
-    d2 = Drift(11.36)
-    d2.name = "Drift2"
+    HOM1 = MirPl(np.loadtxt(params['HOM1']['mirror profile']),
+                 _dim = params['HOM1']['orientation'],
+                 _ang = params['HOM1']['incidence angle'], 
+                 _amp_coef = params['HOM1']['transmission'],
+                 _x = params['HOM1']['xc'], _y = params['HOM1']['yc']) 
+    HOM1.name = params['HOM1']['name']
     
-    HOM2 = MirPl(np.loadtxt(hom2_profile),
-                 _dim = 'x',
-                 _ang = 2.4e-03, 
-                 _amp_coef = 1,
-                 _x = 0, _y = 0) 
-    HOM2.name = "HOM2"
+    d2 =  Drift(params["d2"]['distance'])
+    d2.name = params["d2"]['name']
     
-    d3 = Drift(634.669)
-    d3.name = "Drift3"
+    HOM2 = MirPl(np.loadtxt(params['HOM2']['mirror profile']),
+                 _dim = params['HOM2']['orientation'],
+                 _ang = params['HOM2']['incidence angle'], 
+                 _amp_coef = params['HOM2']['transmission'],
+                 _x = params['HOM2']['xc'], _y = params['HOM2']['yc']) 
+    HOM2.name = params['HOM2']['name']
     
-    MKB_pslit = Aperture(_shape="r", _ap_or_ob="a", _Dx= 0.100, _Dy= 0.100, _x=0, _y=0)
-    MKB_pslit.name = "MKB-Pslit"
+    d3 =  Drift(params["d3"]['distance'])
+    d3.name = params["d3"]['name']
     
-    d4 = Drift(1.200)
-    d4.name = "Drift4"
+    MKB_pslit = Aperture(_shape=params["MKB_pslit"]['shape'],
+                         _ap_or_ob=params["MKB_pslit"]['type'],
+                         _Dx= params["MKB_pslit"]['dx'],
+                         _Dy= params["MKB_pslit"]['dy'],
+                         _x=params["MKB_pslit"]['xc'],
+                         _y=params["MKB_pslit"]['yc'])
+    MKB_pslit.name = params["MKB_pslit"]['name']
     
-    ap_MHE = Aperture(_shape="r", _ap_or_ob="a", _Dx= 0.950, _Dy= 0.025, _x=0, _y=0)
-    ap_MHE.name = "MHE_ap"
+    d4 =  Drift(params["d4"]['distance'])
+    d4.name = params["d4"]['name']
     
-    MHP = MirPl(np.loadtxt(mhp_profile),
-                _dim = 'x',
-                _ang = 1.1e-03,
-                _amp_coef = 1,
-                _x = 0,
-                _y = 0)
-    MHP.name = "MHP"    
+    MHE_ap = Aperture(_shape=params["MHE_ap"]['shape'],
+                         _ap_or_ob=params["MHE_ap"]['type'],
+                         _Dx= params["MHE_ap"]['dx'],
+                         _Dy= params["MHE_ap"]['dy'],
+                         _x=params["MHE_ap"]['xc'],
+                         _y=params["MHE_ap"]['yc'])
+    MHE_ap.name = params["MHE_ap"]['name']
     
-    d5 =  Drift(1.050)
-    d5.name = "Drift5"
+    MHP = MirPl(np.loadtxt(params['MHP']['mirror profile']),
+                 _dim = params['MHP']['orientation'],
+                 _ang = params['MHP']['incidence angle'], 
+                 _amp_coef = params['MHP']['transmission'],
+                 _x = params['MHP']['xc'], _y = params['MHP']['yc']) 
+    MHP.name = params['MHP']['name']
     
-    MHE = MirEl(orient = 'x', p = 896.459, q = 23.905, thetaE = 0.5e-03, theta0 = 0.5e-03,
-                distance = 0, length = 1, roll = 0, yaw = 0,   _refl = 1,
-                _ext_in = 0.5, _ext_out = 0.5) 
+    d5 =  Drift(params["d5"]['distance'])
+    d5.name = params["d5"]['name']
     
+    ###TEST
+    MHE = MirEl2(_p=params['MHE']["distance from source"],
+                _q=params['MHE']["distance to focus"],
+                _ang_graz=params['MHE']["incident angle"],
+                _r_sag=0.1,
+                _size_tang=25,
+                _size_sag=25,
+                _ap_shape="r",
+                _sim_meth=1,
+                _npt=1000,
+                _nps=1000,
+                _treat_in_out=0,
+                _ext_in=0,#params['MHE']["_ext_in"],
+                _ext_out=0,#params['MHE']["_ext_out"],
+                _nvx=np.cos(params['MHE']["incident angle"]),
+                _nvy=np.sin(params['MHE']["roll"]),
+                _nvz=-np.sin(params['MHE']["incident angle"]),
+                _tvx=-np.sin(params['MHE']["incident angle"]),
+                _tvy=0,
+                _x= 0,#np.tan(params['MHE']["yaw"])*params['MHE']["displacement"],
+                _y=0,
+                _refl=1,
+                _n_ph_en=1,
+                _n_ang=1,
+                _n_comp=1,
+                _ph_en_start=1000.0,
+                _ph_en_fin=1000.0,
+                _ph_en_scale_type="lin",
+                _ang_start=0,
+                _ang_fin=0,
+                _ang_scale_type="lin")
+    ###
+    
+# =============================================================================
+#     MHE = MirEl(orient = params['MHE']["orientation"], p = params['MHE']["distance from source"], q = params['MHE']["distance to focus"],
+#                 thetaE = params['MHE']["design angle"], theta0 = params['MHE']["incident angle"],
+#                 distance = params['MHE']["displacement"], length = params['MHE']["length"],
+#                 roll = params['MHE']["roll"],
+#                 yaw = params['MHE']["yaw"],
+#                 _refl = params['MHE']["reflectivity"],
+#                 _ext_in = params['MHE']["_ext_in"], _ext_out = params['MHE']["_ext_out"]) 
+#     
+# =============================================================================
     MHE.name = "MHE"
     
-    d6 = Drift(0.36)
-    d6.name = "Drift6"
+    d6 =  Drift(params["d6"]['distance'])
+    d6.name = params["d6"]['name']
+
+    d7 =  Drift(params["d7"]['distance'])
+    d7.name = params["d7"]['name']
     
-    MKB_scr = Screen()
-    MKB_scr.name = "MKB-Scr"
+    MVE_ap = Aperture(_shape=params["MVE_ap"]['shape'],
+                         _ap_or_ob=params["MVE_ap"]['type'],
+                         _Dx= params["MVE_ap"]['dx'],
+                         _Dy= params["MVE_ap"]['dy'],
+                         _x=params["MVE_ap"]['xc'],
+                         _y=params["MVE_ap"]['yc'])
+    MVE_ap.name = params["MVE_ap"]['name']
     
-    d7 = Drift(1.320)
-    d7.name = "Drift7"
+    MVE = MirEl(orient = params['MVE']["orientation"],
+                p = params['MVE']["distance from source"],
+                q = params['MVE']["distance to focus"],
+                thetaE = params['MVE']["design angle"], theta0 = params['MVE']["incident angle"],
+                distance = params['MVE']["displacement"], length = params['MVE']["length"],
+                roll = params['MVE']["roll"],
+                yaw = params['MVE']["yaw"],
+                _refl = params['MVE']["reflectivity"],
+                _ext_in = params['MVE']["_ext_in"], _ext_out = params['MVE']["_ext_out"]) 
     
-    ap_MVE = Aperture(_shape="r", _ap_or_ob="a", _Dx= 0.025, _Dy= 0.950, _x=0, _y=0)
-    ap_MVE.name = "MVE_ap"
-    
-    MVE = MirEl(orient = 'y', p = 896.459, q = 22.225, thetaE = 0.5e-03, theta0 = 0.5e-03,
-            distance = 0, length = 1, roll = 0, yaw = 0,  _refl = 1,
-            _ext_in = 0.500, _ext_out = 0.500) 
     MVE.name = "MVE"
     
    
-    d8 = Drift(1.050)
-    d8.name = "Drift8"
+    d8 =  Drift(params["d8"]['distance'])
+    d8.name = params["d8"]['name']
     
     
-    MVP = MirPl(np.loadtxt(mvp_profile),
-                _dim = 'y',
-                _ang = 1.1e-03,
-                _amp_coef = 1,
-                _x = 0,
-                _y = 0)
-    MVP.name = "MVP"
     
-    df = Drift(21.175)
-    df.name = "Focus"
+    MVP = MirPl(np.loadtxt(params['MVP']['mirror profile']),
+                 _dim = params['MVP']['orientation'],
+                 _ang = params['MVP']['incidence angle'], 
+                 _amp_coef = params['MVP']['transmission'],
+                 _x = params['MVP']['xc'], _y = params['MVP']['yc']) 
+    MVP.name = params['MVP']['name']
     
-    bl = Beamline()
-    bl.append(d1, [0,0,1,0,0,50,0.328,50,0.328,0,0,0])
-    bl.append(HOM1, propParams(1, 1, 1, 1))
-    bl.append(d2, propParams(1, 1, 1, 1))
-    bl.append(HOM2, propParams(1, 1, 1, 1))
-    bl.append(d3, propParams(1.5,1.5,1.5,1.5))
-    bl.append(MKB_pslit, propParams(1, 1, 1, 1))
-    bl.append(d4, propParams(1, 1, 1, 1))
-    bl.append(MHP, propParams(1, 1, 1, 1))
-    bl.append(d5, propParams(1, 1, 1, 1))
-    bl.append(ap_MHE, propParams(1/1,1,1/1,1))
-    bl.append(MHE, propParams(1, 1, 1, 1))
-    bl.append(d6, propParams(1, 1, 1, 1))
+    df =  Drift(params["df"]['distance'])
+    df.name = params["df"]['name']
+    
+    
+    
+    if focus == "micron":
+        bl = Beamline()
+        bl.append(d1, propParams(1,1,1,1, mode = "farfield"))
+
+        bl.append(HOM1, propParams(1, 1, 1, 1, mode = 'normal'))
+        bl.append(d2, propParams(1, 1, 1, 1, mode = 'quadratic'))
+        bl.append(HOM2,  propParams(1, 1, 1, 1, mode = 'normal'))
+        bl.append(d3, propParams(1,1,1,1, mode = 'farfield'))
+        
+        #bl.append(MKB_pslit, propParams(1/5, 1, 1/5, 1, mode = 'normal'))
+        bl.append(d4, propParams(1, 1, 1, 1, mode = 'quadratic'))
+        bl.append(MHP, propParams(1, 1, 1, 1, mode = 'normal'))
+        bl.append(d5, propParams(1, 1, 1, 1, mode = 'quadratic'))
+        bl.append(MHE_ap, propParams(1, 1, 1, 1, mode = 'normal'))
+        bl.append(MHE, propParams(1, 1, 1, 1, mode = 'normal'))
+        #bl.append(d6, propParams(1, 1, 1, 1, mode = 'quadratic'))
+     
+        #bl.append(d7, propParams(1, 1, 1, 1, mode = 'quadratic'))
+        #bl.append(MVE_ap, propParams(1, 1, 1, 1, mode = 'normal'))
+        #bl.append(MVE, propParams(1, 1, 1, 1, mode = 'normal'))
+        #bl.append(d8, propParams(1, 1, 1, 1, mode = 'quadratic'))
+    
+        #bl.append(MVP, propParams(1, 1, 1, 1, mode = 'normal'))
+        #bl.append(df, propParams(1, 10, 1, 10, mode = 'converge'))
+    
+
+    bl.params = params
+    return bl
+
  
-    bl.append(d7, propParams(1, 1, 1, 1))
-    bl.append(ap_MVE, propParams(1, 1, 1, 1))
-    bl.append(MVE, propParams(1, 1, 1, 1))
-    bl.append(d8, propParams(1, 1, 1, 1))
-
-    bl.append(MVP, propParams(1, 1, 1, 1))
-    bl.append(df, propParams(1/100, 1, 1/100, 1,'converge'))
-
+def config(focus = "micron", screens = True):
+    
+    params = load_params()
+    bl = buildBeamline(params)
+    
     return bl
 
     
@@ -274,12 +353,13 @@ def testPropEnergies(outdir):
         bl.propagateSeq(wfr, outdir + "/{}eV_1nC/".format(energy).replace(".","_"))
         
 if __name__ == '__main__':
-    testPropEnergies("../../output")
-# =============================================================================
-#     wfr = coherentSource(1048, 1048, 6, 1)
-# 
-#  
-#     bl = config()
-#     bl.propagateSeq(wfr, "../../output")
-#     #test_mirror_setup()
-# =============================================================================
+    #testPropEnergies("../../output")
+
+    #params = load_params()
+    wfr = coherentSource(1048, 1048, 6, 1)
+
+    plotIntensity(wfr)
+    bl = config()
+    bl.propagateSeq(wfr)
+    plotIntensity(wfr)
+    #test_mirror_setup()
