@@ -34,7 +34,7 @@ from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
 if __name__ == '__main__':
 
     outdir = "../../output/"
-    #outdir = None
+    outdir = None
     
     print("Testing Beamline Propagation")
     

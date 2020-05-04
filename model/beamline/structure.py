@@ -67,6 +67,7 @@ def propParams(sx, zx, sy, zy, mode = "normal"):
     return [0,0,1,m,0,sx,zx/sx,sy,zy/sy,0,0,0]
 
 
+
 def genMirrorSurface(nx, ny, mirDim, outdir, mode = 'Flat'):
     
     if mode == 'Flat':
@@ -207,48 +208,49 @@ def buildBeamline(params, focus = "micron"):
     d5.name = params["d5"]['name']
     
     ###TEST
-    MHE = MirEl2(_p=params['MHE']["distance from source"],
-                _q=params['MHE']["distance to focus"],
-                _ang_graz=params['MHE']["incident angle"],
-                _r_sag=0.1,
-                _size_tang=25,
-                _size_sag=25,
-                _ap_shape="r",
-                _sim_meth=1,
-                _npt=1000,
-                _nps=1000,
-                _treat_in_out=0,
-                _ext_in=0,#params['MHE']["_ext_in"],
-                _ext_out=0,#params['MHE']["_ext_out"],
-                _nvx=np.cos(params['MHE']["incident angle"]),
-                _nvy=np.sin(params['MHE']["roll"]),
-                _nvz=-np.sin(params['MHE']["incident angle"]),
-                _tvx=-np.sin(params['MHE']["incident angle"]),
-                _tvy=0,
-                _x= 0,#np.tan(params['MHE']["yaw"])*params['MHE']["displacement"],
-                _y=0,
-                _refl=1,
-                _n_ph_en=1,
-                _n_ang=1,
-                _n_comp=1,
-                _ph_en_start=1000.0,
-                _ph_en_fin=1000.0,
-                _ph_en_scale_type="lin",
-                _ang_start=0,
-                _ang_fin=0,
-                _ang_scale_type="lin")
-    ###
-    
 # =============================================================================
-#     MHE = MirEl(orient = params['MHE']["orientation"], p = params['MHE']["distance from source"], q = params['MHE']["distance to focus"],
-#                 thetaE = params['MHE']["design angle"], theta0 = params['MHE']["incident angle"],
-#                 distance = params['MHE']["displacement"], length = params['MHE']["length"],
-#                 roll = params['MHE']["roll"],
-#                 yaw = params['MHE']["yaw"],
-#                 _refl = params['MHE']["reflectivity"],
-#                 _ext_in = params['MHE']["_ext_in"], _ext_out = params['MHE']["_ext_out"]) 
+#     MHE = MirEl2(_p=params['MHE']["distance from source"],
+#                 _q=params['MHE']["distance to focus"],
+#                 _ang_graz= 1,#params['MHE']["incident angle"],
+#                 _r_sag=10e3,
+#                 _size_tang=0.950,#width
+#                 _size_sag=0.026,
+#                 _ap_shape="r",
+#                 _sim_meth=1,
+#                 _npt=100,
+#                 _nps=100,
+#                 _treat_in_out=0,
+#                 _ext_in=0.5,#params['MHE']["_ext_in"],
+#                 _ext_out=0.5,#params['MHE']["_ext_out"],
+#                 _nvx=np.cos(params['MHE']["incident angle"]),
+#                 _nvy=np.sin(params['MHE']["roll"]),
+#                 _nvz=-np.sin(params['MHE']["incident angle"]),
+#                 _tvx=-np.sin(params['MHE']["incident angle"]),
+#                 _tvy=0,
+#                 _x=0,#np.tan(params['MHE']["yaw"])*params['MHE']["displacement"],
+#                 _y=0,
+#                 _refl=1,
+#                 _n_ph_en=1,
+#                 _n_ang=1,
+#                 _n_comp=1,
+#                 _ph_en_start=1000.0,
+#                 _ph_en_fin=1000.0,
+#                 _ph_en_scale_type="lin",
+#                 _ang_start=0,
+#                 _ang_fin=0,
+#                 _ang_scale_type="lin")
+#     ###
 #     
 # =============================================================================
+    MHE = MirEl(orient = params['MHE']["orientation"], p = params['MHE']["distance from source"], q = params['MHE']["distance to focus"],
+                thetaE = 0.005, theta0 = 0.005+2.2e-06,
+                _x = 0, _y = 0,#params['MHE']["displacement"],
+                length = params['MHE']["length"],
+                roll = params['MHE']["roll"],
+                yaw = params['MHE']["yaw"],
+                _refl = params['MHE']["reflectivity"],
+                _ext_in = params['MHE']["_ext_in"], _ext_out = params['MHE']["_ext_out"]) 
+    
     MHE.name = "MHE"
     
     d6 =  Drift(params["d6"]['distance'])
@@ -265,19 +267,21 @@ def buildBeamline(params, focus = "micron"):
                          _y=params["MVE_ap"]['yc'])
     MVE_ap.name = params["MVE_ap"]['name']
     
-    MVE = MirEl(orient = params['MVE']["orientation"],
-                p = params['MVE']["distance from source"],
-                q = params['MVE']["distance to focus"],
-                thetaE = params['MVE']["design angle"], theta0 = params['MVE']["incident angle"],
-                distance = params['MVE']["displacement"], length = params['MVE']["length"],
-                roll = params['MVE']["roll"],
-                yaw = params['MVE']["yaw"],
-                _refl = params['MVE']["reflectivity"],
-                _ext_in = params['MVE']["_ext_in"], _ext_out = params['MVE']["_ext_out"]) 
-    
-    MVE.name = "MVE"
-    
-   
+# =============================================================================
+#     MVE = MirEl(orient = params['MVE']["orientation"],
+#                 p = params['MVE']["distance from source"],
+#                 q = params['MVE']["distance to focus"],
+#                 thetaE = params['MVE']["design angle"], theta0 = params['MVE']["incident angle"],
+#                 distance = params['MVE']["displacement"], length = params['MVE']["length"],
+#                 roll = params['MVE']["roll"],
+#                 yaw = params['MVE']["yaw"],
+#                 _refl = params['MVE']["reflectivity"],
+#                 _ext_in = params['MVE']["_ext_in"], _ext_out = params['MVE']["_ext_out"]) 
+#     
+#     MVE.name = "MVE"
+#     
+#    
+# =============================================================================
     d8 =  Drift(params["d8"]['distance'])
     d8.name = params["d8"]['name']
     
@@ -299,16 +303,16 @@ def buildBeamline(params, focus = "micron"):
         bl = Beamline()
         bl.append(d1, propParams(1,1,1,1, mode = "farfield"))
 
-        bl.append(HOM1, propParams(1, 1, 1, 1, mode = 'normal'))
-        bl.append(d2, propParams(1, 1, 1, 1, mode = 'quadratic'))
-        bl.append(HOM2,  propParams(1, 1, 1, 1, mode = 'normal'))
-        bl.append(d3, propParams(1,1,1,1, mode = 'farfield'))
+        #bl.append(HOM1, propParams(1, 1, 1, 1, mode = 'normal'))
+        #bl.append(d2, propParams(1, 1, 1, 1, mode = 'quadratic'))
+        #bl.append(HOM2,  propParams(1, 1, 1, 1, mode = 'normal'))
+        #bl.append(d3, propParams(1,1,1,1, mode = 'farfield'))
         
         #bl.append(MKB_pslit, propParams(1/5, 1, 1/5, 1, mode = 'normal'))
-        bl.append(d4, propParams(1, 1, 1, 1, mode = 'quadratic'))
-        bl.append(MHP, propParams(1, 1, 1, 1, mode = 'normal'))
-        bl.append(d5, propParams(1, 1, 1, 1, mode = 'quadratic'))
-        bl.append(MHE_ap, propParams(1, 1, 1, 1, mode = 'normal'))
+        #bl.append(d4, propParams(1, 1, 1, 1, mode = 'quadratic'))
+        #bl.append(MHP, propParams(1, 1, 1, 1, mode = 'normal'))
+        #bl.append(d5, propParams(1, 1, 1, 1, mode = 'quadratic'))
+        #bl.append(MHE_ap, propParams(1, 1, 1, 1, mode = 'normal'))
         bl.append(MHE, propParams(1, 1, 1, 1, mode = 'normal'))
         #bl.append(d6, propParams(1, 1, 1, 1, mode = 'quadratic'))
      
@@ -356,7 +360,7 @@ if __name__ == '__main__':
     #testPropEnergies("../../output")
 
     #params = load_params()
-    wfr = coherentSource(1048, 1048, 6, 1)
+    wfr = coherentSource(1048, 1048, 16, 1)
 
     plotIntensity(wfr)
     bl = config()

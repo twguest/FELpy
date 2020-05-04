@@ -104,7 +104,7 @@ if __name__ == "__main__":
                      "distance from source":  896.459,
                      "distance to focus": 23.905,
                      "design angle": 0,
-                     "incident angle": 0,
+                     "incident angle": 1e-03,
                      "displacement": 1,
                      "length": 1,
                      "roll": 0,
