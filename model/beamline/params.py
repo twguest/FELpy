@@ -41,9 +41,9 @@ if __name__ == "__main__":
                       "mirror profile": "../../data/hom1_mir_Flat.dat",
                       "orientation": 'x',
                       "incidence angle": 2.1e-03,
-                      "transmission": 1,
                       "xc": 0,
-                      "yc": 0}
+                      "yc": 0,
+                      "transmission": 1}
     
     params["d2"] = {'name': "drift2",
                     "description": "Drift from HOM1 to HOM2",
@@ -105,7 +105,8 @@ if __name__ == "__main__":
                      "distance to focus": 23.905,
                      "design angle": 0,
                      "incident angle": 1e-03,
-                     "displacement": 1,
+                     "xc": 0,
+                     "yc": 0,
                      "length": 1,
                      "roll": 0,
                      "yaw": 0,
@@ -138,7 +139,8 @@ if __name__ == "__main__":
                      "distance to focus": 22.225,
                      "design angle": 0.5e-03,
                      "incident angle": 0.5e-03,
-                     "displacement": 0,
+                     "xc": 0,
+                     "yc": 0,
                      "length": 5000,
                      "roll": 0,
                      "yaw": 0,

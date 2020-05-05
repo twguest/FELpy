@@ -42,7 +42,6 @@ from wpg.optical_elements import Drift
 from wpg.srwlib import SRWLOptD
 
 fwhm2rms = np.sqrt(8*np.log(2)) ### FWHM = sqrt(8ln(2))*sigma
-
 h = scipy.constants.physical_constants['Planck constant in eV s'][0]
 
 def pulseEnergy(q, ekev):
