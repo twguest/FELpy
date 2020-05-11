@@ -23,7 +23,7 @@ from copy import copy
 import numpy as np
 from matplotlib import pyplot as plt
 from model.src.coherent import coherentSource
-from model.beamline.structure import buildBeamline, cropBeamline, load_params, adjustHOM1
+from model.beamline.structure import beamlineModel
 from model.materials.load_refl import load_refl, get_refl
 
 
@@ -34,10 +34,18 @@ def define_wfr(ekev):
     
     :param ekev: energy of the source
     """
-    params = load_params()
-    bl = buildBeamline(params)
-    cropBeamline(bl, element1 = "drift1", element2 = "drift1")
+    
+    spb = beamlineModel()
+    spb.buildElements(focus = 'micron')
+    
+    spb.buildBeamline(focus = 'micron')
+    
+    spb.cropBeamline(element1 = "drift1", element2 = "drift1")
+    
+    bl = spb.get_beamline()
+    
     wfr = coherentSource(1048, 1048, ekev, 1)
+    
     bl.propagate(wfr)
     
     return wfr
@@ -53,11 +61,14 @@ def getTransmission(ekev, ang):
     print("incidence angle: {} mrad".format(ang*1e3))
     
     adjustHOM1(params, refl, ang)
-
-    bl = buildBeamline(params)
-    adjustHOM1(params, refl, ang)
     
-    cropBeamline(bl, element1 = "HOM1", element2 = "HOM1")
+    spb = beamlineModel()
+    spb.adjustHOMs(refl, ang)
+    spb.buildElements()
+    spb.buildBeamline()
+    spb.cropBeamline(element1 = "HOM1", element2 = "HOM1")
+    
+    bl = spb.get_beamline()
     
     wfr = define_wfr(ekev)
     

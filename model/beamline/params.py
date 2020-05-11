@@ -20,6 +20,7 @@ from os.path import exists
 import json
 import datetime
 
+import numpy as np
 
 def export(params):
     with open('../../data/input/parameters.json', 'w') as f:
@@ -101,10 +102,10 @@ if __name__ == "__main__":
     params["MHE"] = {"name": "MHE",
                      "orientation": 'x',
                      "description": "Micron Focus Horizontal Elliptical Mirror",
-                     "distance from source":  896.459,
+                     "distance from source":  894.779,
                      "distance to focus": 23.905,
-                     "design angle": 0,
-                     "incident angle": 1e-03,
+                     "design angle": 1e-03,
+                     "incidence angle": 1e-03,
                      "xc": 0,
                      "yc": 0,
                      "length": 1,
@@ -133,15 +134,15 @@ if __name__ == "__main__":
 
     
     params["MVE"] = {"name": "MVE",
-                     "orientation": 'x',
+                     "orientation": 'y',
                      "description": "Micron Focus Vertica; Elliptical Mirror",
                      "distance from source":  896.459,
                      "distance to focus": 22.225,
-                     "design angle": 0.5e-03,
-                     "incident angle": 0.5e-03,
+                     "design angle": 1e-03,
+                     "incidence angle": 1e-03,
                      "xc": 0,
                      "yc": 0,
-                     "length": 5000,
+                     "length": 1,
                      "roll": 0,
                      "yaw": 0,
                      "reflectivity": 1,
@@ -155,7 +156,7 @@ if __name__ == "__main__":
     params["MVP"] = {"name": "MVP",
                      "description": "Vertical Plane Mirror of MKB",
                      "mirror profile": "../../data/mvp_mir_Flat.dat",
-                     "orientation": 'x',
+                     "orientation": 'y',
                      "incidence angle": 1.1e-03,
                      "transmission": 1,
                      "xc": 0,

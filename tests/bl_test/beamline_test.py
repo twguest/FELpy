@@ -26,21 +26,28 @@ import time
 import numpy as np
 
 from model.src.coherent import coherentSource
-from model.beamline.structure import config
-
+from model.beamline.structure import BeamlineModel
+from model.materials.load_refl import load_refl, get_refl
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity 
-
+from wpg.wpg_uti_wf import plot_intensity_qmap as plotPhase
 
 if __name__ == '__main__':
-
-    outdir = "../../output/"
-    outdir = None
     
-    print("Testing Beamline Propagation")
+    ekev = 6
     
+    wfr = coherentSource(1024, 1024, ekev, 0.5)
     
-    wfr = coherentSource(1024,1024,6,1.0)
+    spb = BeamlineModel(overwrite_mirrors =  True )
     
-    bl = config(focus = "micron")
+    refl_data = load_refl()
+    refl, ang = get_refl(refl_data, ekev, ang = 2.2e-03, limits = [1.1e-03, 3.6e-03])
     
-    bl.propagateSeq(wfr, outdir = outdir)
+    spb.adjustHOMs(refl, ang)
+    
+    spb.buildElements(focus = "micron")
+    spb.buildBeamline(focus = "micron")
+    bl = spb.get_beamline()
+    
+    bl.propagateSeq(wfr, "../../tmp/")
+    
+    plotPhase(wfr)

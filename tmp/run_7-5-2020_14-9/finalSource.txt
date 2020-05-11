@@ -1,0 +1,39 @@
+Radiation:
+	Mesh:
+		hvx = 1
+		hvy = 0
+		hvz = 0
+		nSlices = 1
+		nvx = 0
+		nvy = 0
+		nvz = 1
+		nx = 10240
+		ny = 10240
+		qxMax = None
+		qxMin = None
+		qyMax = None
+		qyMin = None
+		sliceMax = 9200.0
+		sliceMin = 9200.0
+		xMax = 9.875068413506639e-05
+		xMin = -9.876997514583705e-05
+		yMax = 8.278946105716887e-05
+		yMin = -8.280563403256587e-05
+		zCoord = 0.0
+		
+	Rx = 11.249981445199221
+	Ry = 926.9024792592758
+	dRx = 3.429076100104065e-06
+	dRy = 0.02006456512638155
+	nval = 2
+	photonEnergy = 9200.0
+	wDomain = frequency
+	wEFieldUnit = sqrt(Phot/s/0.1%bw/mm^2)
+	wFloatType = float
+	wSpace = R-space
+	wavelength = 1.3476543194153187e-10
+	xCentre = -0.0
+	yCentre = 0.0
+	
+	arrEhor = array of shape (10240, 10240, 1, 2) // the 2-nd dimension is (re,im)
+	arrEver = array of shape (10240, 10240, 1, 2) // the 2-nd dimension is (re,im)
