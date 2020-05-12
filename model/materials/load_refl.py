@@ -23,27 +23,37 @@ import time
 import numpy as np
 import pandas as pd
 
-def treat_refl(material = 'B4C'):
+def treat_refl(material = 'B4C', indir = None):
     """
     Used for converting excel data obtained via henke to dat file
     
     :param material: mirror material which data is defined for
     """
     
-    excel = pd.read_excel("../../data/hom_refl/{}_refl.xlsx".format(material),header = None)
+    if indir is None:
+        excel = pd.read_excel("../../data/hom_refl/{}_refl.xlsx".format(material),header = None)
+    else:
+        excel = pd.read_excel(indir + "{}_refl.xlsx".format(material),header = None)
     df = pd.DataFrame(excel)
     
     refl = np.asarray(df.values)
-    np.save("../../data/hom_refl/{}_refl.npy".format(material), refl)
     
-def load_refl(material = 'B4C'):
+    if indir is None: 
+        np.save("../../data/hom_refl/{}_refl.npy".format(material), refl)
+    else:
+        np.save(indir + "{}_refl.npy".format(material), refl)
+    
+def load_refl(material = 'B4C', indir = None):
     """
     load data from .npy file generate by treat_refl method
     
     :param material: mirror material which data is defined for
     """
     
-    refl = np.load("../../data/hom_refl/{}_refl.npy".format(material))
+    if indir is None:
+        refl = np.load("../../data/hom_refl/{}_refl.npy".format(material))
+    else:
+        refl = np.load(indir + "/{}_refl.npy".format(material))
     return refl
 
 def get_refl(refl, ekev, ang = 'max', limits = [0,2*np.pi]):
@@ -74,6 +84,6 @@ def get_refl(refl, ekev, ang = 'max', limits = [0,2*np.pi]):
     
 if __name__ == '__main__':
 
-
-    refl = load_refl()
+    treat_refl("B4C")
+    refl = load_refl("B4C", "../../data/kb_refl/")
     get_refl(refl, 9.2, ang = 'max',  limits = [1.1e-03, 3.6e-03])

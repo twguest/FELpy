@@ -99,6 +99,17 @@ def sliceFocus(wfr, ekev, focus = 'micron', nslices = 500, axisName = 'x', outdi
         elif axisName == 'y':
             x = np.linspace(wfr.params.Mesh.yMin*1e6, wfr.params.Mesh.yMax*1e6, wfr.params.Mesh.ny)
             ax.set_xlabel("y ($\mu$m)")
+    
+    if focus == "nano":
+        ax.set_title("Nano Focus Location")
+        ax.set_ylabel("Longitudinal Distance from NKB (m)")
+        
+        if axisName == 'x':
+            x = np.linspace(wfr.params.Mesh.xMin*1e6, wfr.params.Mesh.xMax*1e6, wfr.params.Mesh.nx)
+            ax.set_xlabel("x ($\mu$m)")
+        elif axisName == 'y':
+            x = np.linspace(wfr.params.Mesh.yMin*1e6, wfr.params.Mesh.yMax*1e6, wfr.params.Mesh.ny)
+            ax.set_xlabel("y ($\mu$m)")
             
     
     ax.plot(x, np.ones(x.shape)*spb.bl.params["df"]["distance"], 'r--')

@@ -120,7 +120,42 @@ class BeamlineModel:
         refl_data = load_refl()
         refl, ang = get_refl(refl_data, ekev, ang, limits = [1.1e-03, 3.6e-03])
         
-        self.adjustHOMs(refl, ang)            
+        self.adjustHOMs(refl, ang)           
+        
+    def setupKBs(self, ekev, ang = 3.5e-03, misalignment = 0):
+        
+        if ekev >= 7.5:
+            material = "B4C"
+        else: 
+            material = "Ru"
+            
+        refl_data = load_refl(material, indir = "../../data/kb_refl")
+        refl, ang = get_refl(refl_data, ekev, ang, limits = [0, 5.5e-03])
+        
+        self.adjustKBs(refl, ang, misalignment = misalignment)
+    
+        
+    def adjustKBs(self, refl = None, ang = None, misalignment = 0):
+        """
+        Wrapper to adjust the components of the kbs via editing the current 
+        parameters file
+        """
+        
+        if refl is not None:
+            self.params["MHE"]['reflectivity'] = refl
+            self.params["MVE"]['reflectivity'] = refl
+            self.params["NHE"]['reflectivity'] = refl
+            self.params["NVE"]['reflectivity'] = refl
+        if ang is not None:
+            self.params["MHE"]["design angle"] = ang
+            self.params["MVE"]["design angle"] = ang
+            self.params["NHE"]["design angle"] = ang
+            self.params["NVE"]["design angle"] = ang
+            
+            self.params["MHE"]["incidence angle"] = ang + misalignment
+            self.params["MVE"]["incidence angle"] = ang + misalignment
+            self.params["NHE"]["incidence angle"] = ang + misalignment
+            self.params["NVE"]["incidence angle"] = ang + misalignment
     
     def adjustHOMs(self, refl = None, ang = None):
         """

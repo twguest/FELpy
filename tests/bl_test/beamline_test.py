@@ -38,10 +38,8 @@ def testMicron(ekev, q):
     
     spb = BeamlineModel(overwrite_mirrors =  True)
     
-    refl_data = load_refl()
-    refl, ang = get_refl(refl_data, ekev, ang = 2.2e-03, limits = [1.1e-03, 3.6e-03])
-    
-    spb.adjustHOMs(refl, ang)
+    spb.setupHOMs(ekev, 2.2e-03)
+    spb.setupKBs(ekev, 3.5e-03)
     
     spb.buildElements(focus = "micron")
     spb.buildBeamline(focus = "micron")
@@ -55,10 +53,8 @@ def testNano(ekev, q):
     
     spb = BeamlineModel(overwrite_mirrors =  True)
     
-    refl_data = load_refl()
-    refl, ang = get_refl(refl_data, ekev, ang = 2.2e-03, limits = [1.1e-03, 3.6e-03])
-    
-    spb.adjustHOMs(refl, ang)
+    spb.setupHOMs(ekev, 2.2e-03)
+    spb.setupKBs(ekev, 3.5e-03)
     
     spb.buildElements(focus = "nano")
     spb.buildBeamline(focus = "nano")
