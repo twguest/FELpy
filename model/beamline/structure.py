@@ -203,36 +203,38 @@ class BeamlineModel:
            self.mvp_profile = "../../data/mvp_mir_Flat.dat"
  
 
-    def buildElements(self, focus = "micron", screens = False):
+    def buildElements(self, focus = "micron"):
+       
+        self.d1 =  Drift(self.params["d1"]['distance'])
+        self.d1.name = self.params["d1"]['name']
         
-        if focus == "micron" and screens == False:
-            self.d1 =  Drift(self.params["d1"]['distance'])
-            self.d1.name = self.params["d1"]['name']
-            
-            self.HOM1 = MirPl(np.loadtxt(self.params['HOM1']['mirror profile']),
-                         _dim = self.params['HOM1']['orientation'],
-                         _ang = self.params['HOM1']['incidence angle'], 
-                         _amp_coef = 1,
-                         _x = self.params['HOM1']['xc'], _y = self.params['HOM1']['yc'],
-                         _refl = self.params['HOM1']['transmission']) 
-            
-            self.HOM1.name = self.params['HOM1']['name']
-            
-            self.d2 =  Drift(self.params["d2"]['distance'])
-            self.d2.name = self.params["d2"]['name']
-            
-            self.HOM2 = MirPl(np.loadtxt(self.params['HOM2']['mirror profile']),
-                         _dim = self.params['HOM2']['orientation'],
-                         _ang = self.params['HOM2']['incidence angle'], 
-                         _amp_coef = 1,
-                         _x = self.params['HOM2']['xc'], _y = self.params['HOM2']['yc'],
-                         _refl = self.params['HOM2']['transmission']) 
-            
-            self.HOM2.name = self.params['HOM2']['name']
-            
+        self.HOM1 = MirPl(np.loadtxt(self.params['HOM1']['mirror profile']),
+                     _dim = self.params['HOM1']['orientation'],
+                     _ang = self.params['HOM1']['incidence angle'], 
+                     _amp_coef = 1,
+                     _x = self.params['HOM1']['xc'], _y = self.params['HOM1']['yc'],
+                     _refl = self.params['HOM1']['transmission']) 
+        
+        self.HOM1.name = self.params['HOM1']['name']
+        
+        self.d2 =  Drift(self.params["d2"]['distance'])
+        self.d2.name = self.params["d2"]['name']
+        
+        self.HOM2 = MirPl(np.loadtxt(self.params['HOM2']['mirror profile']),
+                     _dim = self.params['HOM2']['orientation'],
+                     _ang = self.params['HOM2']['incidence angle'], 
+                     _amp_coef = 1,
+                     _x = self.params['HOM2']['xc'], _y = self.params['HOM2']['yc'],
+                     _refl = self.params['HOM2']['transmission']) 
+        
+        self.HOM2.name = self.params['HOM2']['name']
+        
+
+        
+        if focus == "micron":
             self.d3 =  Drift(self.params["d3"]['distance'])
             self.d3.name = self.params["d3"]['name']
-            
+                
             self.MKB_pslit = Aperture(_shape=self.params["MKB_pslit"]['shape'],
                                  _ap_or_ob=self.params["MKB_pslit"]['type'],
                                  _Dx= self.params["MKB_pslit"]['dx'],
@@ -309,17 +311,71 @@ class BeamlineModel:
             
             self.df =  Drift(self.params["df"]['distance'])
             self.df.name = self.params["df"]['name']
+        
+        elif focus == "nano":
+            self.params["d3"]["distance"] = 656.424
+            self.params["d4"]["distance"] = 1.20
+            self.params["d5"]["distance"] = 1.00
+            self.params["df"]["distance"] = 2.2
+            
+            self.NKB_pslit = Aperture(_shape=self.params["NKB_pslit"]['shape'],
+                                      _ap_or_ob=self.params["NKB_pslit"]['type'],
+                                      _Dx= self.params["NKB_pslit"]['dx'],
+                                      _Dy= self.params["NKB_pslit"]['dy'],
+                                      _x=self.params["NKB_pslit"]['xc'],
+                                      _y=self.params["NKB_pslit"]['yc'])
+            self.NKB_pslit.name = self.params["NKB_pslit"]['name']
+            
+            
+            self.NHE = MirEl(orient = self.params['NHE']["orientation"], p = self.params['NHE']["distance from source"], q = self.params['NHE']["distance to focus"],
+                    thetaE = self.params['NHE']["design angle"], theta0 = self.params['NHE']["incidence angle"],
+                    _x = self.params["NHE"]["xc"],
+                    _y = self.params["NHE"]["yc"],
+                    length = self.params['NHE']["length"],
+                    roll = self.params['NHE']["roll"],
+                    yaw = self.params['NHE']["yaw"],
+                    _refl = self.params['NHE']["reflectivity"],
+                    _ext_in = self.params['NHE']["_ext_in"], _ext_out = self.params['NHE']["_ext_out"]) 
+            
+            self.NHE.name = self.params["NHE"]["name"]
+            
+            self.NVE = MirEl(orient = self.params['NVE']["orientation"], p = self.params['NVE']["distance from source"], q = self.params['NVE']["distance to focus"],
+                    thetaE = self.params['NVE']["design angle"], theta0 = self.params['NVE']["incidence angle"],
+                    _x = self.params["NVE"]["xc"],
+                    _y = self.params["NVE"]["yc"],
+                    length = self.params['NVE']["length"],
+                    roll = self.params['NVE']["roll"],
+                    yaw = self.params['NVE']["yaw"],
+                    _refl = self.params['NVE']["reflectivity"],
+                    _ext_in = self.params['NVE']["_ext_in"], _ext_out = self.params['NVE']["_ext_out"]) 
+            
+            self.NVE.name = self.params["NVE"]["name"]
+            
+            self.d3 =  Drift(self.params["d3"]['distance'])
+            self.d3.name = self.params["d3"]['name']
+            
+            self.d4 =  Drift(self.params["d4"]['distance'])
+            self.d4.name = self.params["d4"]['name']
+            
+            self.d5 =  Drift(self.params["d5"]['distance'])
+            self.d5.name = self.params["d5"]['name']
+            
+            self.df =  Drift(self.params["df"]['distance'])
+            self.df.name = self.params["df"]['name']
+
             
     def buildBeamline(self, focus = "micron", screens = "false"):
         """
         Construct the beamline object
         
         :param focus: what beamline configuration (micron or nano)
-        :param screens: include sensing planes [bool]
         """
+        
+        self.bl = Beamline()
+        
         if focus == "micron":
             
-            self.bl = Beamline()
+            
             self.bl.append(self.d1, propParams(1,1,1,1, mode = "farfield"))
     
             self.bl.append(self.HOM1, propParams(1, 1, 1, 1, mode = 'normal'))
@@ -341,9 +397,25 @@ class BeamlineModel:
             self.bl.append(self.MVP, propParams(1, 1, 1, 1, mode = 'normal'))
             self.bl.append(self.df, propParams(20, 10, 20, 10, mode = 'converge'))
        
-        
-        self.bl.params = self.params
+        elif focus == "nano":
+            
+            self.bl.append(self.d1, propParams(1,1,1,1, mode = "farfield"))
+    
+            self.bl.append(self.HOM1, propParams(1, 1, 1, 1, mode = 'normal'))
+            self.bl.append(self.d2, propParams(1, 1, 1, 1, mode = 'quadratic'))
+            self.bl.append(self.HOM2,  propParams(1, 1, 1, 1, mode = 'normal'))
+            self.bl.append(self.d3, propParams(1,1,1,1, mode = 'farfield'))
+            
+            self.bl.append(self.NKB_pslit, propParams(1/5, 1, 1/5, 1, mode = 'normal'))
+            self.bl.append(self.d4, propParams(1, 1, 1, 1, mode = 'quadratic'))
+            self.bl.append(self.NHE, propParams(1, 1, 1, 1, mode = 'normal'))
+            self.bl.append(self.d5, propParams(1, 1, 1, 1, mode = 'quadratic'))
+            self.bl.append(self.NVE, propParams(1, 1, 1, 1, mode = 'normal'))
+            self.bl.append(self.df, propParams(20, 10, 20, 10, mode = 'converge'))
 
+            
+        self.bl.params = self.params
+        
     def get_beamline(self):
         return self.bl
     
@@ -374,7 +446,7 @@ class BeamlineModel:
             self.bl.propagation_options[0]['optical_elements'] = self.bl.propagation_options[0]['optical_elements'][:idx1+1]
             self.bl.propagation_options[0]['propagation_parameters'] = self.bl.propagation_options[0]['propagation_parameters'][:idx1+1]
 
-    def addScreen(position, distance, screenName = None):
+    def addScreen(self,position, distance, screenName = None):
         """
         add a screening plane at drift beyond some element position
         
@@ -394,10 +466,10 @@ class BeamlineModel:
 if __name__ == '__main__':
 
     wfr = coherentSource(1048, 1048, 16, 1)
-
+ 
     spb = BeamlineModel()
-    spb.buildElements(focus = "micron", screens = False)
+    spb.buildElements(focus = "micron")
     
-    bl = spb.buildBeamline(focus = "micron", screens = False)
+    bl = spb.buildBeamline(focus = "micron")
 
      

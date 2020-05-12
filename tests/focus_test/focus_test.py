@@ -50,7 +50,7 @@ def sliceFocus(wfr, ekev, focus = 'micron', nslices = 500, axisName = 'x', outdi
     
     slice_interval = copy(spb.bl.propagation_options[0]['optical_elements'][el_n].L/1000) 
     spb.bl.propagation_options[0]['optical_elements'][el_n].L *= 0.75
-    spb.bl.propagation_options[0]['propagation_parameters'][el_n] = propParams(1/5,1,1/5,1, mode = 'quadratic')
+    spb.bl.propagation_options[0]['propagation_parameters'][el_n] = propParams(1/5,5,1/5,5, mode = 'quadratic')
     bl = spb.get_beamline()
     bl.propagate(wfr)
     
@@ -97,7 +97,7 @@ def sliceFocus(wfr, ekev, focus = 'micron', nslices = 500, axisName = 'x', outdi
             x = np.linspace(wfr.params.Mesh.xMin*1e6, wfr.params.Mesh.xMax*1e6, wfr.params.Mesh.nx)
             ax.set_xlabel("x ($\mu$m)")
         elif axisName == 'y':
-            x = np.linspace(wfr.params.Mesh.yMin*1e6, wfr.params.Mesh.yMax*1e6, wfr.params.Mesh.yx)
+            x = np.linspace(wfr.params.Mesh.yMin*1e6, wfr.params.Mesh.yMax*1e6, wfr.params.Mesh.ny)
             ax.set_xlabel("y ($\mu$m)")
             
     
@@ -117,5 +117,10 @@ if __name__ == '__main__':
     
     wfr = coherentSource(1024, 1024, ekev, 0.5)
     
-    sliceFocus(wfr = wfr, ekev = ekev, focus = 'micron', nslices = 500, axisName = 'x', outdir = "focus_test/")
-    sliceFocus(wfr = wfr, ekev = ekev, focus = 'micron', nslices = 500, axisName = 'y', outdir = "focus_test/")
+# =============================================================================
+#     sliceFocus(wfr = wfr, ekev = ekev, focus = 'micron', nslices = 500, axisName = 'x', outdir = "focus_test/")
+#     sliceFocus(wfr = wfr, ekev = ekev, focus = 'micron', nslices = 500, axisName = 'y', outdir = "focus_test/")
+#     
+# =============================================================================
+    sliceFocus(wfr = wfr, ekev = ekev, focus = 'nano', nslices = 500, axisName = 'x', outdir = "focus_test/")
+    sliceFocus(wfr = wfr, ekev = ekev, focus = 'nano', nslices = 500, axisName = 'y', outdir = "focus_test/")

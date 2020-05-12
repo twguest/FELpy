@@ -166,8 +166,47 @@ if __name__ == "__main__":
                     "description": "Drift to Focus",
                     'distance': 21.175}
     
+    params["NHE"] = {"name": "NHE",
+                     "orientation": 'x',
+                     "description": "Nano Focus Horizontal; Elliptical Mirror",
+                     "distance from source":  915.484,
+                     "distance to focus": 3.2,
+                     "design angle": 1e-03,
+                     "incidence angle": 1e-03,
+                     "xc": 0,
+                     "yc": 0,
+                     "length": 1,
+                     "roll": 0,
+                     "yaw": 0,
+                     "reflectivity": 1,
+                     "_ext_in": 0.5,
+                     "_ext_out": 0.5}
 
+    params["NVE"] = {"name": "NVE",
+                     "orientation": 'y',
+                     "description": "Nano Focus Vertical; Elliptical Mirror",
+                     "distance from source":  916.484,
+                     "distance to focus": 2.2,
+                     "design angle": 1e-03,
+                     "incidence angle": 1e-03,
+                     "xc": 0,
+                     "yc": 0,
+                     "length": 1,
+                     "roll": 0,
+                     "yaw": 0,
+                     "reflectivity": 1,
+                     "_ext_in": 0.5,
+                     "_ext_out": 0.5}
     
+    params["NKB_pslit"] = {"name": "NKB-Pslit",
+                           "description": "Power Slit Aperture Prior to NKB",
+                           "shape": 'r',
+                           "type": 'a',
+                           "dx": 0.0038,
+                           "dy": 0.0038,
+                           "xc": 0,
+                           "yc": 0}
+                              
     export(params)
     
         
