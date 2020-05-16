@@ -3,10 +3,9 @@
 """
 Created on Mon Apr 27 15:45:13 2020
 
-A scratchpad for solving for beamline propagation
+A scratchpad for testing beamline methods
 
 
-    
 @author: twguest
 """
 
@@ -32,42 +31,64 @@ from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
 from wpg.wpg_uti_wf import plot_intensity_qmap as plotPhase
 
 
-def testMicron(ekev, q):
+def testMicron(ekev, q, outdir = "../../tmp", toggle = 'on'):
     
     wfr = coherentSource(1024, 1024, ekev, q)
     
-    spb = BeamlineModel(overwrite_mirrors =  True)
+    spb = BeamlineModel()
     
     spb.setupHOMs(ekev, 2.2e-03)
     spb.setupKBs(ekev, 3.5e-03)
     
+    spb.mirrorProfiles(toggle = "on", overwrite = False)
     spb.buildElements(focus = "micron")
     spb.buildBeamline(focus = "micron")
     bl = spb.get_beamline()
     
-    bl.propagateSeq(wfr, "../../tmp/")
-
-def testNano(ekev, q):
+    bl.propagateSeq(wfr, outdir)
+    
+def testNano(ekev, q, outdir = "../../tmp", toggle = 'on'):
     
     wfr = coherentSource(1024, 1024, ekev, q)
     
-    spb = BeamlineModel(overwrite_mirrors =  True)
+    spb = BeamlineModel()
     
     spb.setupHOMs(ekev, 2.2e-03)
     spb.setupKBs(ekev, 3.5e-03)
-    
+    spb.mirrorProfiles(toggle = "on", overwrite = False)
     spb.buildElements(focus = "nano")
     spb.buildBeamline(focus = "nano")
     bl = spb.get_beamline()
     
-    bl.propagateSeq(wfr, "../../tmp/")
+    bl.propagateSeq(wfr, outdir)
 
-if __name__ == '__main__':
+
+def testSurfaceRoughness(energyrange, q, outdir):
+
+    for ekev in energyrange:
+        testMicron(ekev, q, outdir = outdir, toggle = 'off')
+    for ekev in energyrange:
+        testMicron(ekev, q, outdir = outdir, toggle = 'on')
+    for ekev in energyrange:
+        testNano(ekev, q, outdir = outdir, toggle = 'off')
+    for ekev in energyrange:
+        testNano(ekev, q, outdir = outdir, toggle = 'on')
+ 
+
+def plotMirrorProfiles(outdir):
+
+    spb = BeamlineModel()
+    spb.mirrorProfiles(toggle = "on", overwrite = True)
     
-    ekev = 12.0
-    q = 0.25
+    spb.plotMirrorProfile("HOM1", outdir = outdir)
+    spb.plotMirrorProfile("HOM2", outdir = outdir)
+    spb.plotMirrorProfile("MHP", outdir = outdir)
+    spb.plotMirrorProfile("MVP", outdir = outdir)
+
+if __name__ == '__main__': 
     
-    #testMicron(ekev, q)
-    testNano(ekev,1)
+    plotMirrorProfiles("../../tmp/")
+    testSurfaceRoughness([4.5],0.25, outdir = "../../tests/bl_test/test_surface_roughness")
+    
 
     
