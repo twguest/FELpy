@@ -20,6 +20,8 @@ from os.path import exists
 import json
 import numpy as np
 
+from matplotlib import pyplot as plt
+
 from wpg.beamline import Beamline
 from wpg import srwlib
 from wpg.srwlib import SRWLOptD as Drift
@@ -27,6 +29,7 @@ from wpg.srwlib import SRWLOptA as Aperture
 
 from wpg.optical_elements import Mirror_elliptical as MirEl
 
+from model.materials.mirrorSurface import genMirrorSurface
 from model.materials.load_refl import get_refl, load_refl
 from model.src.coherent import coherentSource
 
@@ -60,28 +63,6 @@ def propParams(sx, zx, sy, zy, mode = "normal"):
     return [0,0,1,m,0,sx,zx/sx,sy,zy/sy,0,0,0]
 
 
-def genMirrorSurface(nx, ny, mirDim, outdir, mode = 'Flat'):
-    """
-    Generate a plane mirror surface
-    
-    :param nx: number of horizontal pixels [int]
-    :param ny: number of vertical pixels [int]
-    :param mirDim: list of mirror dimensions [dx,dy] [m]
-    :param outdir: save directory
-    :param mode: type of mirror surface to be generated
-    """
-    if mode == 'Flat':
-        
-        mirLen = mirDim[0]
-        mirWid = mirDim[1]
-        
-        surface = np.zeros((nx,ny))
-        
-        surface[1:, 0] = np.linspace(-mirLen/2, mirLen/2, nx-1) 
-        surface[0, 1:] = np.linspace(-mirWid/2, mirWid/2, ny-1) 
-        
-    np.savetxt(outdir+"mir_"+ mode +".dat", surface, delimiter='\t')
-
 
 class BeamlineModel:
     
@@ -90,10 +71,10 @@ class BeamlineModel:
     """
     
     
-    def __init__(self, overwrite_mirrors = False):
+    def __init__(self):
         print("Initialising Single Particle Beamline")
         self.load_params()
-        self.defineMirrorProfiles(overwrite = overwrite_mirrors)
+        self.defineMirrorProfiles(overwrite = False)
         
     def load_params(self):
         """
@@ -195,47 +176,42 @@ class BeamlineModel:
             self.params["MVE"]["incidence angle"] = ang
             self.params["MVP"]["incidence angle"] = ang
             
-    def defineMirrorProfiles(self, overwrite = False):
+    def defineMirrorProfiles(self, overwrite = False, surface = 'flat', plot = False):
         """
         Define the plane mirror profiles by loading from /data/. 
         If mirror profiles not defined (unlikely), generate profiles via genMirrorSurface
         
         :param overwrite: bool to overwrite current file.
+        :param surface: surface type (flat or random)
         """
         
  
         if exists("../../data/hom1_mir_Flat.dat") and overwrite == False:
-            self.hom1_profile = "../../data/hom1_mir_Flat.dat"
-        elif overwrite == True:
-            genMirrorSurface(500, 500, [0.010, 0.800], "../../data/hom1_", mode = 'Flat')
-            self.hom1_profile = "../../data/hom1_mir_Flat.dat"
+            pass
         else:
-            genMirrorSurface(500, 500, [0.010, 0.800], "../../data/hom1_", mode = 'Flat')
-            self.hom1_profile = "../../data/hom1_mir_Flat.dat"
+            genMirrorSurface(500, 500, [0.010, 0.800], "../../data/hom1_", mode = surface, plot = plot, mirrorName = "HOM1")
+        self.params['HOM1']['mirror profile'] = "../../data/hom1_mir_{}.dat".format(surface)
             
         ### HOM2    
         if exists("../../data/hom2_mir_Flat.dat") and overwrite == False:
-            self.hom2_profile = "../../data/hom2_mir_Flat.dat"
-        elif overwrite == True:
-            genMirrorSurface(500, 500, [0.010, 0.800], "../../data/hom1_", mode = 'Flat')
-            self.hom1_profile = "../../data/hom1_mir_Flat.dat"
+            pass
         else:
-            genMirrorSurface(500, 500, [0.010, 0.800], "../../data/hom2_", mode = 'Flat')
-            self.hom2_profile = "../../data/hom2_mir_Flat.dat"
+            genMirrorSurface(500, 500, [0.010, 0.800], "../../data/hom2_", mode = surface, plot = plot, mirrorName = "HOM2")
+        self.params['HOM2']['mirror profile'] = "../../data/hom2_mir_{}.dat".format(surface)
         
         ### MHP
         if exists("../../data/mhp_mir_Flat.dat") and overwrite == False:
-            self.mhp_profile = "../../data/mhp_mir_Flat.dat"
+            pass
         else:
-            genMirrorSurface(500, 500, [0.025, 0.950 ], "../../data/mhp_", mode = 'Flat')
-            self.mhp_profile = "../../data/mhp_mir_Flat.dat"
+            genMirrorSurface(500, 500, [0.025, 0.950], "../../data/mhp_", mode = surface, plot = plot, mirrorName = "MHP")
+        self.params['MHP']['mirror profile'] = "../../data/mhp_mir_{}.dat".format(surface)
         
         ### MHE                
         if exists("../../data/mvp_mir_Flat.dat") and overwrite == False:
-            self.mvp_profile = "../../data/mvp_mir_Flat.dat"
+            pass
         else:
-           genMirrorSurface(500, 500, [0.025, 0.950 ], "../../data/mvp_", mode = 'Flat')
-           self.mvp_profile = "../../data/mvp_mir_Flat.dat"
+           genMirrorSurface(500, 500, [0.025, 0.950 ], "../../data/mvp_", mode = surface, plot = plot, mirrorName = "MVP")  
+        self.params['MVP']['mirror profile'] = "../../data/mvp_mir_{}.dat".format(surface)
  
 
     def buildElements(self, focus = "micron"):
@@ -497,14 +473,47 @@ class BeamlineModel:
         else:
             drift2screen.name = screenName
         self.bl.append(SRWLOptD(distance), propParams(1, 1, 1, 1, m = 'quadratic'))
-
-if __name__ == '__main__':
-
-    wfr = coherentSource(1048, 1048, 16, 1)
- 
-    spb = BeamlineModel()
-    spb.buildElements(focus = "micron")
     
-    bl = spb.buildBeamline(focus = "micron")
+    def mirrorProfiles(self, toggle = "on", overwrite = False):
+        """
+        toggle for mirror surfaces
+        """
+        if toggle == "on":
+            self.defineMirrorProfiles(overwrite = overwrite, surface = 'random')
+        if toggle == "off":
+            self.defineMirrorProfiles(overwrite = overwrite, surface = 'flat')
+            
+    def plotMirrorProfile(self, mirror, outdir = None):
+        
+        surface = np.loadtxt(self.params[mirror]['mirror profile'])
+        
+        x = surface[1:, 0]
+        y = surface[0, 1:]
+        
+        surface = surface[1:,1:]
+        
+        extent = [x.min(), x.max(), y.min(), y.max()]
+    
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        
 
-     
+        ax.set_title(mirror + " Surface")
+
+        
+        img = ax.imshow(surface*1e9,
+                        extent = extent,
+                        aspect = 'auto')
+        
+        ax.set_xlabel("x ($\mu$m)")
+        ax.set_ylabel("y ($\mu$m)")
+        
+        cb = plt.colorbar(img, ax = ax)
+        cb.ax.get_yaxis().labelpad = 15
+        cb.ax.set_ylabel("Height Error (nm)", rotation = 270)
+        
+        if outdir is not None:
+            fig.savefig(outdir + mirror + "_surface.png")
+        else:
+            plt.show()
+        
