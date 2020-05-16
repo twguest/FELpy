@@ -87,8 +87,8 @@ def plotMirrorProfiles(outdir):
 
 if __name__ == '__main__': 
     
-    plotMirrorProfiles("../../tmp/")
-    testSurfaceRoughness([4.5],0.25, outdir = "../../tests/bl_test/test_surface_roughness")
+    plotMirrorProfiles("../../tests/bl_test/test_surface_roughness")
+    testSurfaceRoughness([6.0, 9.2, 12.0],0.25, outdir = "../../tests/bl_test/test_surface_roughness")
     
 
     
