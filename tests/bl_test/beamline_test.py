@@ -130,33 +130,35 @@ def testEllipticalRoughness(ekev, q, focus = "micron"):
     bl.propagateSeq(wfr, outdir = "../../tmp")
     return wfr
 
-def getMicronFocalPlaneBeam(outdir):
+def getMicronFocalPlaneBeam(outdir, wfrdir = None):
     
-    wfr = coherentSource(1024, 1024, ekev, q)
-    
+    if wfrdir == None:    
+        wfr = coherentSource(1024, 1024, 9.2, 0.250)
+    else:
+        wfr = Wavefront()
+        wfr.load_hdf5(wfrdir)
+        
     spb = BeamlineModel()
     
-    spb.setupHOMs(ekev, 2.2e-03)
-    spb.setupKBs(ekev, 3.5e-03)
+    spb.setupHOMs(wfr.params.photonEnergy/1000, 2.2e-03)
+    spb.setupKBs(wfr.params.photonEnergy/1000, 3.5e-03)
+    
     spb.mirrorProfiles(toggle = "on", overwrite = False)
     
     
     
-    spb.buildElements(focus)
-    spb.buildBeamline(focus)
+    spb.buildElements(focus = "micron")
+    spb.buildBeamline(focus = "micron")
     
-    if focus == 'nano':
-        spb.cropBeamline("NVE")
-        
-    elif focus == 'micron':
-        #spb.cropBeamline("MVE")
-        pass
+    spb.scale_wfr(wfr)    
+    
     bl = spb.get_beamline()
     
-    bl.propagateSeq(wfr, outdir = "../../tmp")
-    return wfr
+    bl.propagate(wfr)
+    
+    wfr.store_hdf5(outdir)
 
     
 if __name__ == '__main__': 
-    wfr = testEllipticalRoughness(9.2, 0.25, focus = 'nano')
-    #plotMirrorProfiles("../../tmp/")
+    #getMicronFocalPlaneBeam("../../data/input/micronfoc_9-2keV_250pC.hdf5")
+    getMicronFocalPlaneBeam("../../data/input/micronfoc_8-86keV_250pC.hdf5", wfrdir = "../../data/h5/8_86keV_0250pC.h5")
