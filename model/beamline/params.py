@@ -38,8 +38,9 @@ if __name__ == "__main__":
                     'distance': 246.5}
     
     params["HOM1"] = {"name": "HOM1",
+                      "distance from source": 246.5,
                       "description": "First Horizontal Offset Mirror",
-                      "mirror profile": "../../data/hom1_mir_Flat.dat",
+                      "mirror profile": "../../data/input/hom1_mir_real.dat",
                       "orientation": 'x',
                       "incidence angle": 2.1e-03,
                       "xc": 0,
@@ -52,7 +53,8 @@ if __name__ == "__main__":
     
     params["HOM2"] = {"name": "HOM2",
                       "description": "Second Horizontal Offset Mirror",
-                      "mirror profile": "../../data/hom2_mir_Flat.dat",
+                      "distance from source": 257.86,
+                      "mirror profile": "../../data/hom2_mir_real.dat",
                       "orientation": 'x',
                       "incidence angle": 2.4e-03,
                       "transmission": 1,
@@ -65,6 +67,7 @@ if __name__ == "__main__":
 
     params["MKB_pslit"] = {"name": "MKB-Pslit",
                   "description": "Power Slit Aperture Prior to MKB",
+                  "distance from source": 892.529,
                   "shape": 'r',
                   "type": 'a',
                   "dx": 0.0038,
@@ -80,9 +83,12 @@ if __name__ == "__main__":
     
     params["MHP"] = {"name": "MHP",
                      "mirror profile": "../../data/mhp_mir_Flat.dat",
+                     "distance from source": 893.729,
                      "orientation": 'x',
                      "incidence angle": 1.1e-03,
                      "transmission": 1,
+                     "dx": 0.0250,
+                     "dy": 0.950,
                      "xc": 0,
                      "yc": 0}
     
@@ -90,22 +96,20 @@ if __name__ == "__main__":
                     "description": "Drift from MHP to MHE",
                     'distance': 1.050}
     
-    params["MHE_ap"] = {"name": "MHE_ap",
-              "description": "Aperture of the Horizontal Elliptical Mirror",
-              "shape": 'r',
-              "type": 'a',
-              "dx": 0.950,
-              "dy": 0.0250,
-              "xc": 0,
-              "yc": 0}
+
+
+
 
     params["MHE"] = {"name": "MHE",
                      "orientation": 'x',
+                     "distance from source": 894.779,
                      "description": "Micron Focus Horizontal Elliptical Mirror",
                      "distance from source":  894.779,
                      "distance to focus": 23.905,
                      "design angle": 1e-03,
                      "incidence angle": 1e-03,
+                     "dx": 0.950,
+                     "dy": 0.0250,
                      "xc": 0,
                      "yc": 0,
                      "length": 1,
@@ -114,6 +118,16 @@ if __name__ == "__main__":
                      "reflectivity": 1,
                      "_ext_in": 0.5,
                      "_ext_out": 0.5}
+    
+    params["MHE_error"] = {"name": "MHE_error",
+                           "orientation": 'x',
+                           "description": "Micron Focus Horizontal Elliptical Mirror Surface Height Error",
+                           "mirror profile": "../../data/mhe_mir_flat.dat",
+                           "incidence angle": np.pi/2,
+                           "transmission": 1,
+                           "xc": 0,
+                           "yc": 0}
+
     
     params["d6"] = {'name': "MKB-SCR",
                     "description": "Drift from MHE tp MKB-SCR",
@@ -123,23 +137,18 @@ if __name__ == "__main__":
                     "description": "Drift from MKB-SCR to MVE",
                     'distance': 1.320}
 
-    params["MVE_ap"] = {"name": "MVE_ap",
-          "description": "Aperture of the Horizontal Elliptical Mirror",
-          "shape": 'r',
-          "type": 'a',
-          "dy": 0.950,
-          "dx": 0.0250,
-          "xc": 0,
-          "yc": 0}
 
     
     params["MVE"] = {"name": "MVE",
                      "orientation": 'y',
+                     "distance from source": 896.459,
                      "description": "Micron Focus Vertica; Elliptical Mirror",
                      "distance from source":  896.459,
                      "distance to focus": 22.225,
                      "design angle": 1e-03,
                      "incidence angle": 1e-03,
+                     "dx": 0.0250,
+                     "dy": 0.950,
                      "xc": 0,
                      "yc": 0,
                      "length": 1,
@@ -148,6 +157,17 @@ if __name__ == "__main__":
                      "reflectivity": 1,
                      "_ext_in": 0.5,
                      "_ext_out": 0.5}
+    
+        
+    params["MVE_error"] = {"name": "MVE_error",
+                       "description": "Micron Focus Horizontal Elliptical Mirror Surface Height Error",
+                       "mirror profile": "../../data/mve_mir_flat.dat",
+                       "orientation": 'y',
+                       "incidence angle": np.pi/2,
+                       "transmission": 1,
+                       "xc": 0,
+                       "yc": 0}
+
     
     params["d8"] = {'name': "drift8",
                     "description": "Drift from MVE to MVP",
@@ -155,40 +175,31 @@ if __name__ == "__main__":
     
     params["MVP"] = {"name": "MVP",
                      "description": "Vertical Plane Mirror of MKB",
+                     "distance from source": 897.509,
                      "mirror profile": "../../data/mvp_mir_Flat.dat",
                      "orientation": 'y',
                      "incidence angle": 1.1e-03,
                      "transmission": 1,
+                     "dx": 0.0250,
+                     "dy": 0.950,
                      "xc": 0,
                      "yc": 0}
 
     params["df"] = {'name': "focus",
                     "description": "Drift to Focus",
+                    "distance from source": 918.684,
                     'distance': 21.175}
     
     params["NHE"] = {"name": "NHE",
                      "orientation": 'x',
+                     "distance from source": 915.484,
                      "description": "Nano Focus Horizontal; Elliptical Mirror",
                      "distance from source":  915.484,
                      "distance to focus": 3.2,
                      "design angle": 1e-03,
                      "incidence angle": 1e-03,
-                     "xc": 0,
-                     "yc": 0,
-                     "length": 1,
-                     "roll": 0,
-                     "yaw": 0,
-                     "reflectivity": 1,
-                     "_ext_in": 0.5,
-                     "_ext_out": 0.5}
-
-    params["NVE"] = {"name": "NVE",
-                     "orientation": 'y',
-                     "description": "Nano Focus Vertical; Elliptical Mirror",
-                     "distance from source":  916.484,
-                     "distance to focus": 2.2,
-                     "design angle": 1e-03,
-                     "incidence angle": 1e-03,
+                     "dx": 0.950,
+                     "dy": 0.0250,
                      "xc": 0,
                      "yc": 0,
                      "length": 1,
@@ -198,10 +209,54 @@ if __name__ == "__main__":
                      "_ext_in": 0.5,
                      "_ext_out": 0.5}
     
+    
+
+    params["NHE_error"] = {"name": "NHE_error",
+                       "orientation": 'x',
+                       "description": "Nano Focus Horizontal Elliptical Mirror Surface Height Error",
+                       "mirror profile": "../../data/nhe_mir_flat.dat",
+                       "orientation": 'x',
+                       "incidence angle": np.pi/2,
+                       "transmission": 1,
+                       "xc": 0,
+                       "yc": 0}
+
+    params["NVE"] = {"name": "NVE",
+                     "orientation": 'y',
+                     "distance from source": 916.484,
+                     "description": "Nano Focus Vertical; Elliptical Mirror",
+                     "distance from source":  916.484,
+                     "distance to focus": 2.2,
+                     "design angle": 1e-03,
+                     "incidence angle": 1e-03,
+                     "dx": 0.0250,
+                     "dy": 0.950,
+                     "xc": 5e-06,
+                     "yc": 0,
+                     "length": 1,
+                     "roll": 0,
+                     "yaw": 0,
+                     "reflectivity": 1,
+                     "_ext_in": 0.5,
+                     "_ext_out": 0.5}
+    
+    
+    params["NVE_error"] = {"name": "NHE_error",
+                       "orientation": 'x',
+                       "description": "Nano Focus Horizontal Elliptical Mirror Surface Height Error",
+                       "mirror profile": "../../data/nve_mir_flat.dat",
+                       "orientation": 'x',
+                       "incidence angle": np.pi/2,
+                       "transmission": 1,
+                       "xc": 0,
+                       "yc": 0}
+
+    
     params["NKB_pslit"] = {"name": "NKB-Pslit",
                            "description": "Power Slit Aperture Prior to NKB",
                            "shape": 'r',
                            "type": 'a',
+                           "distance from source":  914.284,
                            "dx": 0.0038,
                            "dy": 0.0038,
                            "xc": 0,

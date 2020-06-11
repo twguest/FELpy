@@ -26,13 +26,13 @@ from wpg.beamline import Beamline
 from wpg import srwlib
 from wpg.srwlib import SRWLOptD as Drift
 from wpg.srwlib import SRWLOptA as Aperture
-
+from wpg.srwlib import SRWLOptT
 from wpg.optical_elements import Mirror_elliptical as MirEl
 
 from model.materials.mirrorSurface import genMirrorSurface
 from model.materials.load_refl import get_refl, load_refl
 from model.src.coherent import coherentSource
-
+from wpg.optical_elements import calculateOPD
 
 from wpg.srwlib import srwl_opt_setup_surf_height_2d as MirPl
 
@@ -74,8 +74,7 @@ class BeamlineModel:
     def __init__(self):
         print("Initialising Single Particle Beamline")
         self.load_params()
-        self.defineMirrorProfiles(overwrite = False)
-        
+
     def load_params(self):
         """
         load beamline parameters from /data/input/
@@ -103,7 +102,7 @@ class BeamlineModel:
         
         self.adjustHOMs(refl, ang)           
         
-    def setupKBs(self, ekev, ang = 3.5e-03, misalignment = 0):
+    def setupKBs(self, ekev, ang = 3.5e-03, misorientation = 0, focus = "nano"):
         
         if ekev >= 7.5:
             material = "B4C"
@@ -113,9 +112,32 @@ class BeamlineModel:
         refl_data = load_refl(material, indir = "../../data/kb_refl")
         refl, ang = get_refl(refl_data, ekev, ang, limits = [0, 5.5e-03])
         
-        self.adjustKBs(refl, ang, misalignment = misalignment)
-    
+        if focus == 'nano':
+            self.adjustNHE(refl, ang)
+            
+            ang_e = ang + np.tan(self.params["NVE"]["xc"]/self.params["df"]["distance"])
+            refl_e, ang_e = get_refl(refl_data, ekev, ang_e, limits = [0, 5.5e-03])
+            
+            self.adjustNVE(refl_e, ang_e)
+
+    def adjustNHE(self, refl = None, ang = None, misorientation = 0):
         
+        if refl is not None:
+            self.params["NHE"]['reflectivity'] = refl
+        if ang is not None:
+            self.params["NHE"]["design angle"] = ang
+        if ang or misorientation is not None:
+            self.params["NHE"]["incidence angle"] = self.params["NHE"]["design angle"] + misorientation
+            
+    def adjustNVE(self, refl, ang, misorientation = 0):
+        
+        if refl is not None:
+            self.params["NVE"]['reflectivity'] = refl
+        if ang is not None:
+            self.params["NVE"]["design angle"] = ang
+        if ang or misorientation is not None:
+            self.params["NVE"]["incidence angle"] = self.params["NVE"]["design angle"] + misorientation
+            
     def adjustKBs(self, refl = None, ang = None, misalignment = 0):
         """
         Wrapper to adjust the components of the kbs via editing the current 
@@ -126,17 +148,16 @@ class BeamlineModel:
             self.params["MHE"]['reflectivity'] = refl
             self.params["MVE"]['reflectivity'] = refl
             self.params["NHE"]['reflectivity'] = refl
-            self.params["NVE"]['reflectivity'] = refl
+            
         if ang is not None:
             self.params["MHE"]["design angle"] = ang
             self.params["MVE"]["design angle"] = ang
             self.params["NHE"]["design angle"] = ang
-            self.params["NVE"]["design angle"] = ang
             
             self.params["MHE"]["incidence angle"] = ang + misalignment
             self.params["MVE"]["incidence angle"] = ang + misalignment
             self.params["NHE"]["incidence angle"] = ang + misalignment
-            self.params["NVE"]["incidence angle"] = ang + misalignment
+            
     
     def adjustHOMs(self, refl = None, ang = None):
         """
@@ -175,48 +196,48 @@ class BeamlineModel:
         if ang is not None:
             self.params["MVE"]["incidence angle"] = ang
             self.params["MVP"]["incidence angle"] = ang
-            
+    
+
     def defineMirrorProfiles(self, overwrite = False, surface = 'flat', plot = False):
         """
         Define the plane mirror profiles by loading from /data/. 
         If mirror profiles not defined (unlikely), generate profiles via genMirrorSurface
         
         :param overwrite: bool to overwrite current file.
-        :param surface: surface type (flat or random)
+        :param surface: surface type (flat, random or real)
         """
+    
         
- 
-        if exists("../../data/hom1_mir_Flat.dat") and overwrite == False:
-            pass
-        else:
-            genMirrorSurface(500, 500, [0.010, 0.800], "../../data/hom1_", mode = surface, plot = plot, mirrorName = "HOM1")
-        self.params['HOM1']['mirror profile'] = "../../data/hom1_mir_{}.dat".format(surface)
+        if surface == 'real':
             
-        ### HOM2    
-        if exists("../../data/hom2_mir_Flat.dat") and overwrite == False:
-            pass
-        else:
-            genMirrorSurface(500, 500, [0.010, 0.800], "../../data/hom2_", mode = surface, plot = plot, mirrorName = "HOM2")
-        self.params['HOM2']['mirror profile'] = "../../data/hom2_mir_{}.dat".format(surface)
+            rand = 'random'
+            
+            if overwrite == True:
+                
+                genMirrorSurface(500, 500, [self.params["MHP"]['dx'],self.params["MHP"]['dy']], "../../data/input/mhp_", mode = 'random', plot = plot, mirrorName = "MHP") 
+                genMirrorSurface(500, 500, [self.params["MVP"]['dx'],self.params["MVP"]['dy']], "../../data/input/mvp_", mode = 'random', plot = plot, mirrorName = "MVP")  
+                genMirrorSurface(500, 500, [self.params["MHE"]['dx'],self.params["MHE"]['dy']], "../../data/input/mhe_", mode = 'random', plot = plot, mirrorName = "MHE")
+                genMirrorSurface(500, 500, [self.params["MVE"]['dx'],self.params["MVE"]['dy']], "../../data/input/mve_", mode = 'random', plot = plot, mirrorName = "MVE")  
+                genMirrorSurface(500, 500, [self.params["NHE"]['dx'],self.params["NHE"]['dy']], "../../data/input/nhe_", mode = 'random', plot = plot, mirrorName = "NHE")
+                genMirrorSurface(500, 500, [self.params["NVE"]['dx'],self.params["NVE"]['dy']], "../../data/input/nve_", mode = 'random', plot = plot, mirrorName = "NVE")  
         
-        ### MHP
-        if exists("../../data/mhp_mir_Flat.dat") and overwrite == False:
-            pass
-        else:
-            genMirrorSurface(500, 500, [0.025, 0.950], "../../data/mhp_", mode = surface, plot = plot, mirrorName = "MHP")
-        self.params['MHP']['mirror profile'] = "../../data/mhp_mir_{}.dat".format(surface)
+        elif surface == 'flat':
+            rand = 'flat'
+            
+        self.params['HOM1']['mirror profile'] = "../../data/input/hom1_mir_{}.dat".format(surface)
+        self.params['HOM2']['mirror profile'] = "../../data/input/hom2_mir_{}.dat".format(surface)
+        self.params['MHP']['mirror profile'] = "../../data/input/mhp_mir_{}.dat".format(rand)
+        self.params['MVP']['mirror profile'] = "../../data/input/mvp_mir_{}.dat".format(rand)
+        self.params['MHE_error']['mirror profile'] = "../../data/input/mhe_mir_{}.dat".format(rand)
+        self.params['MVE_error']['mirror profile'] = "../../data/input/mve_mir_{}.dat".format(rand)
+        self.params['NHE_error']['mirror profile'] = "../../data/input/nhe_mir_{}.dat".format(rand)
+        self.params['NVE_error']['mirror profile'] = "../../data/input/nve_mir_{}.dat".format(rand)
         
-        ### MHE                
-        if exists("../../data/mvp_mir_Flat.dat") and overwrite == False:
-            pass
-        else:
-           genMirrorSurface(500, 500, [0.025, 0.950 ], "../../data/mvp_", mode = surface, plot = plot, mirrorName = "MVP")  
-        self.params['MVP']['mirror profile'] = "../../data/mvp_mir_{}.dat".format(surface)
+        
  
-
     def buildElements(self, focus = "micron"):
        
-        self.d1 =  Drift(self.params["d1"]['distance'])
+        self.d1 =  Drift(self.params["HOM1"]['distance from source'])
         self.d1.name = self.params["d1"]['name']
         
         self.HOM1 = MirPl(np.loadtxt(self.params['HOM1']['mirror profile']),
@@ -227,8 +248,8 @@ class BeamlineModel:
                      _refl = self.params['HOM1']['transmission']) 
         
         self.HOM1.name = self.params['HOM1']['name']
-        
-        self.d2 =  Drift(self.params["d2"]['distance'])
+
+        self.d2 =  Drift(self.params["HOM2"]['distance from source']-self.params["HOM1"]['distance from source'])
         self.d2.name = self.params["d2"]['name']
         
         self.HOM2 = MirPl(np.loadtxt(self.params['HOM2']['mirror profile']),
@@ -243,7 +264,7 @@ class BeamlineModel:
 
         
         if focus == "micron":
-            self.d3 =  Drift(self.params["d3"]['distance'])
+            self.d3 =  Drift(self.params["MKB_pslit"]['distance from source']-self.params["HOM2"]['distance from source'])
             self.d3.name = self.params["d3"]['name']
                 
             self.MKB_pslit = Aperture(_shape=self.params["MKB_pslit"]['shape'],
@@ -254,17 +275,10 @@ class BeamlineModel:
                                  _y=self.params["MKB_pslit"]['yc'])
             self.MKB_pslit.name = self.params["MKB_pslit"]['name']
             
-            self.d4 =  Drift(self.params["d4"]['distance'])
+            self.d4 =  Drift(self.params["MHP"]['distance from source']-self.params["MKB_pslit"]['distance from source'])
             self.d4.name = self.params["d4"]['name']
             
-            self.MHE_ap = Aperture(_shape=self.params["MHE_ap"]['shape'],
-                                 _ap_or_ob=self.params["MHE_ap"]['type'],
-                                 _Dx= self.params["MHE_ap"]['dx'],
-                                 _Dy= self.params["MHE_ap"]['dy'],
-                                 _x=self.params["MHE_ap"]['xc'],
-                                 _y=self.params["MHE_ap"]['yc'])
-            self.MHE_ap.name = self.params["MHE_ap"]['name']
-            
+
             self.MHP = MirPl(np.loadtxt(self.params['MHP']['mirror profile']),
                          _dim = self.params['MHP']['orientation'],
                          _ang = self.params['MHP']['incidence angle'], 
@@ -272,8 +286,25 @@ class BeamlineModel:
                          _x = self.params['MHP']['xc'], _y = self.params['MHP']['yc']) 
             self.MHP.name = self.params['MHP']['name']
             
-            self.d5 =  Drift(self.params["d5"]['distance'])
+            self.d5 =  Drift(self.params["MHE"]['distance from source']-self.params["MHP"]['distance from source'])
             self.d5.name = self.params["d5"]['name']
+            
+            self.MHE_error = MirPl(np.loadtxt(self.params['MHE_error']['mirror profile']),
+             _dim = self.params['MHE_error']['orientation'],
+             _ang = self.params['MHE_error']['incidence angle'], 
+             _refl = self.params['MHE_error']['transmission'],
+             _x = self.params['MHE_error']['xc'], _y = self.params['MHE_error']['yc']) 
+            
+            self.MHE_error.name = self.params['MHE_error']['name']
+            
+
+            self.MVE_error = MirPl(np.loadtxt(self.params['MVE_error']['mirror profile']),
+             _dim = self.params['MVE_error']['orientation'],
+             _ang = self.params['MVE_error']['incidence angle'], 
+             _refl = self.params['MVE_error']['transmission'],
+             _x = self.params['MVE_error']['xc'], _y = self.params['MVE_error']['yc']) 
+            
+            self.MVE_error.name = self.params['MVE_error']['name']
             
             self.MHE = MirEl(orient = self.params['MHE']["orientation"], p = self.params['MHE']["distance from source"], q = self.params['MHE']["distance to focus"],
                         thetaE = self.params['MHE']["design angle"], theta0 = self.params['MHE']["incidence angle"],
@@ -287,7 +318,7 @@ class BeamlineModel:
             
             self.MHE.name = self.params['MHE']['name']
             
-            self.d6 =  Drift(self.params["d6"]['distance']+self.params["d7"]['distance'])
+            self.d6 =  Drift(self.params["MHE"]['distance from source']-self.params["MVE"]['distance from source'])
             self.d6.name = self.params["d6"]['name']
             
             self.MVE = MirEl(orient = self.params['MVE']["orientation"], p = self.params['MVE']["distance from source"], q = self.params['MVE']["distance to focus"],
@@ -302,15 +333,8 @@ class BeamlineModel:
                         
             self.MVE.name = self.params['MVE']['name']
 
-            self.MVE_ap = Aperture(_shape=self.params["MVE_ap"]['shape'],
-                     _ap_or_ob=self.params["MVE_ap"]['type'],
-                     _Dx= self.params["MVE_ap"]['dx'],
-                     _Dy= self.params["MVE_ap"]['dy'],
-                     _x=self.params["MVE_ap"]['xc'],
-                     _y=self.params["MVE_ap"]['yc'])
-            self.MVE_ap.name = self.params["MVE_ap"]['name']
-    
-            self.d8 =  Drift(self.params["d8"]['distance'])
+
+            self.d8 =  Drift(self.params["MVP"]['distance from source']-self.params["MVE"]['distance from source'])
             self.d8.name = self.params["d8"]['name']
             
             self.MVP = MirPl(np.loadtxt(self.params['MVP']['mirror profile']),
@@ -320,14 +344,10 @@ class BeamlineModel:
                      _x = self.params['MVP']['xc'], _y = self.params['MVP']['yc']) 
             self.MVP.name = self.params['MVP']['name']
             
-            self.df =  Drift(self.params["df"]['distance'])
+            self.df =  Drift(self.params["df"]['distance from source']-self.params["MVP"]['distance from source'])
             self.df.name = self.params["df"]['name']
         
         elif focus == "nano":
-            self.params["d3"]["distance"] = 656.424
-            self.params["d4"]["distance"] = 1.20
-            self.params["d5"]["distance"] = 1.00
-            self.params["df"]["distance"] = 2.2
             
             self.NKB_pslit = Aperture(_shape=self.params["NKB_pslit"]['shape'],
                                       _ap_or_ob=self.params["NKB_pslit"]['type'],
@@ -362,16 +382,32 @@ class BeamlineModel:
             
             self.NVE.name = self.params["NVE"]["name"]
             
-            self.d3 =  Drift(self.params["d3"]['distance'])
+            self.NVE_error = MirPl(np.loadtxt(self.params['NVE_error']['mirror profile']),
+                            _dim = self.params['NVE_error']['orientation'],
+                            _ang = self.params['NVE_error']['incidence angle'], 
+                            _refl = self.params['NVE_error']['transmission'],
+                            _x = self.params['NVE_error']['xc'], _y = self.params['NVE_error']['yc']) 
+            
+            self.NVE_error.name = self.params['NVE_error']['name']
+            
+            self.NHE_error = MirPl(np.loadtxt(self.params['NHE_error']['mirror profile']),
+                _dim = self.params['NHE_error']['orientation'],
+                _ang = self.params['NHE_error']['incidence angle'], 
+                _refl = self.params['NHE_error']['transmission'],
+                _x = self.params['NHE_error']['xc'], _y = self.params['NHE_error']['yc']) 
+
+            self.NHE_error.name = self.params['NHE_error']['name']
+            
+            self.d3 =  Drift(self.params["NKB_pslit"]['distance from source']-self.params["HOM2"]['distance from source'])
             self.d3.name = self.params["d3"]['name']
             
-            self.d4 =  Drift(self.params["d4"]['distance'])
+            self.d4 =  Drift(self.params["NHE"]['distance from source']-self.params["NKB_pslit"]['distance from source'])
             self.d4.name = self.params["d4"]['name']
             
-            self.d5 =  Drift(self.params["d5"]['distance'])
+            self.d5 =  Drift(self.params["NVE"]['distance from source']-self.params["NHE"]['distance from source'])
             self.d5.name = self.params["d5"]['name']
             
-            self.df =  Drift(self.params["df"]['distance'])
+            self.df =  Drift(self.params["NVE"]['distance from source']-self.params["df"]['distance from source'])
             self.df.name = self.params["df"]['name']
 
             
@@ -398,11 +434,11 @@ class BeamlineModel:
             self.bl.append(self.d4, propParams(1, 1, 1, 1, mode = 'quadratic'))
             self.bl.append(self.MHP, propParams(1, 1, 1, 1, mode = 'normal'))
             self.bl.append(self.d5, propParams(1, 1, 1, 1, mode = 'quadratic'))
-            self.bl.append(self.MHE_ap, propParams(1, 1, 1, 1, mode = 'normal'))
             self.bl.append(self.MHE, propParams(1, 1, 1, 1, mode = 'normal'))
+            self.bl.append(self.MHE_error, propParams(1, 1, 1, 1, mode = 'normal'))
             self.bl.append(self.d6, propParams(1, 1, 1, 1, mode = 'quadratic'))
-            self.bl.append(self.MVE_ap, propParams(1, 1, 1, 1, mode = 'normal'))
             self.bl.append(self.MVE, propParams(1, 1, 1, 1, mode = 'normal'))
+            self.bl.append(self.MVE_error, propParams(1, 1, 1, 1, mode = 'normal'))
             self.bl.append(self.d8, propParams(1, 1, 1, 1, mode = 'quadratic'))
         
             self.bl.append(self.MVP, propParams(1, 1, 1, 1, mode = 'normal'))
@@ -420,9 +456,13 @@ class BeamlineModel:
             self.bl.append(self.NKB_pslit, propParams(1/5, 1, 1/5, 1, mode = 'normal'))
             self.bl.append(self.d4, propParams(1, 1, 1, 1, mode = 'quadratic'))
             self.bl.append(self.NHE, propParams(1, 1, 1, 1, mode = 'normal'))
+            self.bl.append(self.NHE_error, propParams(1, 1, 1, 1, mode = 'normal'))
+            
             self.bl.append(self.d5, propParams(1, 1, 1, 1, mode = 'quadratic'))
             self.bl.append(self.NVE, propParams(1, 1, 1, 1, mode = 'normal'))
-            self.bl.append(self.df, propParams(20, 10, 20, 10, mode = 'converge'))
+            self.bl.append(self.NVE_error, propParams(1, 1, 1, 1, mode = 'normal'))
+            
+            self.bl.append(self.df, propParams(10, 10, 10, 10, mode = 'converge'))
 
             
         self.bl.params = self.params
@@ -479,7 +519,7 @@ class BeamlineModel:
         toggle for mirror surfaces
         """
         if toggle == "on":
-            self.defineMirrorProfiles(overwrite = overwrite, surface = 'random')
+            self.defineMirrorProfiles(overwrite = overwrite, surface = 'real')
         if toggle == "off":
             self.defineMirrorProfiles(overwrite = overwrite, surface = 'flat')
             
@@ -492,7 +532,7 @@ class BeamlineModel:
         
         surface = surface[1:,1:]
         
-        extent = [x.min(), x.max(), y.min(), y.max()]
+        extent = [x.min()*1e03, x.max()*1e03, y.min()*1e03, y.max()*1e03]
     
         fig = plt.figure()
         ax = fig.add_subplot(111)
@@ -505,8 +545,8 @@ class BeamlineModel:
                         extent = extent,
                         aspect = 'auto')
         
-        ax.set_xlabel("x ($\mu$m)")
-        ax.set_ylabel("y ($\mu$m)")
+        ax.set_xlabel("x (mm)")
+        ax.set_ylabel("y (mm)")
         
         cb = plt.colorbar(img, ax = ax)
         cb.ax.get_yaxis().labelpad = 15
@@ -516,4 +556,4 @@ class BeamlineModel:
             fig.savefig(outdir + mirror + "_surface.png")
         else:
             plt.show()
-        
+    
