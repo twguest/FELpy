@@ -129,5 +129,5 @@ dmypy.json
 *.jpg
 *.tiff
 /output/*
-
+*.h5
 .pyre/
