@@ -25,33 +25,13 @@ from wpg.beamline import Beamline
 from wpg.srwlib import srwl_opt_setup_surf_height_2d as OPD
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
 from matplotlib import pyplot as plt
+from model.materials.material_utils import add_extent
 
 def pltPhase(wfr):
     
     phase = wfr.get_phase()[:,:,0]
     plt.imshow(phase, cmap = 'hsv')
     plt.show()
-    
-def add_extent(arr, extent):
-    """
-    add extent to phaseshift array
-    
-    :param arr: phaseshift (or otherwise) array
-    :param extent: extent to be added (following srw_opt_setup_surf_height_2d)
-    """
-    
-    x = np.ones([1, arr.shape[1]])
-    x[0,:] = np.linspace(-extent[0]/2, extent[0]/2, arr.shape[0])
-    
-    y = np.ones([arr.shape[0]+1, 1])
-    
-    y[1:,0] = np.linspace(-extent[1]/2, extent[1]/2, arr.shape[0])
-    
-    arr = np.vstack([x,arr])
-    arr = np.hstack([y,arr])
-    
-    arr[0,0] = 0
-    return arr    
 
 def phaseMask(phaseshift, extent, wav, _ang = 0, outdir = None, maskName = None):
     """

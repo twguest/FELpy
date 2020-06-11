@@ -40,7 +40,7 @@ def testMicron(ekev, q, outdir = "../../tmp", toggle = 'on'):
     spb.setupHOMs(ekev, 2.2e-03)
     spb.setupKBs(ekev, 3.5e-03)
     
-    spb.mirrorProfiles(toggle = "on", overwrite = False)
+    spb.mirrorProfiles(toggle = "on", overwrite = True)
     spb.buildElements(focus = "micron")
     spb.buildBeamline(focus = "micron")
     bl = spb.get_beamline()
@@ -85,10 +85,78 @@ def plotMirrorProfiles(outdir):
     spb.plotMirrorProfile("MHP", outdir = outdir)
     spb.plotMirrorProfile("MVP", outdir = outdir)
 
-if __name__ == '__main__': 
+
+def testBeamlineGeometry(ekev, q, focus = 'nano'):
     
-    plotMirrorProfiles("../../tests/bl_test/test_surface_roughness")
-    testSurfaceRoughness([6.0, 9.2, 12.0],0.25, outdir = "../../tests/bl_test/test_surface_roughness")
+    wfr = coherentSource(1024, 1024, ekev, q)
     
+    spb = BeamlineModel()
+    
+    spb.setupHOMs(ekev, 2.2e-03)
+    spb.setupKBs(ekev, 3.5e-03)
+    spb.mirrorProfiles(toggle = "on", overwrite = False)
+    
+    
+    
+    spb.buildElements(focus = "nano")
+    spb.buildBeamline(focus = "nano")
+    spb.cropBeamline("NVE")
+    bl = spb.get_beamline()
+    
+    bl.propagateSeq(wfr, outdir = "../../tmp")
+
+def testEllipticalRoughness(ekev, q, focus = "micron"):
+    wfr = coherentSource(1024, 1024, ekev, q)
+    
+    spb = BeamlineModel()
+    
+    spb.setupHOMs(ekev, 2.2e-03)
+    spb.setupKBs(ekev, 3.5e-03)
+    spb.mirrorProfiles(toggle = "on", overwrite = False)
+    
+    
+    
+    spb.buildElements(focus)
+    spb.buildBeamline(focus)
+    
+    if focus == 'nano':
+        spb.cropBeamline("NVE")
+        
+    elif focus == 'micron':
+        #spb.cropBeamline("MVE")
+        pass
+    bl = spb.get_beamline()
+    
+    bl.propagateSeq(wfr, outdir = "../../tmp")
+    return wfr
+
+def getMicronFocalPlaneBeam(outdir):
+    
+    wfr = coherentSource(1024, 1024, ekev, q)
+    
+    spb = BeamlineModel()
+    
+    spb.setupHOMs(ekev, 2.2e-03)
+    spb.setupKBs(ekev, 3.5e-03)
+    spb.mirrorProfiles(toggle = "on", overwrite = False)
+    
+    
+    
+    spb.buildElements(focus)
+    spb.buildBeamline(focus)
+    
+    if focus == 'nano':
+        spb.cropBeamline("NVE")
+        
+    elif focus == 'micron':
+        #spb.cropBeamline("MVE")
+        pass
+    bl = spb.get_beamline()
+    
+    bl.propagateSeq(wfr, outdir = "../../tmp")
+    return wfr
 
     
+if __name__ == '__main__': 
+    wfr = testEllipticalRoughness(9.2, 0.25, focus = 'nano')
+    #plotMirrorProfiles("../../tmp/")

@@ -1,0 +1,1 @@
+Energy: 9.2 keV/nBeam Charge: 0.25 nC/nDetector Pixel Size: 1e-06 m/nDetector Width: 0.001024 m

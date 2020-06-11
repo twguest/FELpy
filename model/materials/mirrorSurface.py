@@ -20,6 +20,8 @@ import numpy as np
 from scipy.ndimage import gaussian_filter
 from matplotlib import pyplot as plt 
 
+
+
 def genMirrorSurface(nx, ny, mirDim, outdir, mode = 'Flat', plot = False, mirrorName = None):
     """
     Generate a plane mirror surface
@@ -38,8 +40,8 @@ def genMirrorSurface(nx, ny, mirDim, outdir, mode = 'Flat', plot = False, mirror
         surface = np.zeros((nx,ny))
 
     if mode == 'random':
-        surface = np.random.normal(size = [nx,ny])*1e-09
-        surface = gaussian_filter(surface, 1)
+        surface = np.random.normal(size = [nx,ny])*1e-10
+        surface = gaussian_filter(surface, 5)
         
         if plot == True:
             fig = plt.figure()
@@ -62,14 +64,33 @@ def genMirrorSurface(nx, ny, mirDim, outdir, mode = 'Flat', plot = False, mirror
             cb.ax.set_ylabel("Height Error (nm)", rotation = 270)
             
             fig.savefig(outdir + "mir_"+mode+".png")
-            
-    surface[1:, 0] = np.linspace(-mirLen/2, mirLen/2, nx-1) 
-    surface[0, 1:] = np.linspace(-mirWid/2, mirWid/2, ny-1) 
     
+    #surface = add_extent(surface, mirDim)
+    surface[0,1:] = np.linspace(-mirWid/2, mirWid/2, nx-1)
+    surface[1:,0] = np.linspace(-mirLen/2, mirLen/2, ny-1)
     np.savetxt(outdir+"mir_"+ mode +".dat", surface, delimiter='\t')
 
-
-            
-if __name__ == '__main__':
-    genMirrorSurface(100, 100, [1e-06, 1e-06], "../../tmp/", mode = 'random', plot = True)
+def setupHOMsurface():
+    for i in [1,2]:
+        xlen = 0.010 #m
         
+        mirdat = "../../data/input/mirror{}.dat".format(i)
+        mirdat = np.loadtxt(mirdat)
+        
+        n = mirdat.shape[0]
+        
+        ypos = mirdat[:,0]
+        xpos = np.linspace(-xlen/2, xlen/2, n-1)
+        height = mirdat[:,1]
+        surface = np.ones((n,n+1))
+        surface[:,1:] = height
+        
+        
+        surface[0,1:] = ypos
+        surface[1:,0] = xpos
+        
+        np.savetxt("../../data/input/hom{}".format(i)+"_mir_real.dat", surface, delimiter='\t')
+        return surface
+if __name__ == '__main__':
+    #s = genMirrorSurface(100, 100, [10e-06, 50e-06], "../../tmp/", mode = 'random', plot = True)
+    a = setupHOMsurface()   
