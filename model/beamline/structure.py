@@ -305,7 +305,7 @@ class BeamlineModel:
 
         
         if focus == "micron":
-            self.d3 =  Drift(self.params["MKB_pslit"]['distance from source']-self.params["HOM2"]['distance from source'])
+            self.d3 =  Drift(self.params["d3"]['distance'])
             self.d3.name = self.params["d3"]['name']
                 
             self.MKB_pslit = Aperture(_shape=self.params["MKB_pslit"]['shape'],
@@ -316,7 +316,7 @@ class BeamlineModel:
                                  _y=self.params["MKB_pslit"]['yc'])
             self.MKB_pslit.name = self.params["MKB_pslit"]['name']
             
-            self.d4 =  Drift(self.params["MHP"]['distance from source']-self.params["MKB_pslit"]['distance from source'])
+            self.d4 =  Drift(self.params["d4"]['distance'])
             self.d4.name = self.params["d4"]['name']
             
 
@@ -327,7 +327,7 @@ class BeamlineModel:
                          _x = self.params['MHP']['xc'], _y = self.params['MHP']['yc']) 
             self.MHP.name = self.params['MHP']['name']
             
-            self.d5 =  Drift(self.params["MHE"]['distance from source']-self.params["MHP"]['distance from source'])
+            self.d5 =  Drift(self.params["d5"]['distance'])
             self.d5.name = self.params["d5"]['name']
             
             self.MHE_error = MirPl(np.loadtxt(self.params['MHE_error']['mirror profile']),
@@ -359,8 +359,8 @@ class BeamlineModel:
             
             self.MHE.name = self.params['MHE']['name']
             
-            self.d6 =  Drift(self.params["MHE"]['distance from source']-self.params["MVE"]['distance from source'])
-            self.d6.name = self.params["d6"]['name']
+            self.d6 =  Drift(self.params["d7"]['distance'])
+            self.d6.name = self.params["d7"]['name']
             
             self.MVE = MirEl(orient = self.params['MVE']["orientation"], p = self.params['MVE']["distance from source"], q = self.params['MVE']["distance to focus"],
                         thetaE = self.params['MVE']["design angle"], theta0 = self.params['MVE']["incidence angle"],
@@ -375,7 +375,7 @@ class BeamlineModel:
             self.MVE.name = self.params['MVE']['name']
 
 
-            self.d8 =  Drift(self.params["MVP"]['distance from source']-self.params["MVE"]['distance from source'])
+            self.d8 =  Drift(self.params["d8"]['distance'])
             self.d8.name = self.params["d8"]['name']
             
             self.MVP = MirPl(np.loadtxt(self.params['MVP']['mirror profile']),
@@ -385,7 +385,7 @@ class BeamlineModel:
                      _x = self.params['MVP']['xc'], _y = self.params['MVP']['yc']) 
             self.MVP.name = self.params['MVP']['name']
             
-            self.df =  Drift(self.params["df"]['distance from source']-self.params["MVP"]['distance from source'])
+            self.df =  Drift(self.params["df"]['distance'])
             self.df.name = self.params["df"]['name']
         
         elif focus == "nano":
@@ -487,7 +487,7 @@ class BeamlineModel:
             self.bl.append(self.d8, propParams(1, 1, 1, 1, mode = 'quadratic'))
         
             self.bl.append(self.MVP, propParams(1, 1, 1, 1, mode = 'normal'))
-            self.bl.append(self.df, propParams(20, 10, 20, 10, mode = 'converge'))
+            self.bl.append(self.df, propParams(10,1,10,1, mode = 'converge'))
        
         elif focus == "nano":
             
@@ -509,7 +509,7 @@ class BeamlineModel:
             self.bl.append(self.NVE, propParams(1, 1, 1, 1, mode = 'normal'))
             
             
-            self.bl.append(self.df, propParams(20, 10, 20, 10, mode = 'converge'))
+            self.bl.append(self.df, propParams(10,1,10,1, mode = 'converge'))
 
             
         self.bl.params = self.params
