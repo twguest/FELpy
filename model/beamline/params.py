@@ -128,14 +128,9 @@ if __name__ == "__main__":
                            "xc": 0,
                            "yc": 0}
 
-    
-    params["d6"] = {'name': "MKB-SCR",
-                    "description": "Drift from MHE tp MKB-SCR",
-                    'distance': 0.360}
-    
     params["d7"] = {'name': "drift7",
                     "description": "Drift from MKB-SCR to MVE",
-                    'distance': 1.320}
+                    'distance': 1.680}
 
 
     
