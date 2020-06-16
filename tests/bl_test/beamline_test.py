@@ -186,10 +186,17 @@ def testOnOff():
     
     bl.propagateSeq(wfr)
 
-
+def testwfrScale():
+    wfr = coherentSource(500, 500, 9.2, 0.25)
+    
+    spb = BeamlineModel()
+    spb.scale(wfr, 2000)
+    print(wfr.params.Mesh.nx)
+    
 if __name__ == '__main__': 
     #testNano(9.2, 0.25)
-    testMicron(9.2, 0.25)
+    #testMicron(9.2, 0.25)
     #testOnOff()
     #getMicronFocalPlaneBeam("../../data/input/micronfoc_9-2keV_250pC.hdf5")
     #getMicronFocalPlaneBeam("../../data/input/micronfoc_8-86keV_250pC.hdf5", wfrdir = "../../data/h5/8_86keV_0250pC.h5")
+    testwfrScale()

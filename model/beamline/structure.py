@@ -40,10 +40,10 @@ def propParams(sx, zx, sy, zy, mode = "normal"):
     """
     wrapper for propagation parameters
     
-    :param zx: horizontal scaling factor 
-    :param rx: horizontal zoom factor
-    :param zy: vertical scaling factor
-    :param ry: vertical zoom factor
+    :param sx: horizontal scaling factor 
+    :param zx: horizontal zoom factor
+    :param sy: vertical scaling factor
+    :param zy: vertical zoom factor
     :param mode: normal, semi-analytical, converge or diverge
     
     :return propagation parameters:
@@ -554,7 +554,7 @@ class BeamlineModel:
         """
         self.cropBeamline(element1 = position)
         
-        drift2screen = SRWLOptD(distance)
+        drift2screen = Drift(distance)
         if screenName is not None:
             drift2screen.name = "screen"
         else:
@@ -604,3 +604,21 @@ class BeamlineModel:
         else:
             plt.show()
     
+    def scale(self, wfr, isc = 1024):
+        """
+        narrow functionality for scaling a wavefront (ie the number of pixels)
+        in the source plane
+        
+        :param wfr: wpg wfr strucutre
+        :param isc: ideal scale
+        
+        :returns wfr: scaled wpg wfr structure
+        """
+        
+        nx, ny = wfr.params.Mesh.nx, wfr.params.Mesh.ny
+        
+        scbl = Beamline()
+        scbl.append(Drift(0), propParams(1, isc/nx, 1, isc/ny))
+        scbl.propagate(wfr)
+        
+        return wfr
