@@ -25,13 +25,13 @@ import time
 import numpy as np
 
 from model.src.coherent import coherentSource
-from model.beamline.structure import BeamlineModel
+from model.beamline.structure import BeamlineModel, propParams
 from model.materials.load_refl import load_refl, get_refl
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity 
 from wpg.wpg_uti_wf import plot_intensity_qmap as plotPhase
-
+from wpg.beamline import Beamline
 from wpg.wavefront import Wavefront
-
+from wpg.srwlib import SRWLOptD as Drift
 def testMicron(ekev, q, outdir = "../../tmp", toggle = 'on'):
     
     wfr = coherentSource(1024, 1024, ekev, q)
@@ -189,9 +189,17 @@ def testOnOff():
 def testwfrScale():
     wfr = coherentSource(500, 500, 9.2, 0.25)
     
+    bl = Beamline()
+    bl.append(Drift(0), propParams(2,1,2,1))
+    bl.propagate(wfr)
+
+    print(wfr.params.Mesh.xMax-wfr.params.Mesh.xMin)
+
     spb = BeamlineModel()
-    spb.scale(wfr, 2000)
+    spb.scale(wfr)
+    
     print(wfr.params.Mesh.nx)
+    print(wfr.params.Mesh.xMax-wfr.params.Mesh.xMin)
     
 if __name__ == '__main__': 
     #testNano(9.2, 0.25)
