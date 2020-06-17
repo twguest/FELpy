@@ -23,7 +23,7 @@ import h5py
 
 from matplotlib import pyplot as plt
 import matplotlib as mpl 
-
+from wpg.wpg_uti_wf import integral_intensity
 import h5py
 
 from wpg.wavefront import Wavefront
@@ -42,3 +42,4 @@ plotOnAxisPowerDensity(wfr, spectrum = False, outdir = "../../tmp")
 plotOnAxisPowerDensity(wfr, spectrum = True, outdir = "../../tmp")
 plotTotalPower(wfr, spectrum = False, outdir = "../../tmp")
 plotTotalPower(wfr, spectrum = True, outdir = "../../tmp")
+print(integral_intensity(wfr))

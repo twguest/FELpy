@@ -487,7 +487,7 @@ class BeamlineModel:
             self.bl.append(self.d8, propParams(1, 1, 1, 1, mode = 'quadratic'))
         
             self.bl.append(self.MVP, propParams(1, 1, 1, 1, mode = 'normal'))
-            self.bl.append(self.df, propParams(10,1,10,1, mode = 'converge'))
+            self.bl.append(self.df, propParams(1/10,1,1/10,1, mode = 'converge'))
        
         elif focus == "nano":
             
@@ -604,21 +604,25 @@ class BeamlineModel:
         else:
             plt.show()
     
-    def scale(self, wfr, isc = 1024):
+    def scale(self, wfr, isc = 1024, ifov = 800e-06):
         """
         narrow functionality for scaling a wavefront (ie the number of pixels)
         in the source plane
         
         :param wfr: wpg wfr strucutre
         :param isc: ideal scale
+        :param ifov: ideal field of view
         
         :returns wfr: scaled wpg wfr structure
         """
         
         nx, ny = wfr.params.Mesh.nx, wfr.params.Mesh.ny
+        dx, dy = wfr.params.Mesh.xMax-wfr.params.Mesh.xMin, wfr.params.Mesh.yMax-wfr.params.Mesh.yMin
+        
+        
         
         scbl = Beamline()
-        scbl.append(Drift(0), propParams(1, isc/nx, 1, isc/ny))
+        scbl.append(Drift(0), propParams(ifov/dx, isc/nx, ifov/dy, isc/ny))
         scbl.propagate(wfr)
         
         return wfr
