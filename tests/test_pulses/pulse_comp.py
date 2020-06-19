@@ -28,7 +28,7 @@ def loadPulse(wdir):
     wfr = Wavefront()
     wfr.load_hdf5(wdir)
     
-    wfr.initial_intensity = integral_intensity(wfr, bplot = False)
+    wfr.initial_intensity = integral_intensity(wfr, bPlot = False)
     return wfr
 
 def propagatePulse(wfr, outdir, mode = 'direct'):
@@ -52,7 +52,7 @@ def propagatePulse(wfr, outdir, mode = 'direct'):
     elif mode == 'sequential':
         bl.propagateSeq(wfr, outdir)
     
-    wfr.final_intensity = integral_intensity(wfr, bplot = False)
+    wfr.final_intensity = integral_intensity(wfr, bPlot = False)
     
     return wfr
 
@@ -72,7 +72,7 @@ def constructCoherentEquiv(wfr, outdir, mode = 'direct'):
     spb.buildElements(focus = "micron")
     spb.buildBeamline(focus = "micron")
     
-    spb.scale(cwfr) 
+    spb.scale(cwfr, isc = 501) 
     
     bl = spb.get_beamline()
     
@@ -110,9 +110,10 @@ def comparePulses(wfr, cwfr, savedir):
     
 if __name__ == "__main__":
     
-    wdir = "../../"
+    wdir = "../../data/h5/sourcepulse_4_96keV_0_250nC_0000001.h5"
     
     wfr = loadPulse(wdir)
+    wfr.data.arrEhor = wfr.data.arrEhor[:,:,100,:]
     wfr = propagatePulse(wfr, outdir = "/tmp/", mode = 'sequential')
     
     cwfr = constructCoherentEquiv(wfr, outdir = "/tmp/")
