@@ -131,3 +131,5 @@ dmypy.json
 /output/*
 *.h5
 .pyre/
+
+*.zip
