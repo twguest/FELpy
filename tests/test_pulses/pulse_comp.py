@@ -43,7 +43,7 @@ def propagatePulse(wfr, outdir, mode = 'direct'):
     spb.buildElements(focus = "micron")
     spb.buildBeamline(focus = "micron")
     
-    spb.scale(wfr) 
+    #spb.scale(wfr, isc = 501) 
     
     bl = spb.get_beamline()
     
@@ -72,7 +72,7 @@ def constructCoherentEquiv(wfr, outdir, mode = 'direct'):
     spb.buildElements(focus = "micron")
     spb.buildBeamline(focus = "micron")
     
-    spb.scale(cwfr, isc = 501) 
+    spb.scale(cwfr, isc = 150) 
     
     bl = spb.get_beamline()
     
@@ -113,7 +113,7 @@ if __name__ == "__main__":
     wdir = "../../data/h5/sourcepulse_4_96keV_0_250nC_0000001.h5"
     
     wfr = loadPulse(wdir)
-    wfr.data.arrEhor = wfr.data.arrEhor[:,:,100,:]
+    wfr.data.arrEhor = wfr.data.arrEhor[:,:,:,:]
     wfr = propagatePulse(wfr, outdir = "/tmp/", mode = 'sequential')
     
     cwfr = constructCoherentEquiv(wfr, outdir = "/tmp/")
