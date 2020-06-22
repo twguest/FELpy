@@ -1,0 +1,17 @@
+Steps to run notebooks
+
+log into desy jupyter lab:
+https://max-jhub.desy.de/
+
+
+open a terminal and build the req. conda env:
+cd /gpfs/exfel/data/users/guestt/WPG/
+conda env build -f conda-env.yml
+
+activate the conda env and construct kernel:
+conda activate optics
+python -m ipykernel install --user --display-name=optics
+
+run using optics kernel:
+/gpfs/exfel/data/users/guestt/spb_model/ipynb/SamplingTest.ipynb
+
