@@ -278,7 +278,7 @@ class BeamlineModel:
  
     def buildElements(self, focus = "micron"):
        
-        self.d1 =  Drift(self.params["HOM1"]['distance from source']/10)
+        self.d1 =  Drift(self.params["HOM1"]['distance from source'])
         self.d1.name = self.params["d1"]['name']
         
         self.HOM1 = MirPl(np.loadtxt(self.params['HOM1']['mirror profile']),

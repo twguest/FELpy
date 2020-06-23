@@ -20,8 +20,8 @@ sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
 from model.src.coherent import coherentSource
 from model.beamline.structure import BeamlineModel
 from model.beamline.samplingCalc import getImageProperties, getRequiredDistance
-
-from wpg.wavefront import Wavefront
+from wpg.wpg_uti_wf import calculate_fwhm
+from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
 
 def get_wfr(element, outdir, focus = 'micron'):
     """
@@ -53,18 +53,19 @@ def get_wfr(element, outdir, focus = 'micron'):
     bl = spb.get_beamline()
     bl.propagate(wfr)
     
-    wfr.store_hdf5(outdir)
+    
+    #wfr.store_hdf5(outdir)
     
     return wfr
 
 def main():
     wfr = get_wfr("focus", "../../data/h5/focus_NKB_9-2keV_0-25nC.hdf5", focus = 'nano')
-    
+    plotIntensity(wfr)
     #wfr = Wavefront()
     #wfr.load_hdf5("../../data/h5/MKB_MHE_9-2keV_0-25nC.hdf5")
     
-    zmin = getRequiredDistance(wfr, 13.5e-06)
-    getImageProperties(wfr, 1, 1e-06, [2156, 2048])
-    
+    #zmin = getRequiredDistance(wfr, 13.5e-06)
+    #getImageProperties(wfr, 1, 1e-06, [2156, 2048])
+    print(calculate_fwhm(wfr))
 if __name__ == "__main__":
     main()
