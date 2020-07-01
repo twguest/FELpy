@@ -72,7 +72,7 @@ def constructCoherentEquiv(wfr, outdir, mode = 'direct'):
     spb.buildElements(focus = "micron")
     spb.buildBeamline(focus = "micron")
     
-    spb.scale(cwfr, isc = 150) 
+    #spb.scale(cwfr, isc = 150) 
     
     bl = spb.get_beamline()
     
@@ -110,12 +110,12 @@ def comparePulses(wfr, cwfr, savedir):
     
 if __name__ == "__main__":
     
-    wdir = "../../data/h5/sourcepulse_4_96keV_0_250nC_0000001.h5"
+    wdir = "../../data/h5/gauss.h5"
     
     wfr = loadPulse(wdir)
-    wfr.data.arrEhor = wfr.data.arrEhor[:,:,:,:]
-    wfr = propagatePulse(wfr, outdir = "/tmp/", mode = 'sequential')
+    print(wfr.data.arrEhor.shape)
+    #wfr = propagatePulse(wfr, outdir = "/tmp/", mode = 'sequential')
     
-    cwfr = constructCoherentEquiv(wfr, outdir = "/tmp/")
+    #cwfr = constructCoherentEquiv(wfr, outdir = "/tmp/")
     
-    comparePulses(wfr, cwfr, "/data/")
+    #comparePulses(wfr, cwfr, "/data/")

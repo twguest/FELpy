@@ -226,7 +226,7 @@ if __name__ == "__main__":
                      "incidence angle": 1e-03,
                      "dx": 0.0250,
                      "dy": 0.950,
-                     "xc": 5e-06,
+                     "xc": 0,
                      "yc": 0,
                      "length": 1,
                      "roll": 0,
@@ -236,7 +236,7 @@ if __name__ == "__main__":
                      "_ext_out": 0.5}
     
     
-    params["NVE_error"] = {"name": "NHE_error",
+    params["NVE_error"] = {"name": "NVE_error",
                        "orientation": 'x',
                        "description": "Nano Focus Horizontal Elliptical Mirror Surface Height Error",
                        "mirror profile": "../../data/nve_mir_flat.dat",

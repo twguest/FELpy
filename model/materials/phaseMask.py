@@ -63,6 +63,7 @@ if __name__ == "__main__":
 
     wfr = coherentSource(1024,1024,3, 1)
     pltPhase(wfr)
+    plotIntensity(wfr)
     phaseshift = np.random.rand(200,200)*2*np.pi
 
     opd = phaseMask(phaseshift, [5e-03, 5e-03], wfr.params.wavelength*100)

@@ -72,7 +72,7 @@ class BeamlineModel:
     
     
     def __init__(self):
-        print("Initialising Single Particle Beamline")
+        #print("Initialising Single Particle Beamline")
         self.load_params()
 
     def load_params(self):
@@ -487,18 +487,18 @@ class BeamlineModel:
             self.bl.append(self.d8, propParams(1, 1, 1, 1, mode = 'quadratic'))
         
             self.bl.append(self.MVP, propParams(1, 1, 1, 1, mode = 'normal'))
-            self.bl.append(self.df, propParams(1/10,1,1/10,1, mode = 'converge'))
+            self.bl.append(self.df, propParams(1,1,1,1, mode = 'converge'))
        
         elif focus == "nano":
             
             self.bl.append(self.d1, propParams(1,1,1,1, mode = "farfield"))
     
-            self.bl.append(self.HOM1, propParams(1, 1, 1, 1, mode = 'normal'))
+            self.bl.append(self.HOM1, propParams(1/10, 1, 1/10, 1, mode = 'normal'))
             self.bl.append(self.d2, propParams(1, 1, 1, 1, mode = 'quadratic'))
             self.bl.append(self.HOM2,  propParams(1, 1, 1, 1, mode = 'normal'))
             self.bl.append(self.d3, propParams(1,1,1,1, mode = 'farfield'))
             
-            self.bl.append(self.NKB_pslit, propParams(1/5, 1, 1/5, 1, mode = 'normal'))
+            self.bl.append(self.NKB_pslit, propParams(1/10, 1, 1/10,  1, mode = 'normal'))
             self.bl.append(self.d4, propParams(1, 1, 1, 1, mode = 'quadratic'))
             self.bl.append(self.NHE_error, propParams(1, 1, 1, 1, mode = 'normal'))
             self.bl.append(self.NHE, propParams(1, 1, 1, 1, mode = 'normal'))
@@ -509,7 +509,7 @@ class BeamlineModel:
             self.bl.append(self.NVE, propParams(1, 1, 1, 1, mode = 'normal'))
             
             
-            self.bl.append(self.df, propParams(10,1,10,1, mode = 'converge'))
+            self.bl.append(self.df, propParams(1,1,1,1, mode = 'converge'))
 
             
         self.bl.params = self.params
@@ -622,7 +622,7 @@ class BeamlineModel:
         
         
         scbl = Beamline()
-        scbl.append(Drift(0), propParams(ifov/dx, isc/nx, ifov/dy, isc/ny))
+        scbl.append(Aperture('r','a', 800e-06, 800e-06), propParams(dx/ifov, isc/nx, dy/ifov, isc/ny))
         scbl.propagate(wfr)
         
         return wfr

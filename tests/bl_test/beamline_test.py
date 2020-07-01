@@ -32,6 +32,7 @@ from wpg.wpg_uti_wf import plot_intensity_qmap as plotPhase
 from wpg.beamline import Beamline
 from wpg.wavefront import Wavefront
 from wpg.srwlib import SRWLOptD as Drift
+
 def testMicron(ekev, q, outdir = "../../tmp", toggle = 'on'):
     
     wfr = coherentSource(1024, 1024, ekev, q)
@@ -205,6 +206,6 @@ if __name__ == '__main__':
     #testNano(9.2, 0.25)
     #testMicron(9.2, 0.25)
     #testOnOff()
-    #getMicronFocalPlaneBeam("../../data/input/micronfoc_9-2keV_250pC.hdf5")
+    getMicronFocalPlaneBeam("../../data/h5/gauss.h5")
     #getMicronFocalPlaneBeam("../../data/input/micronfoc_8-86keV_250pC.hdf5", wfrdir = "../../data/h5/8_86keV_0250pC.h5")
-    testwfrScale()
+    #testwfrScale()
