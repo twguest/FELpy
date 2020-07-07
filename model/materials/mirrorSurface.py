@@ -40,7 +40,7 @@ def genMirrorSurface(nx, ny, mirDim, outdir, mode = 'Flat', plot = False, mirror
         surface = np.zeros((nx,ny))
 
     if mode == 'random':
-        surface = np.random.normal(size = [nx,ny])*1e-09
+        surface = np.random.normal(size = [nx,ny])*1e-08
         surface = gaussian_filter(surface, 5)
         
         if plot == True:
