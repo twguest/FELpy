@@ -493,7 +493,7 @@ class BeamlineModel:
             
             self.bl.append(self.d1, propParams(1,1,1,1, mode = "farfield"))
     
-            self.bl.append(self.HOM1, propParams(1/10, 1, 1/10, 1, mode = 'normal'))
+            self.bl.append(self.HOM1, propParams(1, 1, 1, 1, mode = 'normal'))
             self.bl.append(self.d2, propParams(1, 1, 1, 1, mode = 'quadratic'))
             self.bl.append(self.HOM2,  propParams(1, 1, 1, 1, mode = 'normal'))
             self.bl.append(self.d3, propParams(1,1,1,1, mode = 'farfield'))
@@ -509,7 +509,7 @@ class BeamlineModel:
             self.bl.append(self.NVE, propParams(1, 1, 1, 1, mode = 'normal'))
             
             
-            self.bl.append(self.df, propParams(1,1,1,1, mode = 'converge'))
+            self.bl.append(self.df, propParams(1/4,1,1/4,1, mode = 'quadratic'))
 
             
         self.bl.params = self.params

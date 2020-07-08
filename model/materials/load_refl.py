@@ -85,5 +85,5 @@ def get_refl(refl, ekev, ang = 'max', limits = [0,2*np.pi]):
 if __name__ == '__main__':
 
     treat_refl("B4C")
-    refl = load_refl("B4C", "../../data/kb_refl/")
+    refl = load_refl("B4C", "../../data/hom_refl/")
     get_refl(refl, 9.2, ang = 'max',  limits = [1.1e-03, 3.6e-03])
