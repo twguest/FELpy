@@ -86,6 +86,7 @@ def propagatePulses(fname):
     
     wfr = Wavefront()
     wfr.load_hdf5(indir + fname)
+
     srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
     storeWavefrontInfo(wfr)
     
@@ -104,7 +105,7 @@ if __name__ == '__main__':
     
     if MPI:
         
-        cores = 35 ## DESY-MAXWELL ONLY
+        cores = 35 #DESY-MAXWELL ONLY
         print("Using  {} Cores".format(cores))
         print("Available Cores: {}".format(multiprocessing.cpu_count()))
         p = multiprocessing.Pool(cores)

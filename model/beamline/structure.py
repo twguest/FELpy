@@ -509,7 +509,7 @@ class BeamlineModel:
             self.bl.append(self.NVE, propParams(1, 1, 1, 1, mode = 'normal'))
             
             
-            self.bl.append(self.df, propParams(1/4,1,1/4,1, mode = 'quadratic'))
+            self.bl.append(self.df, propParams(5,1,5,1, mode = 'converge'))
 
             
         self.bl.params = self.params
