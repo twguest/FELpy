@@ -37,18 +37,27 @@ from model.materials.phaseMask import phaseMask
 from matplotlib import pyplot as plt
 from wpg.multisliceOptE import greyscaleToSlices
 
-def propThruMask(wfr):
+
+
+drift_to_pam = Drift(3.0)
+drift_to_pam.name = "drift_to_pam"
+
+
+drift_to_ehc = Drift(0.5)
+drift_to_ehc.name = "drift_to_ehc"
+
+def propThruMask(wfr, rotate):
     
-    slices = greyscaleToSlices("../../data/tests/sandpaper-1500nm-pixels.png",
+    slices = greyscaleToSlices("../../data/tests/speckle_test/speckle_crop.png",
                                propagationParameters = propParams(1,1,1,1),
                                slices = 1,
-                               resolution = [0.5e-06, 0.5e-06,  None],
+                               resolution = [10e-06/43, 10e-06/43,  None],
                                thickness = 250e-06,
                                delta = 1.82243693E-05,
-                               attenLength = 1e3)
+                               attenLength = 1e3,
+                               rotate_angle = rotate)
     
     slices.propagate(wfr)
-    
 
 
 def main():
@@ -56,18 +65,9 @@ def main():
     task: to gneerate the output of a speckle tracking experiment
     """
     
-    wfr = coherentSource(1024, 1024, 9.0, 0.25)
-    
-    extent = [1e-02, 1e-02]
-    req_speckle_size = 10e-06
-    npix = [int(extent[0]/req_speckle_size), int(extent[1]/req_speckle_size)]
-    phaseshift = np.random.uniform(-10*np.pi, 10*np.pi, size = npix)
-    
-    speckle = phaseMask(phaseshift, extent, wfr.params.wavelength)
-
+    wfr = coherentSource(1024, 1024, 4.96, 0.250)
     
     spb = BeamlineModel()
-    
     spb.setupHOMs(4.96, 2.2e-03)
     spb.setupKBs(4.96, 3.5e-03)
     spb.mirrorProfiles(toggle = "on", aperture = True, overwrite = True)
@@ -75,27 +75,21 @@ def main():
     spb.buildBeamline(focus = "nano")
    
     bl = spb.get_beamline()
-    
-    
-    drift_to_pam = Drift(3.0)
-    drift_to_pam.name = "drift_to_pam"
-    
-    speckle.name = 'speckle_mask'
-    
-    drift_to_ehc = Drift(0.5)
-    drift_to_ehc.name = "drift_to_ehc"
-    
-    
-    #bl.append(drift_to_pam, propParams(1/2, 1, 1/2, 1, mode = 'quadratic'))
+           
+    bl.append(drift_to_pam, propParams(1,1,1,1, mode = 'quadratic'))
     bl.propagate(wfr)
     plotIntensity(wfr)
-    propThruMask(wfr)
     
+    #### THEN PROP THROUGH MASK
+    propThruMask(wfr, rotate = 0)
+    plotIntensity(wfr)
+    
+    ### then propagate to detector
     bl = Beamline()
-    bl.append(drift_to_ehc, propParams(1, 2, 1, 2, mode = 'quadratic'))    
+    bl.append(drift_to_ehc, propParams(1/5, 2, 1/2, 2, mode = 'quadratic'))    
     
     bl.propagate(wfr)
-    wfr.save_tif("../../tmp/speckle_test")
+    wfr.save_tif("../../tmp/speckle_test_toggleOn")
     plotIntensity(wfr)
    
     return wfr
