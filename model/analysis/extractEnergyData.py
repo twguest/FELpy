@@ -22,14 +22,13 @@ import numpy as np
 
 import wpg.srwlib as srwlib
 
-from wpg.wpg_uti_wf import calc_pulse_energy, calculate_fwhm, getOnAxisPowerDensity, getCentroid
+from wpg.wpg_uti_wf import calc_pulse_energy, getOnAxisPowerDensity, getCentroid
 from wpg.wavefront import Wavefront
-from wpg.generators import build_gauss_wavefront
 
 
 fname = sys.argv[1]
-indir = "/gpfs/exfel/data/user/guest/spb_model/data/h5/NanoKB-Pulse/out/"
-directoryName = "/gpfs/exfel/data/user/guest/spb_model/data/h5/NanoKB-Pulse/data/"
+indir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/out/"
+directoryName = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/data/"
 
 
 def mkdir_p(dir):
@@ -53,49 +52,60 @@ def storeCentroid(wfr, fname):
     mkdir_p(intDir)
     mkdir_p(slicedDir)
     
+
     cI = getCentroid(wfr, mode = 'integrated')
-    cS = getCentroid(wfr, mode = 'pulse')
-    
     np.save(intDir + fname, cI)
-    np.save(intDir + fname, cS)
+    del cI
+
+    cS = getCentroid(wfr, mode = 'pulse')
+    np.save(slicedDir + fname, cS)
+    del cS    
     
     print("Centroids Stored: {}".format(fname))
     
-    del cI, cS
-
+    
 def storeSpectrum(wfr, fname):
     
     timeDir = directoryName + "tSpectrum/"
     freqDir = directoryName + "fSpectrum/"
     
+    mkdir_p(timeDir)
+    mkdir_p(freqDir)
+
     sz0 = getOnAxisPowerDensity(wfr, spectrum = False)
-    sz1 = getOnAxisPowerDensity(wfr, spectrum = True)
-    
     np.save(timeDir + fname, sz0)
+    del sz0
+
+    sz1 = getOnAxisPowerDensity(wfr, spectrum = True)
     np.save(freqDir + fname, sz1)
+    del sz1
     
     print("Spectrums Stored: {}".format(fname))
    
 def storePhotonEnergy(wfr, fname):
     
     enDir = directoryName + "pulseEnergy/"
+    mkdir_p(enDir)
     
+
     srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 't')
     pulseEn, photons_per_pulse = calc_pulse_energy(wfr)
     srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
     
-    np.save(endir + fname, [pulseEn, photons_per_pulse])
-    
+    np.save(enDir + fname, [pulseEn, photons_per_pulse])
+        
     print("Photon Energy Saved: {}".format(fname))
 
 def storeProfiles(wfr, fname):
     
     profDir = directoryName + "profiles/"
+    mkdir_p(profDir)
     
+
     profile = wfr.get_profile_1d()
     
     np.save(profDir + fname, profile)
-    
+        
     print("1D Profiles Stored: {}".format(profDir))
     
 def main(fname):
@@ -107,7 +117,8 @@ def main(fname):
     storeCentroid(wfr, fname)
     storeSpectrum(wfr, fname)
     storePhotonEnergy(wfr, fname)
-
+    storeProfiles(wfr, fname)
+    
 if __name__ == '__main__':
     
     main(fname)

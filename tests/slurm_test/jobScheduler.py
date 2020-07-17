@@ -37,7 +37,7 @@ for v in var:
         fh.writelines("#SBATCH --time=14-00:00\n")
         fh.writelines("#SBATCH --mail-type=ALL\n")
         fh.writelines("#SBATCH --mail-user=trey.guest@desy.de\n")
-        fh.writelines("python /gpfs/exfel/data/user/guestt/slurmTest/testArgArray.py %s\n" %v)
+        fh.writelines("python /gpfs/exfel/data/user/guestt/spb_model/tests/slurm_test/testArgArray.py %s\n" %v)
         
     fh.close()
     os.system("sbatch %s" %job_file)
