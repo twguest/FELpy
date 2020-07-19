@@ -73,7 +73,7 @@ def getSPB(wfr):
     spb.setupHOMs(wfr.params.photonEnergy/1000, 2.2e-03)
     spb.setupKBs(wfr.params.photonEnergy/1000, 3.5e-03)
     
-    spb.mirrorProfiles(toggle = "off", aperture = True, overwrite = False)
+    spb.mirrorProfiles(toggle = "on", aperture = True, overwrite = False)
     
     spb.buildElements(focus)
     spb.buildBeamline(focus)

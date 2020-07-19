@@ -74,7 +74,7 @@ def parseWavefront(wfr, itr = None):
     
     ### ii = np.random.rand(nx,ny) ### DEBUG FOR RANDOM ARR. 17/07/20 TWG
     c = np.where(ii == np.amax(ii)) ### get position of maximum
-    c = (c[0][0], c[1][0])
+    c = (c[1][0], c[0][0])
     
     return ii, nx, ny, c          
 
@@ -142,26 +142,28 @@ def finder(ii, nx, ny, c, efraction = 0.5, threshold = .01, iguess = None, ngues
     
     return r, err
 
-def plotEnclosed(ii, r, c, label = None, outdir = None, fname = "pulse"):
+def plotEnclosed(ii, r, c, mode = 'integrated', label = None, outdir = None, fname = "pulse", itr = None):
     
     
     fig = plt.figure()
     ax1 = fig.add_subplot()
     
-    im1 = ax1.imshow(ii, cmap = 'hot')
+    ax1.imshow(ii, cmap = 'hot')
     circle = plt.Circle(c, r, color='w', fill=False)
     ax1.add_artist(circle)
     plt.axis("off")
-    
+    ax1.plot(c[0],c[1], marker = 'x', color = 'k')
     if label is not None:
         print()
         ax1.text(15, ii.shape[1]-15, label, c = 'w')
         
     if outdir is not None:
-        mkdir_p(outdir)
-        plt.savefig(outdir + str(fname) +".png")
-    
-    plt.show()
+        
+        if mode == 'pulse':
+            plt.savefig(outdir + "/tmp/{}/{}.png".format(fname, itr))
+        elif mode == 'integrated':
+            plt.savefig(outdir + "{}.png".format(fname))
+            plt.show()
 
 def getEnclosedEnergy(wfr, mode = 'integrated', outdir = None, fname = None, **kwargs):
     
@@ -170,11 +172,11 @@ def getEnclosedEnergy(wfr, mode = 'integrated', outdir = None, fname = None, **k
         ii, nx, ny, c = parseWavefront(wfr)
         r, err = finder(ii, nx, ny, c, **kwargs)
     
-        R = (wfr.pixelsize()[0]*r, c, err)
-        print(R*1e6, " $\mu m$")
+        R = [fname, wfr.pixelsize()[0]*r, c[0], c[1], err]
+        print(R[1]*1e6, " um")
  
         
-        plotEnclosed(ii, r, c, outdir, fname)
+        plotEnclosed(ii, r, c, outdir = outdir, label = fname)
 
 
     elif mode == 'pulse':
@@ -185,15 +187,19 @@ def getEnclosedEnergy(wfr, mode = 'integrated', outdir = None, fname = None, **k
 
             r, err = finder(ii, nx, ny, c, **kwargs)
             
-            R.append(wfr.pixelsize()[0]*r, c, err)
-            print(R*1e6, " $\mu m$")
+            R.append([fname, itr, wfr.pixelsize()[0]*r, c[0], c[1], err])
  
             srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 't')
             tax = np.linspace(wfr.params.Mesh.sliceMin, wfr.params.Mesh.sliceMax, wfr.params.Mesh.nSlices)
             srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
-            plotEnclosed(ii, r, c, label = "{:.2f} fs".format(tax[itr]*1e15), outdir = outdir, fname = itr)
+            
+            if mode == 'integrated':
+                plotEnclosed(ii, r, c, mode = 'integrated', label = None, outdir = outdir, fname = fname, itr = None)
+            elif mode == 'pulse':
+                plotEnclosed(ii, r, c, mode = 'pulse',
+                             label = "{:.2f} fs".format(tax[itr]*1e15), outdir = outdir, fname = fname, itr = itr)
     
-    np.save(oudir + fname, R)
+    np.save(outdir + fname, R, allow_pickle= True)
     
 def animate(indir, outdir, fname, delay = 0.1, rmdir = False):
     """
@@ -207,12 +213,24 @@ def animate(indir, outdir, fname, delay = 0.1, rmdir = False):
 if __name__ == '__main__':
     
     fname = sys.argv[1]    
-        
-    mkdir_p("/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/data/tmp/")
-    mkdir_p("/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/data/enclosedEnergy/")
-
-     wfr = Wavefront()
-     wfr.load_hdf5("/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/data/out/{}".format(fname))
+    mode = sys.arv[2]
+    #mode = 'integrated'
+    #fname = "NanoKB-Pulse_54.h5"    
+    outdir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/data/enclosedEnergy/Integrated/"
     
-    getEnclosedEnergy(wfr, mode = 'pulse', efraction = 0.95, threshold = .01, outdir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/data/tmp/")
-    animate(indir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/data/tmp/", outdir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/data/enclosedEnergy/", fname = fname, delay = .1, rmdir = True)
+    
+    if mode == 'pulse':
+        tmpdir = outdir + "/tmp/"
+        ftmp = tmpdir + "/fname/"
+        mkdir_p(tmpdir)
+        mkdir_p(ftmp)
+
+    mkdir_p(outdir)
+    
+    wfr = Wavefront()
+    wfr.load_hdf5("/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/out/{}".format(fname))
+    
+    getEnclosedEnergy(wfr, mode = mode, efraction = 0.50, threshold = .01, outdir = outdir, fname = fname)
+    
+    if mode == 'pulse':
+        animate(indir = ftmp, outdir = outdir, fname = fname, delay = .1, rmdir = True)
