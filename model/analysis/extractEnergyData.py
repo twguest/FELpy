@@ -87,13 +87,23 @@ def storePhotonEnergy(wfr, fname):
     enDir = directoryName + "pulseEnergy/"
     mkdir_p(enDir)
     
+    effDir = directoryName + "systemEff/"
+    mkdir_p(effDir)
+    
+    
 
     srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 't')
     pulseEn, photons_per_pulse = calc_pulse_energy(wfr)
     srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
     
+    effPhotons = photons_per_pulse / wfr.custom_fields['source']['nPhotons']
+    effEn = pulseEn / wfr.custom_fields['source']['pulseEn']
+    
+    
     np.save(enDir + fname, [pulseEn, photons_per_pulse])
-        
+    np.save(effDir + fname, [effPhotons, effEn])
+    
+    
     print("Photon Energy Saved: {}".format(fname))
 
 def storeProfiles(wfr, fname):

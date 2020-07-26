@@ -160,6 +160,7 @@ def plotEnclosed(ii, r, c, mode = 'integrated', label = None, outdir = None, fna
     if outdir is not None:
         
         if mode == 'pulse':
+            mkdir_p(outdir + "tmp/")
             plt.savefig(outdir + "/tmp/{}/{}.png".format(fname, itr))
         elif mode == 'integrated':
             plt.savefig(outdir + "{}.png".format(fname))
@@ -176,7 +177,7 @@ def getEnclosedEnergy(wfr, mode = 'integrated', outdir = None, fname = None, **k
         print(R[1]*1e6, " um")
  
         
-        plotEnclosed(ii, r, c, outdir = outdir, label = fname)
+        plotEnclosed(ii, r, c, outdir = outdir, fname = fname, label = fname)
 
 
     elif mode == 'pulse':
@@ -213,10 +214,10 @@ def animate(indir, outdir, fname, delay = 0.1, rmdir = False):
 if __name__ == '__main__':
     
     fname = sys.argv[1]    
-    mode = sys.arv[2]
+    mode = sys.argv[2]
     #mode = 'integrated'
     #fname = "NanoKB-Pulse_54.h5"    
-    outdir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/data/enclosedEnergy/Integrated/"
+    outdir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/data/enclosedEnergy/SliceBySlice/"
     
     
     if mode == 'pulse':

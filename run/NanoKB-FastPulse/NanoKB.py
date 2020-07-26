@@ -32,7 +32,7 @@ from tqdm import tqdm
 
 focus = "nano"
 indir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/in/"
-outdir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/noProfile/"
+outdir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/out/"
 
 def storeWavefrontInfo(wfr):
     
