@@ -30,33 +30,14 @@ from matplotlib import ticker, cm
 from wpg.generators import build_gauss_wavefront
 from wpg import srwlib
 
+from model.tools import create_circular_mask
+
 def mkdir_p(dir):
     '''make a directory (dir) if it doesn't exist'''
     if not os.path.exists(dir):
         os.mkdir(dir)
 
-def create_circular_mask(nx, ny, c = None, r = None):
-    """
-    create a circular mask numpy array
-    
-    :param nx: number of pixels of array (horizontal) [int]
-    :param ny: number of pixels of array (vertical) [int]
-    :param c: center of array in pixels [list]from wpg import srwlib
-    :param r: radius of array (in pixels) [int]
-    
-    :returns mask: binary mask [np array]
-    """ 
-    if c is None: # use the middle of the image
-        c = (int(nx/2), int(ny/2))
-    if r is None: # use the smallest distance between the center and image walls
-        r = min(c[0], c[1], nx-c[0], ny-c[1])
 
-    X, Y = np.ogrid[:nx, :ny]
-    dist_from_center = np.sqrt((X - c[0])**2 + (Y-c[1])**2)
-
-    mask = dist_from_center <= r
-    
-    return mask
 
 def parseWavefront(wfr, itr = None):
     """
