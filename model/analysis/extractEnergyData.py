@@ -22,7 +22,7 @@ import numpy as np
 
 import wpg.srwlib as srwlib
 
-from wpg.wpg_uti_wf import calc_pulse_energy, getOnAxisPowerDensity, getCentroid
+from wpg.wpg_uti_wf import calc_pulse_energy, getOnAxisPowerDensity, getCentroid, get_profile_1d
 from wpg.wavefront import Wavefront
 
 
@@ -112,7 +112,7 @@ def storeProfiles(wfr, fname):
     mkdir_p(profDir)
     
 
-    profile = wfr.get_profile_1d()
+    profile = get_profile_1d(wfr)
     
     np.save(profDir + fname, profile)
         

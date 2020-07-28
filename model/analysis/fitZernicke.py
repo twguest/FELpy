@@ -15,18 +15,14 @@ sys.path.append("/opt/spb_model") # LOCAL PATH
 sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
 ###############################################################################
 ###############################################################################
-from matplotlib import pyplot as plt
 from poppy import zernike
-from model.src.coherent import coherentSource
 import numpy as np
-from wpg.wpg_uti_wf import calculate_fwhm
 from model.tools import constructPulse, create_circular_mask, mkdir_p
-from sklearn.preprocessing import minmax_scale as norm
 from wpg.wavefront import Wavefront
 
         
         
-def fitZernicke(wfr, mode = 'integrated', nterms):
+def fitZernicke(wfr, mode = 'integrated', nterms = 1250):
     
     nx, ny, nz = wfr.params.Mesh.nx, wfr.params.Mesh.ny, wfr.params.Mesh.nSlices
     
@@ -35,10 +31,10 @@ def fitZernicke(wfr, mode = 'integrated', nterms):
     if mode == 'integrated':
 
         ph = wfr.data.arrEhor[:,:,:,1].sum(axis = 2)
-        ii = wfr.get_intensity()[:,:,0]
+        #ii = wfr.get_intensity()[:,:,0]
 
         zc = zernike.opd_expand(ph, aperture = aperture, nterms = nterms)
-        rc = zernike.opd_from_zernikes(zc)
+        #rc = zernike.opd_from_zernikes(zc)
 
         
     return zc
@@ -67,6 +63,6 @@ if __name__ == '__main__':
     wfr = Wavefront()
     wfr.load_hdf5("/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/{}/{}".format(where, fname))
     
-    zc = fitZernicke(wfr, mode = mode, nterms, 1250)
+    zc = fitZernicke(wfr, mode = mode, nterms = 1250)
     
     np.save(savdir + fname, zc)
