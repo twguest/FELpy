@@ -134,4 +134,4 @@ if __name__ == '__main__':
 #     
 # =============================================================================
     sliceFocus(wfr = wfr, ekev = ekev, focus = 'nano', nslices = 500, axisName = 'x', outdir = "focus_test/")
-    sliceFocus(wfr = wfr, ekev = ekev, focus = 'nano', nslices = 500, axisName = 'y', outdir = "focus_test/")
+    #sliceFocus(wfr = wfr, ekev = ekev, focus = 'nano', nslices = 500, axisName = 'y', outdir = "focus_test/")
