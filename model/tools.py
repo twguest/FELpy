@@ -21,6 +21,18 @@ from wpg.srwlib import SRWLOptA as Aperture
 from wpg.generators import build_gauss_wavefront
 from wpg.beamline import Beamline
 
+def loadWavefront(fname, indir = None):
+    
+    wfr = Wavefront()
+    
+    if indir is None:
+        wfr.load_hdf5(fname)
+    else:
+        wfr.load_hdf5(indir + fname)
+    
+    return wfr
+    
+
 def constructPulse(nx = 512, ny = 512, nz = 512):
     
     wfr = Wavefront(build_gauss_wavefront(nx, ny, nz, 5.0, -400e-06, 400e-06, -400e-06, 400e-06, 1e-15, 5e-06, 5e-06, 19))

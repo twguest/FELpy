@@ -27,8 +27,8 @@ from wpg.wavefront import Wavefront
 
 
 fname = sys.argv[1]
-indir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/out/"
-directoryName = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/data/"
+indir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/legacy/"
+directoryName = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/legacyData/"
 
 
 def mkdir_p(dir):

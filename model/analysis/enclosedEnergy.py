@@ -203,7 +203,7 @@ if __name__ == '__main__':
     
     if mode == 'pulse':
         tmpdir = outdir + "/tmp/"
-        ftmp = tmpdir + "/fname/"
+        ftmp = tmpdir + "/{}/".format(fname)
         mkdir_p(tmpdir)
         mkdir_p(ftmp)
 
