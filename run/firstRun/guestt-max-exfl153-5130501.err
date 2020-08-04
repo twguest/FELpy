@@ -1,0 +1,13 @@
+ERROR: ld.so: object 'libdlfaker.so' from LD_PRELOAD cannot be preloaded: ignored.
+ERROR: ld.so: object 'libvglfaker.so' from LD_PRELOAD cannot be preloaded: ignored.
+ERROR: ld.so: object 'libdlfaker.so' from LD_PRELOAD cannot be preloaded: ignored.
+ERROR: ld.so: object 'libvglfaker.so' from LD_PRELOAD cannot be preloaded: ignored.
+  0%|          | 0/70 [00:00<?, ?it/s]  0%|          | 0/70 [05:27<?, ?it/s]
+Traceback (most recent call last):
+  File "/gpfs/exfel/data/user/guestt/spb_model/run/firstRun/nanoKB-4.96keV-test.py", line 114, in <module>
+    for _ in tqdm(p.imap_unordered(propagatePulses, f), total = len(f)):
+  File "/home/guestt/.conda/envs/optics/lib/python3.8/site-packages/tqdm/std.py", line 1129, in __iter__
+    for obj in iterable:
+  File "/home/guestt/.conda/envs/optics/lib/python3.8/multiprocessing/pool.py", line 865, in next
+    raise value
+multiprocessing.pool.MaybeEncodingError: Error sending result: '<multiprocessing.pool.ExceptionWithTraceback object at 0x2b768a341dc0>'. Reason: 'PicklingError("Can't pickle <class 'MemoryError'>: it's not the same object as builtins.MemoryError")'
