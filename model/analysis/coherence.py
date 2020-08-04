@@ -16,7 +16,7 @@ sys.path.append("/opt/spb_model") # LOCAL PATH
 sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
 ###############################################################################
 ####################################################
-
+import os
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy.signal import argrelextrema

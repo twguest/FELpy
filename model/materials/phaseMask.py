@@ -28,7 +28,6 @@ from matplotlib import pyplot as plt
 from model.materials.material_utils import add_extent
 
 def pltPhase(wfr):
-    
     phase = wfr.get_phase()[:,:,0]
     plt.imshow(phase, cmap = 'hsv')
     plt.show()
