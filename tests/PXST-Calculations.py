@@ -33,13 +33,13 @@ def main():
     npixels = [2560, 2160]
     
     ### taking effective pixel resolution via Richard
-    eff_x = 6.5e-06 
-    eff_y = 6.5e-06 
+    eff_x = 6.5e-06   ## EXFEL 6.5e-06 
+    eff_y = 6.5e-06   ## EXFEL 6.5e-06 
     print("Effective Pixel Size (x/y): {:2e}, {:2e}".format(eff_x, eff_y))
 
     wav = 2.38e-10
     
-    z1 = 0.01 # source to sample
+    z1 = 500e-06 # source to sample
     print("Source to Sample Distance: {}".format(z1))
     
     z = 3.5 # sample to det
@@ -48,15 +48,7 @@ def main():
     M = magnification(z1, z)
     print("Magnification: {}".format(M))
     
-    ### COMPARATIVELY
-    ## via simulation
-    pix = 5e-10 ## approx effective pixel size of sample-plane wavefield
-    print("Alternative Magnification: {}".format(eff_x/pix))
-    
-    
-    fx = 3.2 #focal length of horizontal kb
-    fy = 2.2 #focal length of vertical kb
-    
+ 
     interpolation = 1
     print("Interpolation Factor: {}".format(interpolation))
     
@@ -70,8 +62,8 @@ def main():
     print("Hor. Phase Sensitivity: {:.2e} rad".format(psx))
     print("Ver. Phase Sensitivity: {:.2e} rad".format(psy))
     
-    refx = psx/M
-    refy = psy/M
+    refx = eff_x/M
+    refy = eff_y/M
     
     print("Hor. Reference Resolution: {:.2e} m".format(refx))
     print("Ver. Reference Resolution: {:.2e} m".format(refy))
