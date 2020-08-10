@@ -14,7 +14,7 @@ import datetime
 class obj:
     
     def __init__(self):
-        self.created = datetime.datetime.now()
+        self.created = str(datetime.datetime.now())
         self.author = "twguest"
 
 

@@ -604,7 +604,7 @@ class BeamlineModel:
         else:
             plt.show()
     
-    def scale(self, wfr, isc = 1024, ifov = 800e-06):
+    def scale(self, wfr, iscx = 1024, iscy = 1024, ifov = 800e-06):
         """
         narrow functionality for scaling a wavefront (ie the number of pixels)
         in the source plane
@@ -622,7 +622,7 @@ class BeamlineModel:
         
         
         scbl = Beamline()
-        scbl.append(Aperture('r','a', 800e-06, 800e-06), propParams(dx/ifov, isc/nx, dy/ifov, isc/ny))
+        scbl.append(Aperture('r','a', 800e-06, 800e-06), propParams(dx/ifov, iscx/nx, dy/ifov, iscy/ny))
         scbl.propagate(wfr)
         
         return wfr
