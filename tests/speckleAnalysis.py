@@ -87,7 +87,7 @@ def getWindows(arr, n):
     
     BOOL = checkRoot(n)
     
-    if BOOL:SoMSGUIDELINEforGraduateResearchProgressPolicyISSUEDon5August2020ISSUEDbySchoolGraduateResearchTeamCHAIRA/ProfNarelleBrackSchoolofMolecularSciencesGraduateResearchTeam1.GraduateResearchProgressMilestonesTheGraduateResearchProgressPolicy(heretoforeGRPP)specifiesannualmilestonesatwhichtheprogressofgraduateresearchcandidates(heretoforeCandidates)isevaluated.TheGRPPspecifiestheminimumrequirementsagainstwhichtheprogressoftheCandidateisevaluatedateachmilestone:submitaProgressReportcompletedbythecandidate,PrincipalSupervisorandChairoftheProgressCommitteesubmitwrittenresearchplansandoutcomesofresearchasspecifiedintheMilestonesRequirementsSchedulegiveanoralpresentationmeetwiththeProgressCommitteeTheGRPPallowsSchoolstoset/specifyfurtherrequirements.2.SchoolspecificrequirementsatSoMS(A)OralpresentationTheGraduateResearchProgressSchedulespecifiesthelengthoftheoralpresentationateachmilestonetobetypically20‐40minutes,presentedtoadepartmentaldiscipline,researchcentreorschoolforum,withatleastonememberoftheProgressCommitteeinattendance.Therefore,SMSspecifiesthati.atConfirmationtheCandidateshalldelivera20mintalkplus5minquestiontimetothesp
+    if BOOL:
         w = window(arr, int(arr.shape[0]//np.sqrt(n)), int(arr.shape[1]//np.sqrt(n)))
     elif not BOOL:
         sys.exit("sqrt(n) is not an even integer value")
