@@ -128,14 +128,14 @@ dmypy.json
 *.jpeg
 *.jpg
 *.tiff
-/output/*
 *.h5
 .pyre/
 *.ipynb
 *.zip
 
-tmp/*.npy
+/data/*
+/logs/error/*
+/logs/jobs/*
+/logs/out/*
 
 
-
-*.npy

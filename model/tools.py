@@ -63,7 +63,4 @@ def create_circular_mask(nx, ny, c = None, r = None):
     
     return mask
 
-def mkdir_p(dir):
-    '''make a directory (dir) if it doesn't exist'''
-    if not os.path.exists(dir):
-        os.mkdir(dir)
+

@@ -1,0 +1,261 @@
+#!/usr/bin/env python3 
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Aug 14 13:28:29 2020
+
+@author: twguest
+"""
+    
+import string
+import random
+import time 
+import os
+
+import numpy as np 
+
+from os_utils import mkdir_p
+
+
+# =============================================================================
+# 
+# def timeUtils: 
+#         stime = time.time() ## start time for logging
+#     
+#         os.system("sbatch {}Test-{}".format(self.jobDir, self.jobName))
+#         
+#         ftime = time.time() ## finish time for logging
+#         
+#         tdiff = ftime-stime ## time difference (time per run)
+#         
+# =============================================================================
+
+
+
+
+
+def randomString(length):
+    """
+    writes a random string with length characters
+    """
+
+    
+    letters = string.ascii_letters
+    result_str = ''.join(random.choice(letters) for i in range(length))
+    return result_str
+
+
+
+class JobScheduler:
+    """
+    A Python class for scheduling Slurm jobs
+    """
+    
+    def __init__(self, pydir, jobName, logDir,
+                 partition = 'exfel', nodes = 1,
+                 jobType = 'single',
+                 jobArray = None,
+                 nSpawn = 1,
+                 VERBOSE = True,
+                 runtime = "14-00:00:00",
+                 email = "trey.guest@desy.de",
+                 mailtype = "ALL",
+                 options = None, 
+                 rundir = None):
+        """
+        
+        :param jobType: options = spawn, array, single 
+        """
+        
+        
+        self.pydir = pydir
+        self.jobName = jobName 
+        self.partition = partition
+        self.nodes = nodes
+        self.jobType = jobType
+        self.jobArray = jobArray
+        self.nSpawn = nSpawn
+        self.VERBOSE = VERBOSE
+        
+        
+        if self.VERBOSE:
+            print("\nInitialising Job Scheduler\n")
+        if rundir:
+            self.rundir = rundir
+        else:
+            self.rundir = os.getcwd()
+        self.runTime = runtime
+        self.logDir = logDir + jobName + "/"
+        self.jobDir = logDir + "jobs/" + jobName + "/"
+        self.outDir = logDir + "out/" + jobName + "/"
+        self.errDir = logDir + "error/" + jobName + "/"
+        self.email = email
+        self.mailtype = mailtype
+        self.options = options
+        
+        
+        mkdir_p(self.jobDir)
+        mkdir_p(self.outDir)
+        mkdir_p(self.errDir)
+        
+        if self.VERBOSE == True:
+            self.__str__()
+    
+    def __str__(self):
+    
+        print("Python File: {}".format(self.pydir))
+        print("Global Job Name: {}".format(self.jobName))
+        print("# Nodes: {}".format(self.nodes))
+        print("Partition: {}".format(self.partition))
+        print("Job Type: {}".format(self.jobType))
+        print("Run Dir: {}".format(self.rundir))
+        print("Job Dir: {}".format(self.jobDir))
+        print("Log Dir: {}".format(self.logDir))
+        print("Output Dir: {}".format(self.outDir))
+        print("Error Dir: {}".format(self.errDir))
+        print("Sending {} Diagnostics To: {}".format(self.mailtype, self.email))
+        print("Script Options: {}".format(self.options))
+        
+        
+        
+        
+    
+    def test(self):
+        """
+        execute a single instance of the python script
+        """
+        
+        jobFile = self.jobDir + "Test_{}.job".format(self.jobName)
+        print(jobFile)
+        if self.VERBOSE:
+            print("\nGenerating Python Script Test \n")
+            print("Python Test Job: {}Test_{}".format(self.jobDir, jobFile))
+            
+        if self.jobType == 'spawn':
+            arrItem = np.random.randint(1e5)
+        
+        elif self.jobType == 'array':
+            if type(self.jobArray) == str:
+                arrItem = os.listdir(self.jobArray)[np.random.randint(len(os.listdir(self.jobArray)))]
+            else:
+                arrItem = self.jobArray[np.random.randint(len(self.jobArray))]
+        
+        
+        
+        with open(jobFile, "w+") as fh:
+        
+            fh.writelines("#!/bin/bash\n")
+            fh.writelines("#SBATCH --partition={} \n".format(self.partition))
+    
+            fh.writelines("#SBATCH --job-name=Test_{}.job\n".format(self.jobName))
+            fh.writelines("#SBATCH --chdir {} \n".format(self.rundir))
+            fh.writelines("#SBATCH --nodes={}\n".format(self.nodes))
+            fh.writelines("#SBATCH --output={}Test_{}.out\n".format(self.outDir, self.jobName))
+            fh.writelines("#SBATCH --error={}Test_{}.err\n".format(self.errDir, self.jobName))
+            fh.writelines("#SBATCH --time={}\n".format(self.runTime))
+            fh.writelines("#SBATCH --mail-type={}\n".format(self.mailtype))
+            fh.writelines("#SBATCH --mail-user={}\n".format(self.email))
+            
+        
+            if self.jobType == 'array' and arrItem != None:
+                fh.writelines("#SBATCH python {} {}".format(self.pydir, arrItem))
+            else:
+                fh.writelines("#SBATCH python {}".format(self.pydir))
+            
+                        
+            if self.options:
+                for o in self.options:
+                    fh.writelines("{}".format(str(o)))
+        
+        
+        fh.close()
+        os.system("sbatch {}Test_{}.job".format(self.jobDir, self.jobName))
+    
+    def jobScript(self, jobName, arrItem = None):
+        """
+        wrapper for jobscript data
+        """
+        jobFile = os.path.join(self.jobDir,"{}.job".format(jobName))
+        
+        with open(jobFile, "w+") as fh:
+        
+            fh.writelines("#!/bin/bash\n")
+            fh.writelines("#SBATCH --partition={} \n".format(self.partition))
+    
+            fh.writelines("#SBATCH --job-name={}.job\n".format(jobName))
+            fh.writelines("#SBATCH --chdir {} \n".format(self.rundir))
+            fh.writelines("#SBATCH --nodes={}\n".format(self.nodes))
+            fh.writelines("#SBATCH --output={}{}.out\n".format(self.outDir, jobName))
+            fh.writelines("#SBATCH --error={}{}.err\n".format(self.errDir, jobName))
+            fh.writelines("#SBATCH --time={}\n".format(self.runTime))
+            fh.writelines("#SBATCH --mail-type={}\n".format(self.mailtype))
+            fh.writelines("#SBATCH --mail-user={}\n".format(self.email))
+            
+        
+            if self.jobType != 'array' and arrItem != None:
+                fh.writelines("#SBATCH python {} {}".format(self.pydir, arrItem))
+            else:
+                fh.writelines("#SBATCH python {}".format(self.pydir))
+            
+            
+            
+            if self.options:
+                for o in self.options:
+                    fh.writelines("{}".format(str(o)))
+        
+        fh.close()
+     
+            
+    def buildScripts(self):
+        
+        if self.jobType == 'spawn':
+            
+            for itr in range(self.nSpawn):
+                
+                seed = np.random.seed(itr)
+                 
+                
+                jName = self.jobName + "_" + randomString(8)
+                
+                self.jobScript(jName, arrItem = seed)
+        
+        elif self.jobType == 'single':
+            
+            jName = self.jobName
+            self.jobScript(jName)
+            
+        elif self.jobType == 'array':
+            
+            if type(self.jobArray) == str:
+                
+                for arrItem in os.listdir(self.jobArray):
+                    
+                    jName = self.jobName + arrItem
+                    self.jobScript(jName, arrItem)
+                
+            else:
+                
+                for arrItem in self.jobArray:
+                    jName = self.jobName + "_" + randomString(8)
+                    self.jobScript(jName, arrItem)
+                    
+                    
+    
+    def runScripts(self):
+        
+        for job in os.listdir(self.jobDir):
+        
+            os.system("sbatch {}".format(self.jobDir + job))
+
+    
+    def run(self, test = True):
+        
+        self.test()
+        self.buildScripts()
+        self.runScripts()
+        
+        
+if __name__ == "__main__":
+    
+    js = JobScheduler(pydir = "../tests/testFile.py", jobName = "testJobs", jobArray = "../data/", jobType = 'array', logDir = "../logs/", options = ['mode'])
+
+    js.test()
