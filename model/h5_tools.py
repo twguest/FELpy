@@ -16,7 +16,7 @@ class obj:
     def __init__(self):
         self.created = str(datetime.datetime.now())
         self.author = "twguest"
-
+        pass
 
 
 def object2h5(fname, obj):
@@ -28,6 +28,7 @@ def object2h5(fname, obj):
     """
     with h5py.File(fname, 'w') as f:
         for item in vars(obj).items():
+            
             f.create_dataset(item[0], data = item[1])
     
 
@@ -60,6 +61,7 @@ if __name__ == '__main__':
     pyobj.a = "a"
     pyobj.b = [1,2,3,4,5]
     pyobj.c = np.random.rand(5,5)
+    pyobj.d = np.random.rand(5,5) #+ np.random.rand(5,5)*1j
     
     ### test object to h5
     

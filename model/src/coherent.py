@@ -159,7 +159,7 @@ def coherentSource(nx, ny, ekev, q, xoff = 0, yoff = 0, modDivergence = True):
     
     f = tlFocus(pulseWidth(ekev),pulseDivergence(q,ekev))
         
-    gsnBm = buildGaussian(nx, ny, ekev, xMin, xMax, yMin, yMax, sigX, sigY, 1, pulseTau = tau)
+    gsnBm = buildGaussian(nx, ny, ekev, xMin, xMax, yMin, yMax, sigX, sigY, 1, xoff = xoff, yoff = yoff, pulseTau = tau)
     
     wfr = Wavefront(gsnBm)
     wfr.params.wavelength = wavelength
