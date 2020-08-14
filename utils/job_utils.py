@@ -157,14 +157,14 @@ class JobScheduler:
             
         
             if self.jobType == 'array' and arrItem != None:
-                fh.writelines("#SBATCH python {} {}".format(self.pydir, arrItem))
+                fh.writelines("python {} {}".format(self.pydir, arrItem))
             else:
-                fh.writelines("#SBATCH python {}".format(self.pydir))
+                fh.writelines("python {}".format(self.pydir))
             
                         
             if self.options:
                 for o in self.options:
-                    fh.writelines("{}".format(str(o)))
+                    fh.writelines(" {}".format(str(o)))
         
         
         fh.close()
@@ -192,21 +192,24 @@ class JobScheduler:
             
         
             if self.jobType != 'array' and arrItem != None:
-                fh.writelines("#SBATCH python {} {}".format(self.pydir, arrItem))
+                fh.writelines("python {} {}".format(self.pydir, arrItem))
             else:
-                fh.writelines("#SBATCH python {}".format(self.pydir))
+                fh.writelines("python {}".format(self.pydir))
             
             
             
             if self.options:
                 for o in self.options:
-                    fh.writelines("{}".format(str(o)))
+                    fh.writelines(" {}".format(str(o)))
         
         fh.close()
      
             
     def buildScripts(self):
         
+        if self.VERBOSE: 
+            print("\nGenerating {} Scripts".format(self.jobType))
+            
         if self.jobType == 'spawn':
             
             for itr in range(self.nSpawn):
@@ -218,10 +221,18 @@ class JobScheduler:
                 
                 self.jobScript(jName, arrItem = seed)
         
+                if self.VERBOSE:
+                    print("Building Job File: {}.job".format(jName))              
+            
         elif self.jobType == 'single':
             
             jName = self.jobName
             self.jobScript(jName)
+            
+            
+            if self.VERBOSE:
+                print("Building Job File: {}.job".format(jName))              
+        
             
         elif self.jobType == 'array':
             
@@ -237,11 +248,13 @@ class JobScheduler:
                 for arrItem in self.jobArray:
                     jName = self.jobName + "_" + randomString(8)
                     self.jobScript(jName, arrItem)
-                    
-                    
-    
+                            
+                if self.VERBOSE:
+                    print("Building Job File: {}.job".format(jName))              
+            
     def runScripts(self):
         
+        print("\nSubmitting Jobs")
         for job in os.listdir(self.jobDir):
         
             os.system("sbatch {}".format(self.jobDir + job))
@@ -249,13 +262,45 @@ class JobScheduler:
     
     def run(self, test = True):
         
-        self.test()
+        if test:
+            self.test()
         self.buildScripts()
         self.runScripts()
-        
-        
-if __name__ == "__main__":
-    
-    js = JobScheduler(pydir = "../tests/testFile.py", jobName = "testJobs", jobArray = "../data/", jobType = 'array', logDir = "../logs/", options = ['mode'])
 
-    js.test()
+        
+def moduleTest():
+    
+    print("Testing Job Scheduler Module\n")
+    
+    print("Testing Job Scheduler Single Mode\n")
+    js = JobScheduler(pydir = "../tests/testFile.py",
+                      jobName = "SingleScheduleTest",
+                      logDir = "../logs/",
+                      jobType = "single",
+                      options = ["a", 2, 4, [1,2,3]])
+    js.run(test = False)
+  
+    
+    print("Testing Job Scheduler Spawn Mode\n")
+    js = JobScheduler(pydir = "../tests/testFile.py",
+                      jobName = "SpawnScheduleTest",
+                      logDir = "../logs/",
+                      jobType = "spawn",
+                      nSpawn = 20,
+                      options = ["a", 2, 4, [1,2,3]])
+    js.run(test = False)
+     
+        
+    print("Testing Job Scheduler Array Mode\n")
+    js = JobScheduler(pydir = "../tests/testFile.py",
+                      jobName = "ArrayScheduleTest",
+                      logDir = "../logs/",
+                      jobType = "array",
+                      jobArray = [1,2,3,4,5],
+                      options = ["a", 2, 4, [1,2,3]])
+    js.run(test = False)
+  
+  
+    
+if __name__ == "__main__":
+    moduleTest()
