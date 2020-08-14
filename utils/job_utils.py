@@ -8,7 +8,7 @@ Created on Fri Aug 14 13:28:29 2020
     
 import string
 import random
-import time 
+ 
 import os
 
 import numpy as np 
