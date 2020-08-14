@@ -3,9 +3,9 @@
 #SBATCH --job-name=NanoKB-Pulse_46.h5.job
 #SBATCH --chdir /gpfs/exfel/data/user/guestt/spb_model/run/NanoKB-FastPulse/ 
 #SBATCH --nodes=2
- #SBATCH --output=/gpfs/exfel/data/user/guestt/spb_model/logs/enclosedEnergy/NanoKB-Pulse_46.h5.out
-#SBATCH --error=/gpfs/exfel/data/user/guestt/spb_model/logs/enclosedEnergy/NanoKB-Pulse_46.h5.err
+ #SBATCH --output=/gpfs/exfel/data/user/guestt/spb_model/logs/NanoKB-Seq/NanoKB-Pulse_46.h5.out
+#SBATCH --error=/gpfs/exfel/data/user/guestt/spb_model/logs/NanoKB-Seq/NanoKB-Pulse_46.h5.err
 #SBATCH --time=14-00:00:00
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=trey.guest@desy.de
-python /gpfs/exfel/data/user/guestt/spb_model/model/analysis/enclosedEnergy.py NanoKB-Pulse_46.h5 pulse
+python /gpfs/exfel/data/user/guestt/spb_model/run/NanoKB-FastPulse/NanoKB-Seq.py NanoKB-Pulse_46.h5

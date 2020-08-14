@@ -5,7 +5,6 @@ import os
 from os import listdir
 
 indir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/in/"
-outdir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/out/"
 
 f = listdir(indir)
 
@@ -16,12 +15,13 @@ def mkdir_p(dir):
     
 
 job_directory = "/gpfs/exfel/data/user/guestt/spb_model/run/NanoKB-FastPulse/"
-log_dir = "/gpfs/exfel/data/user/guestt/spb_model/logs/NanoKB/"
+log_dir = "/gpfs/exfel/data/user/guestt/spb_model/logs/NanoKB-Seq/"
 
 # Make top level directories
 mkdir_p(job_directory)
+mkdir_p(log_dir)
 
-F = [f for f in listdir(indir) if f not in listdir(outdir)]
+F = [f for f in listdir(indir)]
 
 for fname in F:
     job_file = os.path.join(job_directory,"{}.job".format(fname))
@@ -40,7 +40,7 @@ for fname in F:
         fh.writelines("#SBATCH --time=14-00:00:00\n")
         fh.writelines("#SBATCH --mail-type=ALL\n")
         fh.writelines("#SBATCH --mail-user=trey.guest@desy.de\n")
-        fh.writelines("python /gpfs/exfel/data/user/guestt/spb_model/run/NanoKB-FastPulse/NanoKB.py {}\n".format(fname) )
+        fh.writelines("python /gpfs/exfel/data/user/guestt/spb_model/run/NanoKB-FastPulse/NanoKB-Seq.py {}\n".format(fname) )
         
     fh.close()
     

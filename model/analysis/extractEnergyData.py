@@ -26,8 +26,8 @@ from wpg.wpg_uti_wf import calc_pulse_energy, getOnAxisPowerDensity, getCentroid
 from wpg.wavefront import Wavefront
 
 
-fname = sys.argv[1]
-indir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/legacy/"
+
+indir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/out/"
 directoryName = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/legacyData/"
 
 
@@ -117,6 +117,28 @@ def storeProfiles(wfr, fname):
     np.save(profDir + fname, profile)
         
     print("1D Profiles Stored: {}".format(profDir))
+
+def integratedAnalysis(indir, outfile):
+    
+    data = []
+    
+    for f in os.listdir(indir):
+        
+        print("Processing: {}".format(f))
+        d = []
+        
+        wfr = loadWavefront(f)
+        cen = getCentroid(wfr, mode = 'integrated')
+           
+        srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 't')
+        pulseEn, photons_per_pulse = calc_pulse_energy(wfr)
+        srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
+    
+        d.append([f, cen, pulseEn, photons_per_pulse])
+        data.append(d)
+    
+    data = np.asarray(data)
+    np.save(outfile, data)
     
 def main(fname):
     
@@ -131,5 +153,8 @@ def main(fname):
     
 if __name__ == '__main__':
     
-    main(fname)
+    indir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/out/"
+    outfile = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/integratedEnergyAnalysis.npy"
+    
+    integratedAnalysis(indir, outfile)
         

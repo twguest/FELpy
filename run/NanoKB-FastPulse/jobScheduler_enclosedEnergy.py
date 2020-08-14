@@ -4,7 +4,7 @@ import os
 
 from os import listdir
 
-indir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/out/"
+indir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/in/"
 
 f = listdir(indir)
 
@@ -23,7 +23,7 @@ mkdir_p(log_dir)
 
 F = listdir(indir)
 
-mode = 'pulse'
+mode = 'integrated'
 
 for fname in F:
     job_file = os.path.join(job_directory,"{}.job".format(fname))

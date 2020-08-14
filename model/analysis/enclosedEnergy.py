@@ -57,7 +57,12 @@ def parseWavefront(wfr, itr = None):
     c = np.where(ii == np.amax(ii)) ### get position of maximum
     c = (c[1][0], c[0][0])
     
-    return ii, nx, ny, c          
+    [xMin, xMax, yMin, yMax] = wfr.get_limits()
+    x = np.linspace(xMin, xMax, nx)
+    y = np.linspace(yMin, yMax, ny)
+    
+    d = (x[c[0]], y[c[1]]) 
+    return ii, nx, ny, c, d          
 
 def finder(ii, nx, ny, c, efraction = 0.5, threshold = .01, iguess = None, nguesses = 5, fname = None, outdir = None):
     """
@@ -144,17 +149,17 @@ def plotEnclosed(ii, r, c, mode = 'integrated', label = None, outdir = None, fna
             mkdir_p(outdir + "tmp/")
             plt.savefig(outdir + "/tmp/{}/{}.png".format(fname, itr))
         elif mode == 'integrated':
-            plt.savefig(outdir + "{}.png".format(fname))
-            plt.show()
-
+            #plt.savefig(outdir + "{}.png".format(fname))
+            #plt.show()
+            pass
 def getEnclosedEnergy(wfr, mode = 'integrated', outdir = None, fname = None, **kwargs):
     
     R = []
     if mode == 'integrated':
-        ii, nx, ny, c = parseWavefront(wfr)
+        ii, nx, ny, c, d = parseWavefront(wfr)
         r, err = finder(ii, nx, ny, c, **kwargs)
     
-        R = [fname, wfr.pixelsize()[0]*r, c[0], c[1], err]
+        R = [fname, wfr.pixelsize()[0]*r, err, d[0], d[1]]
         print(R[1]*1e6, " um")
  
         
@@ -198,7 +203,7 @@ if __name__ == '__main__':
     mode = sys.argv[2]
     #mode = 'integrated'
     #fname = "NanoKB-Pulse_54.h5"    
-    outdir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/data/enclosedEnergy/SliceBySlice/"
+    outdir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/data/enclosedEnergy/source/"
     
     
     if mode == 'pulse':
@@ -210,7 +215,7 @@ if __name__ == '__main__':
     mkdir_p(outdir)
     
     wfr = Wavefront()
-    wfr.load_hdf5("/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/out/{}".format(fname))
+    wfr.load_hdf5("/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/in/{}".format(fname))
     
     getEnclosedEnergy(wfr, mode = mode, efraction = 0.50, threshold = .01, outdir = outdir, fname = fname)
     
