@@ -13,7 +13,7 @@ import os
 
 import numpy as np 
 
-from os_utils import mkdir_p
+from .os_utils import mkdir_p
 
 
 # =============================================================================
