@@ -1,4 +1,13 @@
 # Byte-compiled / optimized / DLL files
+
+
+
+
+
+
+
+
+
 __pycache__/
 *.py[cod]
 *$py.class
@@ -133,9 +142,13 @@ dmypy.json
 *.ipynb
 *.zip
 
-/data/*
+
+# directories 
 /logs/error/*
 /logs/jobs/*
 /logs/out/*
+/data/NanoKB/
+/data/proc/
 
+/data/proc
 

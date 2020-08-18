@@ -91,6 +91,56 @@ def setupHOMsurface():
         
         np.savetxt("../../data/input/hom{}".format(i)+"_mir_real.dat", surface, delimiter='\t')
         return surface
+    
+def setupNHEsurface():
+    
+    ylen = 25e-03
+    
+    mirdat = "../../data/input/XFEL_SPB_NHE_horizontal_focusing_ellipse_profile_of_residual_height.dat"
+    mirdat = np.loadtxt(mirdat)
+    
+    
+    n = mirdat.shape[0]
+    xpos = mirdat[:,0]
+    ypos = np.linspace(-ylen/2, ylen/2, n)
+    height = mirdat[:,1]
+    surface = np.ones((n,n))
+    print(surface.shape)
+    
+    surface[:,:] = height
+    
+    
+    surface[0,1:] = ypos[1:]
+    surface[1:,0] = xpos[1:]
+    
+    np.savetxt("../../data/input/nhe_mir_real.dat", surface)
+    
+def setupNVEsurface():
+    
+    
+    ylen = 25e-03
+    
+    mirdat = "../../data/input/XFEL_SPB_NHE_horizontal_focusing_ellipse_profile_of_residual_height.dat"
+    mirdat = np.loadtxt(mirdat)
+    
+    
+    n = mirdat.shape[0]
+    xpos = mirdat[:,0]
+    ypos = np.linspace(-ylen/2, ylen/2, n)
+    height = mirdat[:,1]
+    surface = np.ones((n,n))
+    
+    surface[:,:] = height
+    
+    
+    surface[0,1:] = ypos[1:]
+    surface[1:,0] = xpos[1:]
+    
+    np.savetxt("../../data/input/nve_mir_real.dat", surface)
+    
 if __name__ == '__main__':
     #s = genMirrorSurface(100, 100, [10e-06, 50e-06], "../../tmp/", mode = 'random', plot = True)
-    a = setupHOMsurface()   
+    
+    #a = setupHOMsurface()   
+    setupNHEsurface()
+    setupNVEsurface()
