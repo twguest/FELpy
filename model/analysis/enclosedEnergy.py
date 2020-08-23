@@ -27,10 +27,12 @@ from wpg.wpg_uti_wf import calc_pulse_energy, getOnAxisPowerDensity, getCentroid
 from wpg.wavefront import Wavefront
 from matplotlib import pyplot as plt
 from matplotlib import ticker, cm
-from wpg.generators import build_gauss_wavefront
+from model.tools import constructPulse
 from wpg import srwlib
 
 from model.tools import create_circular_mask
+
+from wpg.wpg_uti_wf import getAxis
 
 def mkdir_p(dir):
     '''make a directory (dir) if it doesn't exist'''
@@ -183,6 +185,7 @@ def getEnclosedEnergy(wfr, mode = 'integrated', outdir = None, fname = None, **k
     
     np.save(outdir + fname, R, allow_pickle= True)
     
+
 def animate(indir, outdir, fname, delay = 0.1, rmdir = False):
     """
     create gif from pngs in directory
@@ -192,7 +195,13 @@ def animate(indir, outdir, fname, delay = 0.1, rmdir = False):
     if rmdir == True:
         shutil.rmtree(indir)
 
-if __name__ == '__main__':
+
+def speedTest():
+    
+    wfr = constructPulse(500, 500, 10)
+    
+
+    if __name__ == '__main__':
     
     fname = sys.argv[1]    
     mode = sys.argv[2]

@@ -18,248 +18,245 @@ sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
 ####################################################
 
 import numpy as np
-from matplotlib import pyplot as plt
-from scipy.signal import argrelextrema
-from wpg.wavefront import Wavefront
-import matplotlib.patches as mpatches
-
+from time import time
 from wpg import srwlib
+from model.tools import radial_profile
+from model.tools import constructPulse ## for testings
+from wpg.wpg_uti_wf import getAxis
 
-def mkdir_p(dir):
-    '''make a directory (dir) if it doesn't exist'''
-    if not os.path.exists(dir):
-        os.mkdir(dir)
 
-def extractComplex(wfr):
-    """
-    extract the wavefront from wpg in the complex form
-    
-    :param wfr: wpg wfr structure
-    """
-    
-    cmplx_wfr = wfr.toComplex()[0,:,:,:]    
-    cmplx_wfr = np.moveaxis(cmplx_wfr, 2, 0)
-    return cmplx_wfr
 
-def getMC1d(wfr, temporal = False):
+def coherenceTimeLEGACY(wfr, tStep):
     """
-    returns mutual coherence function in each of the transverse dimensions
+    DEPRICATED
     
-    :param wfr: wpg wfr structure
+    Calculate the coherence time of complex wavefield of shape
+    [nx, ny, nt].
+    
+    ref: Coherence properties of the radiation from X-ray free electron laser
+    
+    :param wfr: complex wavefield
+    :param tstep: temporal step between slices
+    
+    :returns tau: coherence time [s]
     """
-    
-    if temporal == True:
-        wfr = wfr.toComplex()[0,:,:,:]   
-    else:
-        wfr = extractComplex(wfr)
-    
-    xslc = wfr[:,wfr.shape[1]//2,:]
-    yslc = wfr[wfr.shape[0]//2,:,:]
 
-    Jx = np.dot(xslc.T.conjugate(), xslc) / wfr.shape[2]
-    Jy = np.dot(yslc.T.conjugate(), yslc) / wfr.shape[2]
-    
-    return Jx,Jy
-
-def getMC2d(wfr):
-    """
-    WARNING: SIZE OF J = [nx,ny]**2
-    SUPER COMPUTATIONALLY EXPENSIVE
-    
-    returns mutual coherence function of the wavefield
-    
-    :param wfr: wpg wfr structure
-    """
-    
-    wfr = extractComplex(wfr)
-    
-    
-    slc = wfr[:,:,:]
+    b = np.zeros([*wfr.shape])
+    for k in range(wfr.shape[-1]):
         
-    J = np.dot(slc.T.conjugate(), slc) / wfr.shape[2]
-    return J
+        for i in range(wfr.shape[-1]):
+         b[:,:,k] = np.mean(wfr[:,:,i]*wfr[:,:,i-k].conjugate(), axis = -1)/np.sqrt(
+             np.mean(abs(wfr[:,:,i]**2), axis = -1)*np.mean(abs(wfr[:,:,i-k]**2), axis = -1)) 
+    tau = np.sum(abs(b)**2, axis = -1)[0]
+    return tau*tStep
 
-def getTDOC(Jx,Jy):
+
+def coherenceTime(wfr, tStep, VERBOSE = True):
+    """
+    Calculate the coherence time of complex wavefield of shape
+    [nx, ny, nt].
+    
+    ref: Coherence properties of the radiation from X-ray free electron laser
+    
+    :param wfr: complex wavefield
+    :param tstep: temporal step between slices
+    
+    :returns tau: coherence time [s]
+    """
+
+    b = np.zeros([*wfr.shape])
+
+    for i in range(wfr.shape[-1]):
+        
+        A = np.roll(wfr, -i, axis = 2)
+        B = np.repeat(wfr[:,:,i][:, :, np.newaxis], wfr.shape[-1], axis=-1)
+    
+        ## DEGUB print(A[:,:,0] == wfr[:,:,i])
+        ## DEBUG print([B[:,:,k] == wfr[:,:,i] for k in range(wfr.shape[-1])])
+        
+        b[:,:,i] = ((A*B.conjugate()).mean(axis = -1))/np.sqrt(
+            (abs(A)**2).mean(axis=-1)*(abs(B)**2).mean(axis = -1))
+
+    
+    tau = (abs(b)**2).sum(axis = -1)[0,0]
+    
+    if VERBOSE:
+        print("Coherence Time: {:.2e} fs".format(tau*1e15))
+        
+    return tau*tStep
+
+
+def coherenceLen(wfr, dx, dy, VERBOSE = True):
+    """
+    Calculate coherence length of a complex wavefield of shape
+    [nx, ny. nz]
+    
+    :param wfr: complex wavefield
+    :param dx: horizontal pixel size
+    :param dy: vertical pixel size
+    
+    :returns Jd: complex degree of coherence
+    :returns clen: coherence length [m]
+    """
+    
+    
+    profile, r = complexRadialProfile(wfr)
+
+    
+    nt = wfr.shape[-1]
+    
+    J = np.dot(profile, profile.T.conjugate())/ nt
+    II = np.abs(np.diag(J))  # intensity as the main diagonal
+    
+    J /= II**0.5 * II[:, np.newaxis]**0.5
+    Jd = np.abs(np.diag(np.fliplr(J)))  # DoC as the cross-diagonal
+    
+    lm = np.arange(Jd.shape[0])
+
+    lm = lm[(lm >= Jd.shape[0]//2) & (Jd[lm] < 0.5)]
+
+    rstep = np.sqrt((dx)**2 + (dy)**2)
+
+    
+    try:
+        lm = lm[0] - Jd.shape[0]//2 
+    except(IndexError):
+        lm = np.inf
+    
+    clen = lm*rstep
+    
+    if VERBOSE: 
+        print("Coherence Length: {:.2f} um".format(clen*1e6))
+    return clen
+
+def transverseDOC(wfr, VERBOSE = True):
     """
     get transverse degree of coherence of the wavefront across each of the
     transverse dimensions slices
     """
-    tdoc_x = np.diag(np.dot(Jx, Jx)).sum() / np.diag(Jx).sum()**2
-    tdoc_y = np.diag(np.dot(Jy, Jy)).sum() / np.diag(Jy).sum()**2
     
-    print("Horizontal TDOC: {}".format(tdoc_x.real))
-    print("Vertical TDOC: {}".format(tdoc_y.real))
+    p, r =  complexRadialProfile(wfr)
+    nt = wfr.shape[-1]
+    J = np.dot(p, p.T.conjugate())/nt
     
-    return tdoc_x.real, tdoc_y.real
+    
+    tdoc = np.diag(np.dot(J, J)).sum() / np.diag(J).sum()**2
+    
+    if VERBOSE:
+        print("Transverse Degree of Coherence: {:.4f}".format(tdoc.real))
+    
+    return tdoc
 
-def calcCoherence(wfr, mode = 'temporal'):
-    
+def complexRadialProfile(wfr):
     """
-    calculate the temporal or spatial coherence of an FEL pulse
+    Calculate the radial profile of a complex array by azimuthal averaging:
     
-    :param wfr: wpg wfr structure
-    :param mode: temporal or spatial [str]
-
+        I_{radial}(R) = \int_0^R \frac{I(r)2\pi r}{\pi R^2} dr
+    
+    :param wfr: complex wavefield [np array]
+    
+    :returns prof: radial profile
+    """
+        
+    r = radial_profile(wfr[:,:,0].real, [wfr.shape[0]//2,wfr.shape[1]//2])[1]
+    
+    r = np.diag(r).copy()
+    r[:r.shape[0]//2] *= -1
+    
+    rp = np.stack([radial_profile(wfr[:,:,i].real,
+                                  [wfr.shape[0]//2,wfr.shape[1]//2])[0]
+                   + radial_profile(wfr[:,:,i].imag,
+                                    [wfr.shape[0]//2,wfr.shape[1]//2])[0]*1j
+                   for i in range(wfr.shape[-1])])
+    
+    prof = np.moveaxis(rp, 0, -1), r
+    return prof
+  
+    
+def speedTest(nx = 1024, ny = 1024, nz = 5, N = 2000):
+    """
+    Estimate the approximate completion time for measuremetn of the 
+    coherence time of a wavefront of size [nx, ny, nz]
+    
+    :param nx: wfr shape [0]
+    :param ny: wfr shape [1]
+    :param ny: wfr shape [2]
+    :paran N: desired number of slices in full-scale test
     """
     
     
-    if mode == 'temporal':
-        Jx, Jy = getMC1d(wfr, temporal = True)
-    
-        axis_x = np.linspace(wfr.params.Mesh.sliceMin, wfr.params.Mesh.sliceMax, wfr.params.Mesh.nSlices) ### temporal axis
-        axis_y = np.linspace(wfr.params.Mesh.sliceMin, wfr.params.Mesh.sliceMax, wfr.params.Mesh.nSlices)
-    
-    elif mode == 'spatial':
-        Jx, Jy = getMC1d(wfr, temporal = False)
-    
-        axis_x = np.linspace(wfr.params.Mesh.xMin, wfr.params.Mesh.xMax, wfr.params.Mesh.nx) ### temporal axis
-        axis_y = np.linspace(wfr.params.Mesh.yMin, wfr.params.Mesh.yMax, wfr.params.Mesh.ny) ### spatial axis
-                             
-    ii_x = np.abs(np.diag(Jx))
-    ii_y = np.abs(np.diag(Jy))
-    
-    Jx /= ii_x**0.5 * ii_x[:, np.newaxis]**0.5
-    Jy /= ii_y**0.5 * ii_y[:, np.newaxis]**0.5
-    
-    Jdx = np.abs(np.diag(np.fliplr(Jx)))
-    Jdy = np.abs(np.diag(np.fliplr(Jy)))
-    varI_x = (ii_x * axis_x**2).sum() / ii_x.sum()
-    varI_y = (ii_y * axis_y**2).sum() / ii_y.sum()
-    
-    axisEx_x = axis_x*2
-    axisEx_y = axis_y*2
-    
-    
-    lmx = argrelextrema(Jdx, np.less)[0]  # local min
-    lmy = argrelextrema(Jdy, np.less)[0]  # local min
-    
-    # for variance up to the 1st local minimum which is < 0.5:
-    lmx = lmx[(axisEx_x[lmx] > 0) & (Jdx[lmx] < 0.50)]
-    lmy = lmy[(axisEx_y[lmy] > 0) & (Jdx[lmy] < 0.50)]
-    
-    if len(lmx) > 0:
-        cond = np.abs(axisEx_x) <= axisEx_x[lmx[0]]
-        limJdx = axisEx_x[lmx[0]]
-    else:
-        cond = slice(None)  # for unconstrained variance calculation
-        limJdx = None
-    
-    if len(lmy) > 0:
-        cond = np.abs(axisEx_y) <= axisEx_y[lmy[0]]
-        limJdy = axisEx_y[lmy[0]]
-    else:
-        cond = slice(None)  # for unconstrained variance calculation
-        limJdy = None
-
-
-    varJdx = (Jdx * axisEx_x**2)[cond].sum() / Jdx[cond].sum()
-    varJdy = (Jdy * axisEx_y**2)[cond].sum() / Jdy[cond].sum()
-    
+    print("Performing Coherence Time Speed Test\n")
  
     
-    if mode == 'temporal':
-# =============================================================================
-#         fig = plt.figure()
-#         ax1 = fig.add_subplot()
-#         ax1.plot(axis_x*1e15, ii_x)
-#         ax1.set_title("On-Axis Power Density")
-#         ax1.set_ylabel("Intensity (W/$mm^2$)")
-#         ax1.set_xlabel("Time (fs)")
-# =============================================================================
+    for t in range(2, nz+1):
         
-        print("Hor. Temporal Coherence Length: {} fs".format(varJdx*1e15))
-        print("Ver. Temporal Coherence Length: {} fs".format(varJdy*1e15))
-    
-    elif mode == 'spatial': 
+        wfr = constructPulse(nx = nx, ny = ny, nz = t, tau = 0.5e-25)
+        srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 't')
+        wfr = wfr.toComplex()[0,:,:,:] 
+
+        start = time()
+        coherenceTime(wfr, tStep = 1, VERBOSE = False)
+        fin = time()
         
-# =============================================================================
-#         fig, axs = plt.subplots(1,2, gridspec_kw={'hspace': 0.25, 'wspace': 0.25})
-#         (ax1, ax2) = axs
-#         
-#         fig.suptitle('On-Axis Coherent Power Density')
-#         
-#         ax1.plot(axis_x*1e6, ii_x, color = 'r')
-#         ax2.plot(axis_y*1e6, ii_y, color = 'b')
-#         
-#         ax1.set_ylabel("Intensity (W/$mm^2$)")
-#         ax1.set_xlabel("Position ($\mu$m)")
-#         
-#         ax3 = ax1.twinx()
-#         ax3.plot(axisEx_x*1e6, Jdx, color = 'r', linestyle = 'dashed')
-#         ax3.set_yticks([])
-#         ax4 = ax2.twinx()
-#         ax4.plot(axisEx_y*1e6, Jdy, color = 'b', linestyle = 'dashed')
-#         
-#         rectx = mpatches.Rectangle((-limJdx, 0), width=2*limJdx, height=1.00, color='r', alpha=0.10)
-#         ax3.add_patch(rectx)
-#         coherence_analysis
-#         recty = mpatches.Rectangle((-limJdy, 0), width=2*limJdy, height=1.00, color='b', alpha=0.10)
-#         ax4.add_patch(recty)
-#         
-#         ax1.set_xlim([0, max(axis_x*1e6)])
-#         ax2.set_xlim([0, max(axis_x*1e6)])
-#         
-# =============================================================================
-        print("Hor. Coherence Length: {} $\mu$m".format(varJdx*1e6))
-        print("Ver. Coherence Length: {} $\mu$m".format(varJdy*1e6))
-    
-    MCx = [Jx, axis_x]
-    MCy = [Jy, axis_y]
-    measurement = [varJdx, varJdy]
-    
-    return MCx, MCy, measurement 
+        print("Time in minutes for {} Slices: {}".format(t, (fin-start)/60))
 
 
-def getCoherenceData(fname):
+def MSS(arr1, arr2):
+    """ 
+    calculate the mean-squared similarity (1-error) of two arrays
     
-    wfr = Wavefront()
-    wfr.load_hdf5(indir + fname)
+    :param arr1: expected array
+    :param arr2: measured array
     
-    mcfdir = outdir + "MCF/"
-    mcfx = mcfdir + "x/"
-    mcfy = mcfdir + "y/"
+    :returns sim: similarity metric [0-1]
+    """
+    # the 'Mean Squared Similarity' between the two images is the
+    # sum of the squared difference between the two images;
+    # NOTE: the two images must have the same dimension
+    err = np.sum((arr1.astype("float") - arr2.astype("float")) ** 2)
+    err /= float(arr2.shape[0] * arr1.shape[1])
+    sim = 1-err
+    # return the MSE, the lower the error, the more "similar"
+    # the two images are
+    return sim
+
+
+def testUsage():
     
-    tdocDir = outdir + "TDOC/"
-  
-    cTimeDir = outdir + "cTime/"
-    cLenDir = outdir + "cLen/"
+    wfr = constructPulse(nx = 500, ny = 500, nz = 15, tau = 0.5e-05)
+    srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 't')
+
+    tstep = getAxis(wfr, axis = 'z')
+    tstep = tstep[0]-tstep[1]
     
-    mkdir_p(mcfdir)
-    mkdir_p(mcfx)
-    mkdir_p(mcfy)
-    mkdir_p(tdocDir)
-    mkdir_p(cTimeDir)
-    mkdir_p(cLenDir)
+    xstep, ystep = wfr.pixelsize()
     
-    Jx, Jy = getMC1d(wfr)
-    tdoc = getTDOC(Jx, Jy)
+    wfr = wfr.toComplex()[0,:,:,:]
     
-    MCx, MCy, Ctime = calcCoherence(wfr, mode = 'temporal')
-    MCx, MCy, Clen = calcCoherence(wfr, mode = 'spatial')
+    tau = coherenceTime(wfr, tstep)
+    clen = coherenceLen(wfr, xstep, ystep)
+    tdoc = transverseDOC(wfr)
+
+    del tau, clen, tdoc
     
-    np.save(mcfx + fname, Jx)
-    np.save(mcfy + fname, Jy)
     
-    np.save(tdocDir + fname, tdoc)
-    np.save(cTimeDir + fname, Ctime)
-    np.save(cLenDir + fname, Clen)
+def run(wfr):
+    
+    tstep = getAxis(wfr, axis = 'z')
+    tstep = tstep[0]-tstep[1]
+    
+    xstep, ystep = wfr.pixelsize()
+    
+    wfr = wfr.toComplex()[0,:,:,:]
+    
+    tau = coherenceTime(wfr, tstep)
+    clen = coherenceLen(wfr, xstep, ystep)
+    tdoc = transverseDOC(wfr)
+    
+    return tau, clen, tdoc
+
     
 if __name__ == "__main__":
     
-# =============================================================================
-#     import os
-#     
-#     indir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/out/"
-#     outdir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/coherence/"
-#     
-#     mkdir_p(outdir)
-#     
-#     fname = sys.argv[1]    
-#         
-#     getCoherenceData(fname)
-# =============================================================================
-
-    from model.tools import constructPulse
-    
-    wfr = constructPulse()
-    calcCoherence(wfr, mode = 'temporal')
+    testUsage()
+    speedTest(nz = 15)

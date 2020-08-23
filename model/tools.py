@@ -21,9 +21,9 @@ from wpg.srwlib import SRWLOptA as Aperture
 from wpg.generators import build_gauss_wavefront
 from wpg.beamline import Beamline
 
-def constructPulse(nx = 512, ny = 512, nz = 512):
+def constructPulse(nx = 512, ny = 512, nz = 512, tau = 1e-06, d2waist = 10):
     
-    wfr = Wavefront(build_gauss_wavefront(nx, ny, nz, 5.0, -400e-06, 400e-06, -400e-06, 400e-06, 1e-15, 5e-06, 5e-06, 19))
+    wfr = Wavefront(build_gauss_wavefront(nx, ny, nz, 5.0, -400e-06, 400e-06, -400e-06, 400e-06, tau, 5e-06, 5e-06, d2waist))
     srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
     #look_at_q_space(wfr)
     return wfr
@@ -55,3 +55,26 @@ def mkdir_p(dir):
     '''make a directory (dir) if it doesn't exist'''
     if not os.path.exists(dir):
         os.mkdir(dir)
+        
+
+def radial_profile(data, center):
+    y, x = np.indices((data.shape))
+    r = np.sqrt((x - center[0])**2 + (y - center[1])**2)
+    r = r.astype(np.int)
+
+    tbin = np.bincount(r.ravel(), data.ravel())
+    nr = np.bincount(r.ravel())
+    radialprofile = tbin / nr
+    return radialprofile, r
+
+
+def binArray(data, axis, binstep, binsize, func=np.nanmean):
+    data = np.array(data)
+    dims = np.array(data.shape)
+    argdims = np.arange(data.ndim)
+    argdims[0], argdims[axis]= argdims[axis], argdims[0]
+    data = data.transpose(argdims)
+    data = [func(np.take(data,np.arange(int(i*binstep),int(i*binstep+binsize)),0),0) for i in np.arange(dims[axis]//binstep)]
+    data = np.array(data).transpose(argdims)
+    return data
+

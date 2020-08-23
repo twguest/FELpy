@@ -137,3 +137,15 @@ dmypy.json
 tmp/*.npy
 
 
+
+data/NanoKB/sCentroid/
+
+data/NanoKB/pulseEnergy/
+
+data/NanoKB/systemEff/
+
+data/NanoKB/measBeamSize/
+
+data/NanoKB/profiles/
+
+data/NanoKB/tSpectrum/
