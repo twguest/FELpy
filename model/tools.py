@@ -21,21 +21,9 @@ from wpg.srwlib import SRWLOptA as Aperture
 from wpg.generators import build_gauss_wavefront
 from wpg.beamline import Beamline
 
-def loadWavefront(fname, indir = None):
+def constructPulse(nx = 512, ny = 512, nz = 512, tau = 1e-06, d2waist = 10):
     
-    wfr = Wavefront()
-    
-    if indir is None:
-        wfr.load_hdf5(fname)
-    else:
-        wfr.load_hdf5(indir + fname)
-    
-    return wfr
-    
-
-def constructPulse(nx = 512, ny = 512, nz = 512):
-    
-    wfr = Wavefront(build_gauss_wavefront(nx, ny, nz, 5.0, -400e-06, 400e-06, -400e-06, 400e-06, 1e-15, 5e-06, 5e-06, 19))
+    wfr = Wavefront(build_gauss_wavefront(nx, ny, nz, 5.0, -400e-06, 400e-06, -400e-06, 400e-06, tau, 5e-06, 5e-06, d2waist))
     srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
     #look_at_q_space(wfr)
     return wfr
@@ -63,4 +51,75 @@ def create_circular_mask(nx, ny, c = None, r = None):
     
     return mask
 
+def mkdir_p(dir):
+    '''make a directory (dir) if it doesn't exist'''
+    if not os.path.exists(dir):
+        os.mkdir(dir)
+        
+
+def radial_profile(data, center):
+    y, x = np.indices((data.shape))
+    r = np.sqrt((x - center[0])**2 + (y - center[1])**2)
+    r = r.astype(np.int)
+
+    tbin = np.bincount(r.ravel(), data.ravel())
+    nr = np.bincount(r.ravel())
+    radialprofile = tbin / nr
+    return radialprofile, r
+
+
+def binArray(data, axis, binstep, binsize, func=np.nanmean):
+    data = np.array(data)
+    dims = np.array(data.shape)
+    argdims = np.arange(data.ndim)
+    argdims[0], argdims[axis]= argdims[axis], argdims[0]
+    data = data.transpose(argdims)
+    data = [func(np.take(data,np.arange(int(i*binstep),int(i*binstep+binsize)),0),0) for i in np.arange(dims[axis]//binstep)]
+    data = np.array(data).transpose(argdims)
+    return data
+
+
+def getCoord(arr, mode = 'centre'):
+    
+    """
+    get the coordinate space indices of a 2D array, 2 2D array of indices.
+    useful in translating numpy coordinate system to real-space coordinates
+    
+    :param arr: np array to get index of
+    :param mode: if center, return indices relative to the matrix center (0,0) = matrix center,
+                 otherwise, return relative to numpy representation (0,0) = top left corner 
+    
+    :usage:
+        >>> getIndex(arr = np.ones([9,9]), mode = 'centre')
+        
+    :returns idx: x-coordinates (2d numpy array)
+    :returns idy: y-coordinates (2d numpy array)
+    """
+    
+    if (arr.shape[0]%2) == 0 or (arr.shape[1]%2) == 0:
+        raise(ValueError("Number of Rpeates Should Be Odd"))
+    
+    
+    if mode == 'centre':
+        idx = np.linspace(0,arr.shape[0], arr.shape[0]+1)[1:]-(arr.shape[0]//2+1)
+        idy = np.flip(np.linspace(0,arr.shape[1], arr.shape[1]+1)[1:]-(arr.shape[1]//2+1))
+    else:
+        idx = np.linspace(0,arr.shape[0], arr.shape[0]+1)[1:]
+        idy = np.linspace(0,arr.shape[1], arr.shape[1]+1)[1:]
+        
+    idx, idy = np.meshgrid(idx, idy)
+    
+    return idx, idy 
+
+def argmax2d(X):
+    """
+    2-dimensional equivalent of np.argmax
+    
+    via: https://github.com/numpy/numpy/issues/9283
+    """
+    n, m = X.shape
+    x_ = np.ravel(X)
+    k = np.argmax(x_)
+    i, j = k // m, k % m
+    return i, j
 

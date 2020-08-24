@@ -27,7 +27,7 @@ from model.beamline.structure import BeamlineModel
 from model.materials.load_refl import load_refl, get_refl
 
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity 
-
+from scipy.ndimage import gaussian_filter
 
 def setupBL(ekev, toggle = "on"):
     

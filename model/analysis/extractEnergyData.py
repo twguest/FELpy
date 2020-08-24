@@ -153,6 +153,8 @@ def main(fname):
     
 if __name__ == '__main__':
     
+    
+    main(fname)
     indir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/out/"
     outfile = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/integratedEnergyAnalysis.npy"
     
