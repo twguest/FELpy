@@ -78,3 +78,48 @@ def binArray(data, axis, binstep, binsize, func=np.nanmean):
     data = np.array(data).transpose(argdims)
     return data
 
+
+def getCoord(arr, mode = 'centre'):
+    
+    """
+    get the coordinate space indices of a 2D array, 2 2D array of indices.
+    useful in translating numpy coordinate system to real-space coordinates
+    
+    :param arr: np array to get index of
+    :param mode: if center, return indices relative to the matrix center (0,0) = matrix center,
+                 otherwise, return relative to numpy representation (0,0) = top left corner 
+    
+    :usage:
+        >>> getIndex(arr = np.ones([9,9]), mode = 'centre')
+        
+    :returns idx: x-coordinates (2d numpy array)
+    :returns idy: y-coordinates (2d numpy array)
+    """
+    
+    if (arr.shape[0]%2) == 0 or (arr.shape[1]%2) == 0:
+        raise(ValueError("Number of Rpeates Should Be Odd"))
+    
+    
+    if mode == 'centre':
+        idx = np.linspace(0,arr.shape[0], arr.shape[0]+1)[1:]-(arr.shape[0]//2+1)
+        idy = np.flip(np.linspace(0,arr.shape[1], arr.shape[1]+1)[1:]-(arr.shape[1]//2+1))
+    else:
+        idx = np.linspace(0,arr.shape[0], arr.shape[0]+1)[1:]
+        idy = np.linspace(0,arr.shape[1], arr.shape[1]+1)[1:]
+        
+    idx, idy = np.meshgrid(idx, idy)
+    
+    return idx, idy 
+
+def argmax2d(X):
+    """
+    2-dimensional equivalent of np.argmax
+    
+    via: https://github.com/numpy/numpy/issues/9283
+    """
+    n, m = X.shape
+    x_ = np.ravel(X)
+    k = np.argmax(x_)
+    i, j = k // m, k % m
+    return i, j
+

@@ -24,7 +24,7 @@ from model.tools import radial_profile
 from model.tools import constructPulse ## for testings
 from wpg.wpg_uti_wf import getAxis
 
-
+from tqdm import tqdm
 
 def coherenceTimeLEGACY(wfr, tStep):
     """
@@ -66,7 +66,7 @@ def coherenceTime(wfr, tStep, VERBOSE = True):
 
     b = np.zeros([*wfr.shape])
 
-    for i in range(wfr.shape[-1]):
+    for i in tqdm(range(wfr.shape[-1])):
         
         A = np.roll(wfr, -i, axis = 2)
         B = np.repeat(wfr[:,:,i][:, :, np.newaxis], wfr.shape[-1], axis=-1)
@@ -198,7 +198,7 @@ def speedTest(nx = 1024, ny = 1024, nz = 5, N = 2000):
         coherenceTime(wfr, tStep = 1, VERBOSE = False)
         fin = time()
         
-        print("Time in minutes for {} Slices: {}".format(t, (fin-start)/60))
+        print("Time Per-Slice in minutes for {} Slices: {}".format(t, (fin-start)/60))
 
 
 def MSS(arr1, arr2):
@@ -226,7 +226,7 @@ def testUsage():
     wfr = constructPulse(nx = 500, ny = 500, nz = 15, tau = 0.5e-05)
     srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 't')
 
-    tstep = getAxis(wfr, axis = 'z')
+    tstep = getAxis(wfr, axis = 't')
     tstep = tstep[0]-tstep[1]
     
     xstep, ystep = wfr.pixelsize()
@@ -242,21 +242,23 @@ def testUsage():
     
 def run(wfr):
     
-    tstep = getAxis(wfr, axis = 'z')
+    tstep = getAxis(wfr, axis = 't')
     tstep = tstep[0]-tstep[1]
     
     xstep, ystep = wfr.pixelsize()
     
     wfr = wfr.toComplex()[0,:,:,:]
     
-    tau = coherenceTime(wfr, tstep)
-    clen = coherenceLen(wfr, xstep, ystep)
-    tdoc = transverseDOC(wfr)
+    tau = coherenceTime(wfr, tstep, VERBOSE=True)
+    clen = coherenceLen(wfr, xstep, ystep, VERBOSE=True)
+    tdoc = transverseDOC(wfr, VERBOSE=True)
     
     return tau, clen, tdoc
 
+
+def launch():
     
 if __name__ == "__main__":
     
     testUsage()
-    speedTest(nz = 15)
+    #speedTest(nz = 15)

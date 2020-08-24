@@ -82,7 +82,7 @@ def run(multi = False):
     # then launch() -- inter and intra-pulse
     # then launch multipulse simulations once all jobs have run
     # schedule multipulse stuff for after jobs have run
-    
+    pass 
 def generateTestPulses(savedir, N = 5):
     """
     generate a set of test pulses
@@ -95,8 +95,7 @@ def generateTestPulses(savedir, N = 5):
         
         wfr = constructPulse(500,500,5)
         
-        wfr.data.arrEhor*= np.random.uniform(0.75, 1,
-                                             size = wfr.data.arrEhor.shape)
+        wfr.data.arrEhor*= np.random.uniform(0.75, 1, size = wfr.data.arrEhor.shape)
         
         wfr.store_hdf5(savedir + "n.h5")
         
