@@ -191,7 +191,9 @@ class JobScheduler:
             fh.writelines("#SBATCH --mail-user={}\n".format(self.email))
             
         
-            if self.jobType != 'array' and arrItem != None:
+            if self.jobType == 'array' and arrItem != None:
+                fh.writelines("python {} {}".format(self.pydir, arrItem))
+            elif self.jobType == 'spawn' and arrItem != None:
                 fh.writelines("python {} {}".format(self.pydir, arrItem))
             else:
                 fh.writelines("python {}".format(self.pydir))
@@ -214,13 +216,13 @@ class JobScheduler:
             
             for itr in range(self.nSpawn):
                 
-                seed = np.random.seed(itr)
+                seed = np.random.randint(1e05)
                  
                 
                 jName = self.jobName + "_" + randomString(8)
                 
                 self.jobScript(jName, arrItem = seed)
-        
+
                 if self.VERBOSE:
                     print("Building Job File: {}.job".format(jName))              
             
@@ -239,7 +241,7 @@ class JobScheduler:
             if type(self.jobArray) == str:
                 
                 for arrItem in os.listdir(self.jobArray):
-                    
+                    print(arrItem)
                     jName = self.jobName + arrItem
                     self.jobScript(jName, arrItem)
                 

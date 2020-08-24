@@ -20,7 +20,7 @@ import numpy as np
 from scipy.ndimage import gaussian_filter
 from matplotlib import pyplot as plt 
 
-
+from utils.job_utils import JobScheduler
 
 def genMirrorSurface(nx, ny, mirDim, outdir, mode = 'Flat', plot = False, mirrorName = None):
     """
@@ -91,7 +91,19 @@ def setupHOMsurface():
         
         np.savetxt("../../data/input/hom{}".format(i)+"_mir_real.dat", surface, delimiter='\t')
         return surface
-    
+
+def binArray(data, axis, binstep, binsize, func=np.nanmean):
+    data = np.array(data)
+    dims = np.array(data.shape)
+    argdims = np.arange(data.ndim)
+    argdims[0], argdims[axis]= argdims[axis], argdims[0]
+    data = data.transpose(argdims)
+    data = [func(np.take(data,np.arange(int(i*binstep),int(i*binstep+binsize)),0),0) for i in np.arange(dims[axis]//binstep)]
+    data = np.array(data).transpose(argdims)
+    return data
+
+
+
 def setupNHEsurface():
     
     ylen = 25e-03
@@ -99,45 +111,46 @@ def setupNHEsurface():
     mirdat = "../../data/input/XFEL_SPB_NHE_horizontal_focusing_ellipse_profile_of_residual_height.dat"
     mirdat = np.loadtxt(mirdat)
     
-    
-    n = mirdat.shape[0]
-    xpos = mirdat[:,0]
-    ypos = np.linspace(-ylen/2, ylen/2, n)
     height = mirdat[:,1]
+    height = binArray(height, 0, 3, 3)
+    n = height.shape[0]
+    xpos =np.linspace(mirdat[0,0]*1e-03, mirdat[-1,0]*1e-03, n)
+    ypos = np.linspace(-ylen/2, ylen/2, n)
+
     surface = np.ones((n,n))
-    print(surface.shape)
     
     surface[:,:] = height
-    
-    
+     
     surface[0,1:] = ypos[1:]
     surface[1:,0] = xpos[1:]
     
     np.savetxt("../../data/input/nhe_mir_real.dat", surface)
-    
+
+
 def setupNVEsurface():
-    
     
     ylen = 25e-03
     
-    mirdat = "../../data/input/XFEL_SPB_NHE_horizontal_focusing_ellipse_profile_of_residual_height.dat"
+    mirdat = "/gpfs/exfel/data/user/guestt/spb_model/data/input/XFEL_SPB_NVE_vertical_focusing_ellipse_profile_of_residual_height.dat"
     mirdat = np.loadtxt(mirdat)
     
-    
-    n = mirdat.shape[0]
-    xpos = mirdat[:,0]
-    ypos = np.linspace(-ylen/2, ylen/2, n)
     height = mirdat[:,1]
+    height = binArray(height, 0, 3, 3)
+    n = height.shape[0]
+    xpos =np.linspace(mirdat[0,0]*1e-03, mirdat[-1,0]*1e-03, n)
+    ypos = np.linspace(-ylen/2, ylen/2, n)
+
     surface = np.ones((n,n))
     
     surface[:,:] = height
-    
-    
+     
     surface[0,1:] = ypos[1:]
     surface[1:,0] = xpos[1:]
     
     np.savetxt("../../data/input/nve_mir_real.dat", surface)
     
+  
+
 if __name__ == '__main__':
     #s = genMirrorSurface(100, 100, [10e-06, 50e-06], "../../tmp/", mode = 'random', plot = True)
     

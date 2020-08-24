@@ -9,14 +9,14 @@ Python Operations for NanoKB test w/ FAST PULSE
 
 ###############################################################################
 import sys
-sys.path.append("/opt/WPG/") # LOCAL PATH
+#sys.path.append("/opt/WPG/") # LOCAL PATH
 sys.path.append("/gpfs/exfel/data/user/guestt/WPG") # DESY MAXWELL PATH
 
-sys.path.append("/opt/spb_model") # LOCAL PATH
+#sys.path.append("/opt/spb_model") # LOCAL PATH
 sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
 ###############################################################################
 ###############################################################################
-
+import os
 import multiprocessing
 
 from model.beamline.structure import BeamlineModel
@@ -29,6 +29,8 @@ from wpg.misc import calcDivergence
 
 from os import listdir
 from tqdm import tqdm
+from model.src.coherent import coherentSource
+from utils.job_utils import JobScheduler
 
 focus = "nano"
 indir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/in/"
@@ -86,11 +88,17 @@ def getSPB(wfr):
     
     return bl
  
-def propagatePulses(fname):
+def propagatePulse(fname = None):
     
+    print("Beginning Pulse Propagation")
     
     wfr = Wavefront()
-    wfr.load_hdf5(indir + fname)
+    if fname:
+        print("loading waverfont")
+        wfr.load_hdf5(indir + fname)
+    else: 
+        wfr = coherentSource(1024, 1024, 4.96, 0.250)
+        
     srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
     storeWavefrontInfo(wfr)
     
@@ -101,10 +109,27 @@ def propagatePulses(fname):
     
     wfr.store_hdf5(outdir + fname)
     print("Writing to File: Done")
-def main(fname):
     
-    propagatePulses(fname)
+
+def launch(mode = 'pulse'):
+    """
+    This part launches the jobs that run in main 
+    """
+    
+    cwd = os.getcwd()
+    script = os.path.basename(__file__)
+    
+    js = JobScheduler(cwd + "/" + script, logDir = "../../logs/",
+                      jobName = "NKB-Propagation", partition = 'exfel', nodes = 2, jobType = 'array',
+                      jobArray = indir)
+        
+    js.run(test = True)
+
 
 if __name__ == '__main__':
+    #print("output is working")
     fname = sys.argv[1]
-    main(fname)
+    #print(fname)
+    propagatePulse(fname)
+    ## DEBUGprint(os.path.basename(__file__))
+ 

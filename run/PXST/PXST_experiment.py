@@ -15,7 +15,10 @@ Python Operations for NanoKB test w/ FAST PULSE
 @author: twguest
 """
 
+import sys
 
+sys.path.append("../../")
+import os
  
 from model.beamline.structure import BeamlineModel, propParams
 from model.src.coherent import coherentSource
@@ -28,9 +31,10 @@ from model.h5_tools import obj, object2h5, h52object
 from wpg.multisliceOptE import greyscaleToSlices
 
 import numpy as np 
-
+from utils.job_utils import JobScheduler
 from model.materials.phaseMask import phaseMask
 from scipy.ndimage import gaussian_filter
+from utils.os_utils import mkdir_p
 
 def phaseScreen(wfr):
     
@@ -132,6 +136,21 @@ def get_random_string(length):
     result_str = ''.join(random.choice(letters) for i in range(length))
     return result_str
 
+
+def launch():
+    """
+    This part launches the jobs that run in main 
+    """
+    
+    cwd = os.getcwd()
+    script = "PXSE_experiment.py"
+    
+    js = JobScheduler(cwd + "/" + script, logDir = "../../logs/",
+                      jobName = "coherentPXST", partition = 'exfel', nodes = 1, jobType = 'spawn', nSpawn = 25)
+    
+        
+    js.run(test = True)
+    
 if __name__ == '__main__':
     
     import imageio
@@ -154,7 +173,9 @@ if __name__ == '__main__':
         data.translation = [pos_x*px, pos_y*px]
         
         focus = "nano"
-        outdir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/PXST/out/"
+        mkdir_p("/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/PXST/")
+        outdir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/PXST/coherentOut/"
+        mkdir_p(outdir)
         
         wfr = coherentSource(2560, 2160, 4.96, 0.25)
         print("Wavefront Loaded")
@@ -184,9 +205,7 @@ if __name__ == '__main__':
         data.mask = np.array(imageio.imread("../../data/samples/AAO.png"))
         data.wavelength = wfr.params.wavelength
         
-        from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
-        plotIntensity(wfr)
-        
+
         ID = get_random_string(10)
         object2h5(outdir + "SpeckleTest_{}{}.h5".format(seed, ID), data)
         ### DEBUG testpyobj = h52object(outdir + str(seed) + ".h5") twg 07/2020

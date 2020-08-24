@@ -219,8 +219,8 @@ class BeamlineModel:
                     genMirrorSurface(500, 500, [self.params["MVP"]['dx'],self.params["MVP"]['dy']], "../../data/input/mvp_", mode = mm, plot = plot, mirrorName = "MVP")  
                     genMirrorSurface(500, 500, [self.params["MHE"]['dx'],self.params["MHE"]['dy']], "../../data/input/mhe_", mode = mm, plot = plot, mirrorName = "MHE")
                     genMirrorSurface(500, 500, [self.params["MVE"]['dx'],self.params["MVE"]['dy']], "../../data/input/mve_", mode = mm, plot = plot, mirrorName = "MVE")  
-                    genMirrorSurface(500, 500, [self.params["NHE"]['dx'],self.params["NHE"]['dy']], "../../data/input/nhe_", mode = mm, plot = plot, mirrorName = "NHE")
-                    genMirrorSurface(500, 500, [self.params["NVE"]['dx'],self.params["NVE"]['dy']], "../../data/input/nve_", mode = mm, plot = plot, mirrorName = "NVE")  
+                    genMirrorSurface(500, 500, [self.params["NHE"]['dx'],self.params["NHE"]['dy']], "../../data/input/nhe_", mode = surface, plot = plot, mirrorName = "NHE")
+                    genMirrorSurface(500, 500, [self.params["NVE"]['dx'],self.params["NVE"]['dy']], "../../data/input/nve_", mode = surface, plot = plot, mirrorName = "NVE")  
                     
                 elif aperture == False:
                     genMirrorSurface(500, 500, [100,100], "../../data/input/hom1_", mode = mm, plot = plot, mirrorName = "HOM1") 
