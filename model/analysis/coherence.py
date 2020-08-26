@@ -81,7 +81,8 @@ def coherenceTime(wfr, tStep, VERBOSE = True):
     tau = (abs(b)**2).sum(axis = -1)[0,0]
     
     if VERBOSE:
-        print("Coherence Time: {:.2e} fs".format(tau*1e15))
+        print("Time Step: {}".format(tStep))
+        print("Coherence Time: {:.2e} fs".format(tau*1e15*tStep))
         
     return tau*tStep
 
@@ -227,7 +228,7 @@ def testUsage():
     srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 't')
 
     tstep = getAxis(wfr, axis = 't')
-    tstep = tstep[0]-tstep[1]
+    tstep = tstep[1]-tstep[0]
     
     xstep, ystep = wfr.pixelsize()
     
@@ -243,7 +244,7 @@ def testUsage():
 def run(wfr):
     
     tstep = getAxis(wfr, axis = 't')
-    tstep = tstep[0]-tstep[1]
+    tstep = tstep[1]-tstep[0]
     
     xstep, ystep = wfr.pixelsize()
     
@@ -256,8 +257,11 @@ def run(wfr):
     return tau, clen, tdoc
 
 
+
 def launch():
-    
+    pass    
+
+
 if __name__ == "__main__":
     
     testUsage()

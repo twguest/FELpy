@@ -29,7 +29,7 @@ from matplotlib import pyplot as plt
 from matplotlib import ticker, cm
 from model.tools import constructPulse, argmax2d
 from wpg import srwlib
-
+from tqdm import tqdm
 from model.tools import create_circular_mask
 
 from wpg.wpg_uti_wf import getAxis
@@ -41,7 +41,7 @@ def mkdir_p(dir):
 
 
 
-def finder(ii, nx, ny, c, efraction = 0.5, threshold = .01, iguess = None, nguesses = 5, fname = None, outdir = None, VERBOSE = True):
+def finder(ii, nx, ny, c, efraction = 0.5, threshold = .01, iguess = None, nguesses = 10, fname = None, outdir = None, VERBOSE = True):
     """
     Modified Bisection Algortihm, iterates over a set of guesses to reduce the 
     error function 1-(0.95/(ii-ii*mask(r))) in searching for a solution for r
@@ -62,7 +62,7 @@ def finder(ii, nx, ny, c, efraction = 0.5, threshold = .01, iguess = None, ngues
     
     ### make some random guesses
     if iguess is None:
-        ins = np.random.randint(100, nx//2, nguesses)
+        ins = np.random.randint(0, nx, nguesses)
         h = []
         for gs in ins:
             mask = create_circular_mask(nx, ny, c, r = gs)
@@ -70,6 +70,7 @@ def finder(ii, nx, ny, c, efraction = 0.5, threshold = .01, iguess = None, ngues
             h.append(arr.sum()/ii.sum())
         
         gs = ins[np.argmin(h)]
+        
         va = min(h)
         del h
     else:
@@ -84,19 +85,20 @@ def finder(ii, nx, ny, c, efraction = 0.5, threshold = .01, iguess = None, ngues
     
     if VERBOSE:
         print("\nInitial Guess: ", gs, "Initial Error:", va)
-        
-    while ulim  <= va or va <= llim and i < nx:
+    
+    
+    while (ulim  <= va or va <= llim) and i < nx:
         
         if  va <= llim:
-            gs = gs + gs//2
+            gs = gs + 1#gs//2
         elif va >= ulim:
-            gs = gs - gs//2
+            gs = gs - 1#gs//2
             
         
         mask = create_circular_mask(nx, ny, c, r = gs)
         arr = mask*ii
         va = arr.sum()/ii.sum()
-        
+
         i += 1
 
     r = gs
@@ -135,30 +137,35 @@ def plotEnclosed(ii, r, c, mode = 'integrated', label = None, outdir = None, fna
 
 
 
-def getEnclosedEnergy(wfr, mode = 'integrated', outdir = None, fname = None, VERBOSE = True, **kwargs):
+def getEnclosedEnergy(wfr, mode = 'integrated', outdir = None, fname = None, VERBOSE = True, bPlot = False, **kwargs):
     
-    R = []
+    dx, dy = wfr.pixelsize()
     
     if mode == 'integrated':
         
-        ii, nx, ny, c = parseWavefront(wfr)
-        r, err = finder(ii, nx, ny, c, VERBOSE = VERBOSE, **kwargs)
-    
-        R = [fname, wfr.pixelsize()[0]*r, c[0], c[1], err]
+        ii = wfr.get_intensity().sum(axis = -1)  
         
-        if VERBOSE:
-            print(R[1]*1e6, " um")
- 
         
-        plotEnclosed(ii, r, c, outdir = outdir, fname = fname, label = fname)
-
+        if dx/dy > 1.25 or dy/dx > 1.25:
+            raise(ValueError, "pixel sizes are too-dissimilar,enclosed energy technique is not suitable")
+        
+        nx, ny = ii.shape
+        c = argmax2d(ii)
+        
+        results, err = finder(ii, nx, ny, c, VERBOSE = VERBOSE, **kwargs)
+        results = float(results)*dx
+        
+        if bPlot:
+            if outdir is None:
+                raise(ValueError, "Output Directory Not Specified")
+            plotEnclosed(ii, results, c, outdir = outdir, fname = fname, label = fname)
+        
 
     elif mode == 'pulse':
         
         timeAx = getAxis(wfr, 't')
 
-        
-        
+
         ii = wfr.get_intensity()
         sz0 = ii.shape
         
@@ -169,33 +176,37 @@ def getEnclosedEnergy(wfr, mode = 'integrated', outdir = None, fname = None, VER
         
         sz1 = ii.shape
         
-        if VERBOSE:
-            print("Wavefront Reduced from {} to {}".format(sz0, sz1))
+        ### MOVED OUTSIDE VERBOSE
+        print("Wavefront Reduced from {} to {}".format(sz0, sz1))
             
         nx, ny, nz = ii.shape
         
+        results = np.zeros([sz0[-1], 3])
         
-        for itr in range(nz):
+        
+        for itr in tqdm(range(nz)):
             
+
             slc = ii[:,:,itr]
             c = argmax2d(slc)
-            r, err = finder(slc, nx, ny, c, VERBOSE = VERBOSE, **kwargs)
+            R, err = finder(slc, nx, ny, c, VERBOSE = VERBOSE, **kwargs)
             
-            R.append([fname, itr, wfr.pixelsize()[0]*r, c[0], c[1], err])
-            t = timeAx[idx[itr]]
             
-        if VERBOSE:
-            if mode == 'integrated':
-                plotEnclosed(ii, r, c, mode = 'integrated', label = None, outdir = outdir, fname = fname, itr = None)
-            elif mode == 'pulse':
-                plotEnclosed(slc, r, c, mode = 'pulse',
-                             label = "{:.2f} fs".format(t*1e15), outdir = outdir, fname = fname, itr = itr)
+           
+            results[:,0] = idx
+            results[idx[itr], 1] = timeAx[idx[itr]]
+            results[idx[itr], 2] = float(R)*dx
+            
+            if bPlot:
+                
+                if outdir is None:
+                    raise(ValueError, "Output Directory Not Specified")
+                plotEnclosed(slc, results, c, mode = 'pulse',
+                             label = "{:.2f} fs".format(timeAx[idx[itr]]*1e15), outdir = outdir, fname = fname, itr = itr)
+        
     
-    if outdir is not None:
-        np.save(outdir + fname, R, allow_pickle= True)
-    
-    return R
-
+        
+    return results
     
 
 def animate(indir, outdir, fname, delay = 0.1, rmdir = False):
@@ -209,15 +220,25 @@ def animate(indir, outdir, fname, delay = 0.1, rmdir = False):
 
 
 def speedTest():
-    nz = 15
+    nz = 6
     wfr = constructPulse(1024, 1024, nz = nz, tau = 1e-12)
     
     start = time.time()
-    R = getEnclosedEnergy(wfr, mode = 'pulse', VERBOSE = True)
+    getEnclosedEnergy(wfr, mode = 'pulse', VERBOSE = True)
     stop = time.time()
     time1 = stop-start
     print("Time Taken per Slice: {} s".format(time1/nz))
+
+
+
+def run(wfr, mode, VERBOSE = True):
     
+    results = getEnclosedEnergy(wfr, mode = mode, VERBOSE = VERBOSE)
+    return results
+
 if __name__ == '__main__':
     
-    speedTest()
+    nz = 6
+    wfr = constructPulse(1024, 1024, nz = nz, tau = 1e-12)
+    
+    results = run(wfr, mode = 'pulse')
