@@ -20,16 +20,16 @@ import os
 import numpy as np
 from time import time
 from wpg import srwlib
-from model.tools import radial_profile
+from model.tools import radial_profile, binArray
 from model.tools import constructPulse ## for testings
 from wpg.wpg_uti_wf import getAxis
-
+from wpg.wavefront import Wavefront 
 from tqdm import tqdm
 
-def coherenceTimeLEGACY(wfr, tStep):
+
+
+def coherenceTime(wfr, tStep, bins = 1, VERBOSE = True):
     """
-    DEPRICATED
-    
     Calculate the coherence time of complex wavefield of shape
     [nx, ny, nt].
     
@@ -40,30 +40,17 @@ def coherenceTimeLEGACY(wfr, tStep):
     
     :returns tau: coherence time [s]
     """
-
-    b = np.zeros([*wfr.shape])
-    for k in range(wfr.shape[-1]):
+    
+    nz0 = wfr.shape[-1]
+    
+    if bins == 1:
+        pass
+    else:
+        wfr = binArray(wfr, axis = -1, binstep = nz0//bins, binsize = 1 )
         
-        for i in range(wfr.shape[-1]):
-         b[:,:,k] = np.mean(wfr[:,:,i]*wfr[:,:,i-k].conjugate(), axis = -1)/np.sqrt(
-             np.mean(abs(wfr[:,:,i]**2), axis = -1)*np.mean(abs(wfr[:,:,i-k]**2), axis = -1)) 
-    tau = np.sum(abs(b)**2, axis = -1)[0]
-    return tau*tStep
-
-
-def coherenceTime(wfr, tStep, VERBOSE = True):
-    """
-    Calculate the coherence time of complex wavefield of shape
-    [nx, ny, nt].
+    nz1 = wfr.shape[-1]
+    tStep *= (nz0/nz1)
     
-    ref: Coherence properties of the radiation from X-ray free electron laser
-    
-    :param wfr: complex wavefield
-    :param tstep: temporal step between slices
-    
-    :returns tau: coherence time [s]
-    """
-
     b = np.zeros([*wfr.shape])
 
     for i in tqdm(range(wfr.shape[-1])):
@@ -233,8 +220,12 @@ def testUsage():
     xstep, ystep = wfr.pixelsize()
     
     wfr = wfr.toComplex()[0,:,:,:]
+    wfr += np.random.rand(*wfr.shape)*1j*100
     
-    tau = coherenceTime(wfr, tstep)
+    for b in range(1, 10):
+        print("bins {}".format(b))
+        tau = coherenceTime(wfr, tstep, bins = b)
+        
     clen = coherenceLen(wfr, xstep, ystep)
     tdoc = transverseDOC(wfr)
 
@@ -250,13 +241,25 @@ def run(wfr):
     
     wfr = wfr.toComplex()[0,:,:,:]
     
+    
     tau = coherenceTime(wfr, tstep, VERBOSE=True)
     clen = coherenceLen(wfr, xstep, ystep, VERBOSE=True)
     tdoc = transverseDOC(wfr, VERBOSE=True)
     
     return tau, clen, tdoc
 
-
+def binTest():
+    
+    wfr = Wavefront()
+    wfr.load_hdf5("")
+    
+    tstep = getAxis(wfr, axis = 't')
+    tstep = tstep[1]-tstep[0]
+    
+    for bins in np.arange(10, 1, -1):
+        tau = coherenceTime(wfr, tstep, VERBOSE = True)
+        print("{} bins: {}".format(bins, tau))
+    
 
 def launch():
     pass    
@@ -264,5 +267,6 @@ def launch():
 
 if __name__ == "__main__":
     
-    testUsage()
+    binTest()
+    #testUsage()
     #speedTest(nz = 15)
