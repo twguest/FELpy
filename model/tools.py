@@ -123,3 +123,24 @@ def argmax2d(X):
     i, j = k // m, k % m
     return i, j
 
+def memoryMap(savedir, fname, shape, dtype = 'float64'):
+    """
+    construct a memory map
+    """
+    if os.path.exists(savedir + fname):
+        memmap = np.memmap(savedir + fname, mode = "r+",
+                           shape = shape, dtype = dtype)
+    else:
+        memmap = np.memmap(savedir + fname, mode = "w+",
+                           shape = shape, dtype = dtype)
+    return memmap
+
+def readMap(mapdir,shape,dtype = 'float64'):
+    """
+    read a map from mapDir
+    """
+    
+    mp = np.memmap(mapdir, dtype = dtype, mode = 'r+', shape = shape)
+    
+    return mp
+

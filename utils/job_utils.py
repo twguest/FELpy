@@ -50,7 +50,7 @@ class JobScheduler:
     A Python class for scheduling Slurm jobs
     """
     
-    def __init__(self, pydir, jobName, logDir,
+    def __init__(self, pycmd, jobName, logDir,
                  partition = 'exfel', nodes = 1,
                  jobType = 'single',
                  jobArray = None,
@@ -67,7 +67,7 @@ class JobScheduler:
         """
         
         
-        self.pydir = pydir
+        self.pycmd = pycmd
         self.jobName = jobName 
         self.partition = partition
         self.nodes = nodes
@@ -102,7 +102,7 @@ class JobScheduler:
     
     def __str__(self):
     
-        print("Python File: {}".format(self.pydir))
+        print("Python File: {}".format(self.pycmd))
         print("Global Job Name: {}".format(self.jobName))
         print("# Nodes: {}".format(self.nodes))
         print("Partition: {}".format(self.partition))
@@ -157,9 +157,9 @@ class JobScheduler:
             
         
             if self.jobType == 'array' and arrItem != None:
-                fh.writelines("python {} {}".format(self.pydir, arrItem))
+                fh.writelines("python {} {}".format(self.pycmd, arrItem))
             else:
-                fh.writelines("python {}".format(self.pydir))
+                fh.writelines("python {}".format(self.pycmd))
             
                         
             if self.options:
@@ -192,11 +192,11 @@ class JobScheduler:
             
         
             if self.jobType == 'array' and arrItem != None:
-                fh.writelines("python {} {}".format(self.pydir, arrItem))
+                fh.writelines("python {} {}".format(self.pycmd, arrItem))
             elif self.jobType == 'spawn' and arrItem != None:
-                fh.writelines("python {} {}".format(self.pydir, arrItem))
+                fh.writelines("python {} {}".format(self.pycmd, arrItem))
             else:
-                fh.writelines("python {}".format(self.pydir))
+                fh.writelines("python {}".format(self.pycmd))
             
             
             
@@ -266,6 +266,7 @@ class JobScheduler:
         
         if test:
             self.test()
+            
         self.buildScripts()
         self.runScripts()
 
@@ -275,7 +276,7 @@ def moduleTest():
     print("Testing Job Scheduler Module\n")
     
     print("Testing Job Scheduler Single Mode\n")
-    js = JobScheduler(pydir = "../tests/testFile.py",
+    js = JobScheduler(pycmd = "../tests/testFile.py",
                       jobName = "SingleScheduleTest",
                       logDir = "../logs/",
                       jobType = "single",
@@ -284,7 +285,7 @@ def moduleTest():
   
     
     print("Testing Job Scheduler Spawn Mode\n")
-    js = JobScheduler(pydir = "../tests/testFile.py",
+    js = JobScheduler(pycmd = "../tests/testFile.py",
                       jobName = "SpawnScheduleTest",
                       logDir = "../logs/",
                       jobType = "spawn",
@@ -294,7 +295,7 @@ def moduleTest():
      
         
     print("Testing Job Scheduler Array Mode\n")
-    js = JobScheduler(pydir = "../tests/testFile.py",
+    js = JobScheduler(pycmd = "../tests/testFile.py",
                       jobName = "ArrayScheduleTest",
                       logDir = "../logs/",
                       jobType = "array",
