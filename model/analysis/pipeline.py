@@ -52,6 +52,9 @@ function of the script is as follows:
     - Beam size analysis [Multi-Pulse]:
         - Enclosed energy of a integrated pulse** (DONE)
         
+    USAGE:
+        >>> python -c "from pipeline import launch; launch(); launch(multi = True)"
+        
     
 @author: twguest
 @version: 0.0.0
@@ -59,14 +62,13 @@ function of the script is as follows:
 
 
 import sys
-import shutil
 import os
 
 sys.path.append("../../")
 
 import numpy as np
 
-from multiprocessing import Pool
+from multiprocessing.pool import ThreadPool as Pool
 
 from model.tools import mkdir_p, memoryMap, readMap
 
@@ -119,12 +121,11 @@ def setup(VERBOSE = False):
     
     params['nProc'] = 8 ## number of cpus for MPI 
     
-    params['indir'] = "../../data/tmpTest/" ## input directory
-    params['global'] = "../../data/procTemp/" ## global data directory
-
+    params['indir'] = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/out/" ## input directory
+    params['global'] = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/data/" ## global data directory
     
     ### train 
-    params ['traindir'] = "../../data/pulseTrain/" ## directory to save pulse train
+    params ['traindir'] = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/data/pulseTrain/" ## directory to save pulse train
     params['trainwfr'] = "pulseTrain.h5" ## pulse train name 
     
     params['train'] = 'train' ## pulse train e-field memmap
@@ -149,7 +150,11 @@ def setup(VERBOSE = False):
     params['bss'] = "bss" ## pulsed beam size memmap 
     params['coh'] = 'coh' ## single-coherence memmap
 
+    
 
+    mkdir_p(params['global'])
+    mkdir_p(params['traindir'])
+    
     ### hardcoded pulse dimensions
     nx = 1024
     ny = 1024
@@ -162,29 +167,29 @@ def setup(VERBOSE = False):
           shape = (nx,ny,nSlice,2))  
 
     tsi = memoryMap(params['global'], params['tsi'],
-              shape = len(os.listdir(params['traindir'])))
+              shape = 2)
     
     tss = memoryMap(params['global'], params['tss'], 
-          shape=(nSlice, 3, len(os.listdir(params['traindir']))))
+          shape=(nSlice, 4, 1))
     
     
     tcoh = memoryMap(params['global'], params['tcoh'], 
-          shape=(len(os.listdir(params['traindir'])), 3))
+          shape=(1, 3))
 
 
     tesi = memoryMap(params['global'], params['tesi'],
-              shape = (1,3,len(os.listdir(params['traindir'])))) 
+              shape = (1,3,1)) 
     
  
     tesp = memoryMap(params['global'], params['tesp'], 
-              shape=(nSlice,3,len(os.listdir(params['traindir']))))
+              shape=(nSlice,3,1))
     
     tcni = memoryMap(params['global'], params['tcni'], 
-              shape=(1,2,len(os.listdir(params['traindir']))))
+              shape=(1,2,1))
     
     
     tcnp = memoryMap(params['global'], params['tcnp'],
-          shape = (nSlice,4,len(os.listdir(params['traindir'])))) 
+          shape = (nSlice,4,1)) 
 
     
     esi = memoryMap(params['global'], params['esi'],
@@ -203,11 +208,11 @@ def setup(VERBOSE = False):
 
 
     bsi = memoryMap(params['global'], params['bsi'],
-              shape = len(os.listdir(params['indir']))) 
+              shape = (len(os.listdir(params['indir'])),2)) 
     
  
     bss = memoryMap(params['global'], params['bss'], 
-              shape=(nSlice, 3, len(os.listdir(params['indir']))))
+              shape=(nSlice, 4, len(os.listdir(params['indir']))))
     
     coh = memoryMap(params['global'], params['coh'], 
               shape=(len(os.listdir(params['indir'])), 3))
@@ -268,10 +273,8 @@ def generateTestPulses(savedir, N = 5):
     
 def BeamSize(wfr, mode, memMap, ID, VERBOSE = False):
         
-
     if mode == 'integrated':
-        memMap[ID] = beamSize(wfr, mode = mode, VERBOSE = VERBOSE)
-    
+        memMap[ID, :] = beamSize(wfr, mode = mode, VERBOSE = VERBOSE)
     if mode == 'pulse':
         memMap[:,:,ID] = beamSize(wfr, mode = mode, VERBOSE = VERBOSE)
        
@@ -324,8 +327,8 @@ def trainAnalysis():
     ID = 0
 
     ## get multipulse profiles
-    getTrain(params['indir'], params = params, mpi = True, nProc = 2)
-    
+    getTrain(params['indir'], params = params, mpi = True, nProc = params['nProc'])
+    print("Pulse Train Succesfully Added")
     ## load relevant train memmap
     tsi = readMap(params['global'] + params['tsi'], shape = params['tsi_shape'])
     tss = readMap(params['global'] + params['tss'], shape = params['tss_shape'])
@@ -343,18 +346,17 @@ def trainAnalysis():
                 
     pulseEnergy(tfr, tesi, ID, mode = 'integrated')
     pulseEnergy(tfr, tesp, ID, mode = 'pulse')
-    
+    print("Train Energy Calculated")
     centroid(tfr, tcni, ID, mode = 'integrated')
     centroid(tfr, tcnp, ID, mode = 'pulse')
+    print("Train Centrod Calculated")
     
-    
-# =============================================================================
-#     BeamSize(tfr, mode = 'integrated', memMap = tsi, ID = 0)
-#     BeamSize(tfr, mode = 'pulse', memMap = tss, ID = 0)
-#     Coherence(tfr, tcoh, ID = 0, VERBOSE = True)
-#     
-# 
-# =============================================================================
+    BeamSize(tfr, mode = 'integrated', memMap = tsi, ID = 0)
+    BeamSize(tfr, mode = 'pulse', memMap = tss, ID = 0)
+    print("Train Beam Size Calculated")
+    Coherence(tfr, tcoh, ID = 0, VERBOSE = True)
+    print("Train Coherence Calculated")
+
     del tsi, tss, tcoh, tesi, tesp, tcni, tcnp
     
 def pulseEnergy(wfr, memMap, ID, mode = "integrated"):
@@ -419,35 +421,40 @@ def launch(multi = False):
     """ 
     job scheduler function
     """
-        
+    
+    params = setup()
+    
+
+    
     if multi:
         
-        js = JobScheduler(pycmd = os.getcwd() + "-c import pipeline; trainAnalysis()",
+        js = JobScheduler(pycmd = " -c 'import pipeline; pipeline.trainAnalysis()' ",
                           jobName = "pulseTrainAnalysis", logDir = "../../logs/",
                           jobType = 'single', nodes = 8)
         
         js.run(test = False)
         
     else:
-        js = JobScheduler(pycmd = os.getcwd() + "pipeline.py", 
+        js = JobScheduler(pycmd = os.getcwd() + "/pipeline.py", 
                           jobName = "FEL_PulseAnalysis",
-                          logDir = "../../logs.",
+                          logDir = "../../logs/",
                           jobType = 'array',
-                          jobArray = range(os.listdir(params['indir'])))
+                          nodes = 1,
+                          jobArray = range(len(os.listdir(params['indir']))))
         
         js.run(test = False)
    
 
 if __name__ == '__main__':
     
-    ID = sys.argv[1] 
+    ID = int(sys.argv[1]) 
+    print("Job ID ", ID)
     
     params = setup(VERBOSE = True)
 
-    mkdir_p(params['global'])
-    mkdir_p(params['traindir'])
+
     
-    bsi = readMap(params['global'] + params['bsi'], shape = params['bss_shape'])
+    bsi = readMap(params['global'] + params['bsi'], shape = params['bsi_shape'])
     bss = readMap(params['global'] + params['bss'], shape = params['bss_shape'])
     coh = readMap(params['global'] + params['coh'], shape = params['coh_shape'])
 
@@ -457,33 +464,33 @@ if __name__ == '__main__':
     cnp = readMap(params['global'] + params['cnp'], shape = params['cnp_shape'])
     
     fname = os.listdir(params['indir'])[ID]
-
+    print("loading wavefront: {}".format(fname))
     wfr = Wavefront()
     wfr.load_hdf5(params['indir']+fname)
     
-        
+    
     pulseEnergy(wfr, esi, ID, mode = 'integrated')
     pulseEnergy(wfr, esp, ID, mode = 'pulse')
-    
+    print("Pulse Energy Calculated")
     centroid(wfr, cni, ID, mode = 'integrated')
     centroid(wfr, cnp, ID, mode = 'pulse')
-    
-# =============================================================================
-#     ### integrated beam profile
-#     print("Calculating Integrated Beam Profiles")
-#     BeamSize(wfr, mode = "integrated", memMap = bsi, ID = ID)
-#     
-#     ### pulsed beam profile
-#     print("calculating pulsed beam profiles")
-#     BeamSize(wfr, mode = "pulse", memMap = bss, ID = ID, VERBOSE = False)
-#     
-#     ### single-pulse coherence analysis
-#     Coherence(wfr, coh, ID, VERBOSE = True)
-# 
-# =============================================================================
+    print("Pulse Centroid Calculated")
+    ### integrated beam profile
+    print("Calculating Integrated Beam Profiles")
+    BeamSize(wfr, mode = "integrated", memMap = bsi, ID = ID)
+    print("Integrated Beam Profiles Calculated")
+    ### pulsed beam profile
+    print("calculating pulsed beam profiles")
+    BeamSize(wfr, mode = "pulse", memMap = bss, ID = ID, VERBOSE = True)
+    print("Beam Size Calculated")
+    ### single-pulse coherence analysis
+    Coherence(wfr, coh, ID, VERBOSE = True)
+    print("Beam Coherence Calculated")
     
     del bsi, bss, coh, esi, esp, cni, cnp ## save to mem?!?
-
+    
+    print("Saving Results...")
     flush()
+    print("Results Saved")
     
     

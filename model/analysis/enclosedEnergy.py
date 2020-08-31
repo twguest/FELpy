@@ -145,15 +145,12 @@ def getEnclosedEnergy(wfr, mode = 'integrated', outdir = None, fname = None, VER
         
         ii = wfr.get_intensity().sum(axis = -1)  
         
-        
-        if dx/dy > 1.25 or dy/dx > 1.25:
-            raise(ValueError, "pixel sizes are too-dissimilar,enclosed energy technique is not suitable")
-        
+
         nx, ny = ii.shape
         c = argmax2d(ii)
         
         results, err = finder(ii, nx, ny, c, VERBOSE = VERBOSE, **kwargs)
-        results = float(results)*dx
+        results = (float(results)*dx, float(results*dy))
         
         if bPlot:
             if outdir is None:
@@ -181,7 +178,7 @@ def getEnclosedEnergy(wfr, mode = 'integrated', outdir = None, fname = None, VER
             
         nx, ny, nz = ii.shape
         
-        results = np.zeros([sz0[-1], 3])
+        results = np.zeros([sz0[-1], 4])
         
         
         for itr in tqdm(range(nz)):
@@ -196,6 +193,7 @@ def getEnclosedEnergy(wfr, mode = 'integrated', outdir = None, fname = None, VER
             results[:,0] = idx
             results[idx[itr], 1] = timeAx[idx[itr]]
             results[idx[itr], 2] = float(R)*dx
+            results[idx[itr], 3] = float(R)*dy
             
             if bPlot:
                 
