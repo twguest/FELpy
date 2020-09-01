@@ -447,7 +447,7 @@ def launch(multi = False):
 
 if __name__ == '__main__':
     
-    ID = int(sys.argv[1]) 
+    ID = int(0) 
     print("Job ID ", ID)
     
     params = setup(VERBOSE = True)
