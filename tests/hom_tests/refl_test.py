@@ -23,7 +23,7 @@ from copy import copy
 import numpy as np
 from matplotlib import pyplot as plt
 from model.src.coherent import coherentSource
-from model.beamline.structure import beamlineModel
+from model.beamline.structure import BeamlineModel
 from model.materials.load_refl import load_refl, get_refl
 
 
@@ -52,7 +52,7 @@ def define_wfr(ekev):
 
 def getTransmission(ekev, ang):
 
-    params = load_params()
+    #params = load_params()
     
     refl_data = load_refl()
     refl, ang = get_refl(refl_data, ekev, ang = ang, limits = [1.1e-03, 3.6e-03])

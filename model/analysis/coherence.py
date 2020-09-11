@@ -28,6 +28,7 @@ from tqdm import tqdm
 
 
 
+
 def coherenceTime(wfr, tStep, bins = 1, VERBOSE = True):
     """
     Calculate the coherence time of complex wavefield of shape

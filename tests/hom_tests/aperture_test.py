@@ -29,6 +29,8 @@ from model.materials.load_refl import load_refl, get_refl
 
 from tqdm import tqdm
 
+from model.tools import mkdir_p
+
 def beamlineSetup(mode, ekev):
     """
     Setup beamline, and adjust mirror parameters.
@@ -143,8 +145,9 @@ def testAcceptance(ekev, q, outdir = None):
     
     
 if __name__ == '__main__':
-    from tqdm import tqdm
     
+    outdir = "../../data/beamlineTests/mirrorAp/"
+    mkdir_p(outdir)
     ang = 2.2e-03 # fixed mirror angle [rad]
     ### NOTE THAT MIRROR ANGLE IS HARDCODED IN beamlineSetup fn.
     
@@ -155,7 +158,7 @@ if __name__ == '__main__':
     
     for ekev in tqdm(energies):
         for q in charges:
-            testAcceptance(ekev, q, outdir = "aperture_test/mirror_acceptance_")
+            testAcceptance(ekev, q, outdir = outdir)
     
 
     
