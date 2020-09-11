@@ -20,12 +20,15 @@ import sys
 sys.path.append("../../")
 import os
  
+from tqdm import tqdm
+
 from model.beamline.structure import BeamlineModel, propParams
 from model.src.coherent import coherentSource
  
 from wpg.beamline import Beamline
 from wpg.srwlib import SRWLOptD as Drift
 
+from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
 
 from model.h5_tools import obj, object2h5, h52object  
 from wpg.multisliceOptE import greyscaleToSlices
@@ -35,6 +38,8 @@ from utils.job_utils import JobScheduler
 from model.materials.phaseMask import phaseMask
 from scipy.ndimage import gaussian_filter
 from utils.os_utils import mkdir_p
+
+from wpg.srwl_uti_smp import srwl_opt_setup_transm_from_file as Sample
 
 def phaseScreen(wfr):
     
@@ -66,6 +71,27 @@ def propThruMask(wfr, _x = 0, _y = 0):
                                shift_y = _y)
     
     slices.propagate(wfr)
+    
+def propThruMaskLite(wfr, _x = 0, _y = 0):
+    """
+    propagate through the speckle generator
+    """
+    s = Sample(filepath = "../../data/samples/AAO.png", 
+               rx = 1e-09, ry = 1e-09,
+               thickness = 60e-06,
+               delta = 3.35e-03,
+               atten_len = 20e-06,
+               xc = 0, yc = 0,
+               shift_x = _y, shift_y = _x,
+               tile = [5,5])
+
+
+    bl = Beamline()
+    bl.append(s, propParams(1,1,1,1,mode = 'normal'))
+    bl.propagate(wfr)
+    
+    return wfr
+    
 
 def propagateToMask(wfr, foc2sample):
     
@@ -151,6 +177,46 @@ def launch():
         
     js.run(test = True)
     
+    
+
+def kirkwoodTest():
+        
+    px = 1e-09
+    
+    for i in tqdm(range(-5, 5, 1)):
+        
+        print("Translating Mask at 5 Micron Steps")
+
+        pos_x = i*px
+        pos_y = 0
+                        
+        mkdir_p("/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/PXST/")
+        outdir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/PXST/kirkwood/"
+        
+        mkdir_p(outdir)
+        
+        wfr = coherentSource(2560, 2160, 4.96, 0.25)
+        print("Wavefront Loaded")
+        wfr = propagateToMask(wfr, 1000e-06)
+        wfr.save_tif(outdir + "atMask_{}.tif".format(i))
+        
+        wfr = phaseScreen(wfr)
+        
+        propThruMask(wfr, _x = pos_x, _y = pos_y)
+        wfr.save_tif(outdir + "postMask_{}.tif".format(i))
+        
+        sample2detector = 4.0
+        wfr = propagate2detector(wfr, sample2detector)
+        
+    
+        wfr = resizeImage(wfr)
+        wfr.save_tif(outdir + "atDet_{}.tif".format(i))        
+        
+    
+        
+    
+    
+
 if __name__ == '__main__':
     
     import imageio
@@ -163,7 +229,7 @@ if __name__ == '__main__':
     
     delta = scanRange/px
     
-    for i in range(1000):
+    for i in range(15):
         
     
         pos_x = np.random.randint(-int(delta//2), int(delta//2))
@@ -192,8 +258,7 @@ if __name__ == '__main__':
         sample2detector = 3.5
         wfr = propagate2detector(wfr, sample2detector)
         
-    
-        
+
         wfr = resizeImage(wfr)
         data.ComplexSolution = wfr.toComplex()[0,:,:,0]
         data.detectorIntensity = wfr.get_intensity().sum(axis = -1)
