@@ -137,7 +137,7 @@ def plotEnclosed(ii, r, c, mode = 'integrated', label = None, outdir = None, fna
 
 
 
-def getEnclosedEnergy(wfr, mode = 'integrated', outdir = None, fname = None, VERBOSE = True, bPlot = False, **kwargs):
+def getEnclosedEnergy(wfr, mode = 'integrated', outdir = None, fname = None, nSlc = 20, VERBOSE = True, bPlot = False, **kwargs):
     
     dx, dy = wfr.pixelsize()
     
@@ -166,8 +166,7 @@ def getEnclosedEnergy(wfr, mode = 'integrated', outdir = None, fname = None, VER
         ii = wfr.get_intensity()
         sz0 = ii.shape
         
-        idx = np.stack([itr for itr in range(ii.shape[-1]) if 
-                       ii[:,:,itr].sum() >= 1e-06 * ii.sum()], axis = -1)
+        idx = np.flip(np.argsort(ii.sum(axis = 0).sum(axis = 0)))[:nSlc]
         
         ii = ii[:,:,idx]
         
@@ -179,7 +178,7 @@ def getEnclosedEnergy(wfr, mode = 'integrated', outdir = None, fname = None, VER
         nx, ny, nz = ii.shape
         
         results = np.zeros([sz0[-1], 4])
-        
+        results[:,0] = np.arange(sz0[-1])
         
         for itr in tqdm(range(nz)):
             
@@ -190,7 +189,7 @@ def getEnclosedEnergy(wfr, mode = 'integrated', outdir = None, fname = None, VER
             
             
            
-            results[:,0] = idx
+            
             results[idx[itr], 1] = timeAx[idx[itr]]
             results[idx[itr], 2] = float(R)*dx
             results[idx[itr], 3] = float(R)*dy
@@ -229,9 +228,9 @@ def speedTest():
 
 
 
-def run(wfr, mode, VERBOSE = True):
+def run(wfr, mode, nSlc = 250, VERBOSE = True):
     
-    results = getEnclosedEnergy(wfr, mode = mode, VERBOSE = VERBOSE)
+    results = getEnclosedEnergy(wfr, mode = mode, nSlc = 250, VERBOSE = VERBOSE)
     return results
 
 if __name__ == '__main__':

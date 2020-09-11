@@ -158,7 +158,7 @@ def setup(VERBOSE = False):
     ### hardcoded pulse dimensions
     nx = 1024
     ny = 1024
-    nSlice = 6#2250 ### number of slices per pulse
+    nSlice = 2250 ### number of slices per pulse
     
     
     
@@ -276,7 +276,7 @@ def BeamSize(wfr, mode, memMap, ID, VERBOSE = False):
     if mode == 'integrated':
         memMap[ID, :] = beamSize(wfr, mode = mode, VERBOSE = VERBOSE)
     if mode == 'pulse':
-        memMap[:,:,ID] = beamSize(wfr, mode = mode, VERBOSE = VERBOSE)
+        memMap[:,:,ID] = beamSize(wfr, mode = mode, VERBOSE = VERBOSE, nSlc = 250) 
        
 def Coherence(wfr, memMap, ID, VERBOSE):
     

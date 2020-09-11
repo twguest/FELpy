@@ -41,7 +41,7 @@ def propThruMask(wfr, _x = 0, _y = 0):
     """
     propagate through the speckle generator
     """
-    s = Sample(filepath = "../../data/samples/AAO.png", 
+    s = Sample("../../data/samples/AAO.png", 
                rx = 10e-09, ry = 10e-09,
                thickness = 60e-06,
                delta = 3.35e-03,
@@ -114,10 +114,10 @@ def launch():
     """
     
     cwd = os.getcwd()
-    script = "PXSE_experiment.py"
+    script = "PXST_Pulsed.py"
     
     js = JobScheduler(cwd + "/" + script, logDir = "../../logs/",
-                      jobName = "coherentPXST", partition = 'exfel', nodes = 4, jobType = 'single')
+                      jobName = "PXST_Pulsed", partition = 'exfel', nodes = , jobType = 'single')
     
         
     js.run(test = False)
@@ -129,7 +129,7 @@ if __name__ == '__main__':
     focus = "nano"
     glob = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/PXST/"
     outdir = glob + "pulsed/"
-    indir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB/in/"
+    indir = "/gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/in/"
     
     mkdir_p(glob)
     mkdir_p(outdir)

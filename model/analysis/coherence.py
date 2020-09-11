@@ -25,7 +25,7 @@ from model.tools import constructPulse ## for testings
 from wpg.wpg_uti_wf import getAxis
 from wpg.wavefront import Wavefront 
 from tqdm import tqdm
-
+from utils.job_utils import JobScheduler
 
 
 def coherenceTime(wfr, tStep, bins = 1, VERBOSE = True):
@@ -248,25 +248,31 @@ def run(wfr):
     
     return tau, clen, tdoc
 
-def binTest():
+def binTest(bins):
     
     wfr = Wavefront()
-    wfr.load_hdf5("")
+    wfr.load_hdf5("//gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/out/NanoKB-Pulse_1.h5")
     
     tstep = getAxis(wfr, axis = 't')
     tstep = tstep[1]-tstep[0]
     
-    for bins in np.arange(10, 1, -1):
-        tau = coherenceTime(wfr, tstep, VERBOSE = True)
-        print("{} bins: {}".format(bins, tau))
+    wfr.toComplex()[0,:,:,:]
+    tau = coherenceTime(wfr, tstep, VERBOSE = True)
+    print("{} bins: {}".format(bins, tau))
     
 
 def launch():
-    pass    
+    
+    js = JobScheduler(os.getcwd() + "/coherence.py", 
+                      "CoherenceBinTest",
+                      "../../logs/",
+                      jobType = 'array',
+                      jobArray = range(10,1,-1))
 
+    js.run(test = False)
 
 if __name__ == "__main__":
     
-    binTest()
+    binTest(sys.argv[1])
     #testUsage()
     #speedTest(nz = 15)

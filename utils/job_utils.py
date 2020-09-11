@@ -15,7 +15,7 @@ import numpy as np
 
 from .os_utils import mkdir_p
 
-
+import shutil
 # =============================================================================
 # 
 # def timeUtils: 
@@ -93,8 +93,16 @@ class JobScheduler:
         self.options = options
         
         
+        if os.path.exists(self.jobDir):
+            shutil.rmtree(self.jobDir)
         mkdir_p(self.jobDir)
+        
+        if os.path.exists(self.outDir):
+            shutil.rmtree(self.outDir)
         mkdir_p(self.outDir)
+        
+        if os.path.exists(self.errDir):
+            shutil.rmtree(self.errDir)
         mkdir_p(self.errDir)
         
         if self.VERBOSE == True:
@@ -248,7 +256,7 @@ class JobScheduler:
             else:
                 
                 for arrItem in self.jobArray:
-                    jName = self.jobName + "_" + randomString(8)
+                    jName = self.jobName + "_" + str(arrItem)
                     self.jobScript(jName, arrItem)
                             
                 if self.VERBOSE:
@@ -262,7 +270,7 @@ class JobScheduler:
             os.system("sbatch {}".format(self.jobDir + job))
 
     
-    def run(self, test = True):
+    def run(self, test = False):
         
         if test:
             self.test()
