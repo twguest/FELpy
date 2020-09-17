@@ -21,7 +21,7 @@ from wpg.srwlib import SRWLOptA as Aperture
 from wpg.generators import build_gauss_wavefront
 from wpg.beamline import Beamline
 
-def constructPulse(nx = 512, ny = 512, nz = 512, tau = 1e-06, d2waist = 10):
+def constructPulse(nx = 512, ny = 512, nz = 5, tau = 1e-06, d2waist = 10):
     
     wfr = Wavefront(build_gauss_wavefront(nx, ny, nz, 5.0, -400e-06, 400e-06, -400e-06, 400e-06, tau, 5e-06, 5e-06, d2waist))
     srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
@@ -144,3 +144,23 @@ def readMap(mapdir,shape,dtype = 'float64'):
     
     return mp
 
+
+def generateTestPulses(savedir, nx = 1024, ny = 1024, N = 5):
+    """
+    generate a set of test pulses
+    
+    :param savedir: directory for test pulses to be saved
+    :param N: number of pulses to generate
+    """
+    print("Constructing {} Test Pulses".format(N))
+    
+    mkdir_p(savedir)
+    
+    for n in range(N):
+        
+        wfr = constructPulse(nx, ny, nz = 6, tau = 1e-12)
+        
+        wfr.data.arrEhor*= np.random.uniform(0.75, 1, size = wfr.data.arrEhor.shape)
+        
+        wfr.store_hdf5(savedir + "testWavefront_{}.h5".format(n))
+        print("Storing Wavefront @" + savedir + "testWavefront_{}.h5".format(n))    

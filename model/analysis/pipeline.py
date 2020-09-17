@@ -253,7 +253,7 @@ def setup(VERBOSE = False):
         print("\n")
     return params
 
-def generateTestPulses(savedir, N = 5):
+def generateTestPulses(savedir, nx = 1024, ny = 1024, N = 5):
     """
     generate a set of test pulses
     
@@ -264,7 +264,7 @@ def generateTestPulses(savedir, N = 5):
     
     for n in range(N):
         
-        wfr = constructPulse(1024, 1024, nz = 6, tau = 1e-12)
+        wfr = constructPulse(nx, ny, nz = 6, tau = 1e-12)
         
         wfr.data.arrEhor*= np.random.uniform(0.75, 1, size = wfr.data.arrEhor.shape)
         
