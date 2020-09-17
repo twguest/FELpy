@@ -14,8 +14,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 import imageio 
 
-import psychopy.visual
-import psychopy.event
 from copy import copy
 from psychopy import filters
 from matplotlib import pyplot as plt
@@ -28,7 +26,7 @@ def michelsonContrast(image):
     
     :returns contrast: contrast of image (float)
     """
-    
+    image = abs(image)
     contrast = (np.max(image)-np.min(image))/(np.max(image)+np.min(image))
 
     return contrast
@@ -77,7 +75,7 @@ def bandpass(image, f1, f2, order = 10, bPlot = False):
     
         
     ### construct new image
-    img_new = abs( np.real(np.fft.ifft2(np.fft.ifftshift(img_filt))) )
+    img_new = np.fft.ifft2(np.fft.ifftshift(img_filt))
     
     
     
@@ -91,14 +89,14 @@ def bandpass(image, f1, f2, order = 10, bPlot = False):
         plt.show()
         
     if bPlot:
-        plt.imshow(img_new, cmap = 'bone')
+        plt.imshow(abs(img_new), cmap = 'bone')
         plt.title("Filtered Real-Space Image")
         plt.show()
         
     return img_new    
 
 
-def speckleContrast(image, speckleSize, ftol = 0.5, VERBOSE = True):
+def speckleContrast(image, f1, f2, VERBOSE = True):
     """
     
     For determining the ideal plane of for a speckle mask
@@ -111,8 +109,7 @@ def speckleContrast(image, speckleSize, ftol = 0.5, VERBOSE = True):
     :returns contrast: speckle contrast [0-1]
     """
     
-    f1 = 1/speckleSize - ftol/speckleSize
-    f2 = 1/speckleSize + ftol/speckleSize
+
     
     if VERBOSE: 
         bPlot = True
@@ -134,4 +131,4 @@ if __name__ == '__main__':
     image = imageio.imread("../../data/samples/flower.png")  ### load an image    
     speckleSize = 10
     
-    speckleContrast(image, speckleSize, VERBOSE = True)
+    speckleContrast(image, speckleSize, VERBOSE = VERBOSE)

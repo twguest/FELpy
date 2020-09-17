@@ -76,7 +76,7 @@ def propThruMaskLite(wfr, _x = 0, _y = 0):
     """
     propagate through the speckle generator
     """
-    s = Sample(filepath = "../../data/samples/AAO.png", 
+    s = Sample("../../data/samples/AAO.png", 
                rx = 1e-09, ry = 1e-09,
                thickness = 60e-06,
                delta = 3.35e-03,
@@ -101,6 +101,8 @@ def propagateToMask(wfr, foc2sample):
     :param wfr: wpg wavefront structure
     :param foc2sample: focus to sample distance [m] (float)
     """
+    
+    focus = "nano"
     
     spb = BeamlineModel()
     
@@ -137,15 +139,21 @@ def propagate2detector(wfr, sample2detector):
     
     return wfr
 
-def resizeImage(wfr):
+def resizeImage(wfr, nx = None, ny = None, fov_x = None, fov_y = None):
     
     bl = Beamline()
     
-    fov_x = 2560*6.5e-06
-    fov_y = 2160*6.5e-06
+    if nx == None:
+        nx = 2560
+    if ny == None:
+        ny = 2160
+    if fov_x == None:
+        fov_x = nx*6.5e-06
+    if fov_y == None:
+        fov_y = ny*6.5e-06
     
     [xMin, xMax, yMin, yMax] = wfr.get_limits()
-    bl.append(Drift(0), propParams(fov_x/(xMax-xMin), 1, fov_y/(yMax-yMin), 1, mode = 'normal'))
+    bl.append(Drift(0), propParams(fov_x/(xMax-xMin), nx/wfr.params.Mesh.nx, fov_y/(yMax-yMin), ny/wfr.params.Mesh.ny, mode = 'normal'))
     bl.propagate(wfr)
     
     return wfr
@@ -211,8 +219,27 @@ def kirkwoodTest():
     
         wfr = resizeImage(wfr)
         wfr.save_tif(outdir + "atDet_{}.tif".format(i))        
-        
+
+
+def testPXST(xpos = 0, ypos = 0, nx = 2560, ny = 2160,
+             fov_x = None, fov_y = None,
+             sam2foc = 1000e-06):
+
+    print("Testing the coherent case of PXST")
     
+    wfr = coherentSource(2560, 2160, 4.96, 0.25)
+    print("Wavefront Loaded")
+    
+    wfr = propagateToMask(wfr, sam2foc)
+    wfr = phaseScreen(wfr)
+    
+    propThruMaskLite(wfr, _x = xpos, _y = ypos)
+    
+    sample2detector = 4.0 - sam2foc
+    wfr = propagate2detector(wfr, sample2detector)
+    
+    wfr = resizeImage(wfr,  nx = nx, ny = ny, fov_x = fov_x, fov_y = fov_y)
+    plotIntensity(wfr)    
         
     
     

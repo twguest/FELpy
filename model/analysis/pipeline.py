@@ -367,7 +367,7 @@ def centroid(wfr, memMap, ID, mode = "integrated"):
 
     memMap[:,:,ID] = getCentroid(wfr, mode = mode, idx = False)
 
-def flush():
+def flush(params):
     """
     save memMaps to final npy file
     """    
@@ -430,7 +430,7 @@ def launch(multi = False):
         
         js = JobScheduler(pycmd = " -c 'import pipeline; pipeline.trainAnalysis()' ",
                           jobName = "pulseTrainAnalysis", logDir = "../../logs/",
-                          jobType = 'single', nodes = 8)
+                          jobType = 'single', nodes = 4)
         
         js.run(test = False)
         
@@ -447,7 +447,7 @@ def launch(multi = False):
 
 if __name__ == '__main__':
     
-    ID = int(0) 
+    ID = int(sys.argv[1])
     print("Job ID ", ID)
     
     params = setup(VERBOSE = True)
