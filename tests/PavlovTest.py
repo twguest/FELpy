@@ -36,7 +36,7 @@ from wpg.wpg_uti_wf import getAxis
 from scipy.constants import h,c,e
 from scipy.ndimage.filters import gaussian_filter
 from matplotlib import colors
-
+from exp.pavlovFlow import tiePavlov
 if __name__ == "__main__":
     
     slc = 2
@@ -52,12 +52,11 @@ if __name__ == "__main__":
     
 
     
-    
     wfr = coherentSource(nx,ny,4.96,0.25)
     wfr.store_hdf5("coherentSrc.h5")
 
-    wav = (h*c)/(wfr.params.photonEnergy*e)
-    
+
+    wav = (h*c)/(wfr.params.photonEnergy*e)    
     pm = gaussian_filter(np.random.rand(5,5)/1000, sigma = 20)
     plt.imshow(pm)
     
@@ -74,21 +73,31 @@ if __name__ == "__main__":
     
 
     bl = Beamline()
-    bl.append(sp, propParams(1,1,1,1))
+    #bl.append(sp, propParams(1,1,1,1))
     bl.append(Drift(1), propParams(1,1,1,1, mode = 'normal'))
     bl.propagate(wfr)
     
-    Ps = wfr.get_phase(slice_number = 0) #% np.pi*2
+    Ps = wfr.get_phase(slice_number = 0) #
     Is =  wfr.get_intensity(slice_number = 0)
     
-    
+        
+    ekev = wfr.params.photonEnergy
+    z1 = 1
+    z2  = 1
+    pix_size = wfr.pixelsize()[0]
+    delta = 1
+    beta = 1
+    bg_val = 1
+    scale = 1
     #######################################
     
     
     wfr = Wavefront()
+    
+    
     wfr.load_hdf5("coherentSrc.h5")
     bl = Beamline()    
-    bl.append(Drift(1), propParams(1,1,1,1, mode = 'normal'))
+    bl.append(Drift(2), propParams(1,1,1,1, mode = 'normal'))
     bl.propagate(wfr)
 
 
@@ -99,18 +108,10 @@ if __name__ == "__main__":
     for I in [Ir, Is]:    
         I[np.where(I == 0)] = 1e-10
 
-    results = processOneProjection(Is, Ir)
-    dy = results['dy']
-    phi = results['phi'].real*wav
+    results = tiePavlov(Is, Ir, ekev, z1, z2, pix_size, delta, beta, bg_val, scale)% np.pi*2
+
     
     phase = Ps-Pr
     plt.imshow(phase)
     plt.show()
     
-    def plotNorm(phi):
-        
-        norm = colors.LogNorm(phi.mean() + 0.5 * phi.std(), phi.max(), clip='True')
-        plt.imshow(phi, norm = norm)
-        plt.show()
-        
-    plt.imshow(dy)

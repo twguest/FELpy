@@ -77,8 +77,7 @@ def bandpass(image, f1, f2, order = 10, bPlot = False):
     
         
     ### construct new image
-    img_new = abs( np.real(np.fft.ifft2(np.fft.ifftshift(img_filt))) )
-    
+    img_new = (np.fft.ifft2(np.fft.ifftshift(img_filt)))
     
     
     if bPlot:
@@ -91,7 +90,7 @@ def bandpass(image, f1, f2, order = 10, bPlot = False):
         plt.show()
         
     if bPlot:
-        plt.imshow(img_new, cmap = 'bone')
+        plt.imshow(abs(img_new), cmap = 'bone')
         plt.title("Filtered Real-Space Image")
         plt.show()
         
