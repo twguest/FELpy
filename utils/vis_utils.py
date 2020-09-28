@@ -13,7 +13,7 @@ import matplotlib as mpl
 
 import os
 from moviepy.editor import ImageSequenceClip
-from scipy.signal.preprocessing import minmax_scale as norm
+from sklearn.preprocessing import minmax_scale as norm
 
 
 def triple(ii, title = None, xlabel = None, ylabel = None, clabel = None,
@@ -68,8 +68,8 @@ def arr2gif(fname, array, fps=10, scale=1.0):
     filename = fname + '.gif'
 
     # normalise 
-    for itr in range(arr.shape[-1]):
-        arr[:,:,itr] = norm(arr[:,:,itr]*255)    
+    for itr in range(array.shape[-1]):
+        array[:,:,itr] = norm(array[:,:,itr]*255)    
 
     # copy into the color dimension if the images are black and white
     if array.ndim == 3:
