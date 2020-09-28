@@ -11,7 +11,9 @@ import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib as mpl
 
-
+import os
+from moviepy.editor import ImageSequenceClip
+from scipy.signal.preprocessing import minmax_scale as norm
 
 
 def triple(ii, title = None, xlabel = None, ylabel = None, clabel = None,
@@ -51,4 +53,29 @@ def triple(ii, title = None, xlabel = None, ylabel = None, clabel = None,
         plt.show()
         
 
- 
+def arr2gif(fname, array, fps=10, scale=1.0):
+    """Creates a gif given a stack of images using moviepy
+    see: https://gist.github.com/nirum/d4224ad3cd0d71bfef6eba8f3d6ffd59
+    
+    :params fname: save directory (str)
+    :params array: array to be made into gif (along -1 axis)
+    :params fps: frames per second (int)
+    :params scale: rescaling factor of image
+    """
+
+    # ensure that the file has the .gif extension
+    fname, _ = os.path.splitext(fname)
+    filename = fname + '.gif'
+
+    # normalise 
+    for itr in range(arr.shape[-1]):
+        arr[:,:,itr] = norm(arr[:,:,itr]*255)    
+
+    # copy into the color dimension if the images are black and white
+    if array.ndim == 3:
+        array = array[..., np.newaxis] * np.ones(3)
+        
+    # make the moviepy clip
+    clip = ImageSequenceClip(list(array), fps=fps).resize(scale)
+    clip.write_gif(filename, fps=fps)
+    print("gif saved @: {}".format(fname))
