@@ -12,23 +12,37 @@ from distutils.core import setup, Extension
 
 from distutils.command.install import install as DistutilsInstall
 from os import system
-
+from setuptools import setup, find_packages
 class MyInstall(DistutilsInstall):
     def run(self):
         
         DistutilsInstall.run(self)
         system("rm develop")
  
-        system("wget --no-check-certificate -nc https://github.com/twguest/WPG/tarball/develop")
-        system("mkdir sources/WPG")
-        system("tar -xvf  develop -C sources/WPG --strip-components=1")
-        system("cd sources/WPG")
-        system("pip install -e sources/WPG")
+        system("cd WPG; make all")
+        system("pip install -e WPG")
+        system("cd ../; pip install -e FELpy")
         
-        
-setup(name='foo',
-      version='1.0',
+setup(name='FELpy',
+      version='0.1.0',
       ext_modules=[],
       cmdclass={'install': MyInstall},
-      install_requires= [''],
+      install_requires= ['h5py>=2.10.0',
+                         'imageio>=2.8.0',
+                         'ipython>=7.13.0',
+                         'joblib>=0.14.1',
+                         'jupyter_client>=6.1.2',
+                         'jupyter_core>=4.6.3',
+                         'matplotlib>=3.1.1',
+                         'numpy>=1.18.1',
+                         'pandas>=1.0.3',
+                         'pillow>=7.0.0',
+                         'pip>=20.0.2',
+                         'scikit-learn>=0.22.1',
+                         'scipy>=1.4.1',
+                         'spyder>=4.1.0',
+                         'tqdm>=4.46.0',
+                         'wheel>=0.34.2'
+                         ],
+      packages=find_packages()
       )
