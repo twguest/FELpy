@@ -1,4 +1,4 @@
-## SPB MODEL MAXWELL SETUP
+## FELpy: A Python Library for Free Electron Lasers 
 The SPB model code, and accompanying WavefrontPropaGator (WPG) branch is located on github - contact Trey for access (trey.guest@desy.de). A workflow for installation to MAXWELL@DESY is outlined below.
 
 Recommended storage: 
