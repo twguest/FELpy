@@ -21,7 +21,7 @@ from matplotlib import pyplot as plt
 import matplotlib as mpl
 from wpg.beamline import Beamline
 from wpg.wavefront import Wavefront
-from model.tools import constructPulse
+from model.tools import constructPulscmdclass={'install': MyInstall}e
 from model.beamline.structure import BeamlineModel, propParams
 from wpg.srwlib import SRWLOptD as Drift
 import numpy as np
@@ -48,7 +48,7 @@ def getSPB(wfr):
     bl = spb.get_beamline()
     print(bl)
     return bl
-
+cmdclass={'install': MyInstall}
 def propThruFocus(wfr):
     
     outdir = "../../tmp/"
