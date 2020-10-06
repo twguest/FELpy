@@ -12,9 +12,7 @@ A scratchpad for testing beamline methods
 
 ###############################################################################
 import sys
-sys.path.append("/opt/WPG/") # LOCAL PATH
-sys.path.append("/gpfs/exfel/data/user/guestt/WPG") # DESY MAXWELL PATH
-
+ 
 sys.path.append("/opt/spb_model") # LOCAL PATH
 sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
 ###############################################################################
