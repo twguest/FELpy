@@ -19,12 +19,12 @@ class MyInstall(DistutilsInstall):
         DistutilsInstall.run(self)
         system("echo making WPG")
         system("rm develop")
-        system("cd felpy/WPG; make all")
-        system("pip install -e FELpy/felpy/WPG")
+        system("cd FELpy/WPG; make all")
+        system("pip install -e FELpy/WPG")
         system("cd ../; pip install -e FELpy")
         
 setup(name='FELpy',
-      version='0.1.0',
+      version='0.1.1',
       ext_modules=[],
       cmdclass={'install': MyInstall},
       install_requires= ['h5py>=2.10.0',
