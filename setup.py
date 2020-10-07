@@ -19,6 +19,7 @@ class MyInstall(DistutilsInstall):
         DistutilsInstall.run(self)
         system("echo making WPG")
         system("rm develop")
+        system("git submodule update --init")
         system("cd FELpy/WPG; make all")
         system("pip install -e FELpy/WPG")
         system("cd ../; pip install -e FELpy")
