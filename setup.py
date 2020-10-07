@@ -6,21 +6,21 @@ Created on Tue Oct  6 15:08:38 2020
 @author: twguest
 """
 
+from os import system
 
-from setuptools import Extension
-from distutils.core import setup, Extension
+from distutils.core import setup
 
 from distutils.command.install import install as DistutilsInstall
-from os import system
-from setuptools import setup, find_packages
+
+
 class MyInstall(DistutilsInstall):
     def run(self):
         
         DistutilsInstall.run(self)
+        system("echo making WPG")
         system("rm develop")
- 
-        system("cd WPG; make all")
-        system("pip install -e WPG")
+        system("cd felpy/WPG; make all")
+        system("pip install -e FELpy/felpy/WPG")
         system("cd ../; pip install -e FELpy")
         
 setup(name='FELpy',
@@ -44,5 +44,20 @@ setup(name='FELpy',
                          'tqdm>=4.46.0',
                          'wheel>=0.34.2'
                          ],
-      packages=find_packages()
+      
+      packages=['felpy',
+                'felpy.data'
+                'felpy.data.samples',
+                'felpy.data.spb-sfx',
+                'felpy.data.spb-sfx.hom_refl',
+                'felpy.data.spb-sfx.kb_refl',
+                'felpy.data.spb-sfx.mirror_surface'
+                'felpy.exp',
+                'felpy.model',
+                'felpy.model.src',
+                'felpy.model.analysis',
+                'felpy.model.materials',
+                'felpy.model.beamline',
+                'felpy.utils',
+                ]
       )
