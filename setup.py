@@ -46,19 +46,19 @@ setup(name='FELpy',
                          'wheel>=0.34.2'
                          ],
       
-      packages=['felpy',
-                'felpy.data'
-                'felpy.data.samples',
-                'felpy.data.spb-sfx',
-                'felpy.data.spb-sfx.hom_refl',
-                'felpy.data.spb-sfx.kb_refl',
-                'felpy.data.spb-sfx.mirror_surface'
-                'felpy.exp',
-                'felpy.model',
-                'felpy.model.src',
-                'felpy.model.analysis',
-                'felpy.model.materials',
-                'felpy.model.beamline',
-                'felpy.utils',
+      packages=[ 'felpy',
+                 'felpy.data',
+                 'felpy.exp',
+                 'felpy.utils',
+                 'felpy.model',
+                 'felpy.data.spb-sfx',
+                 'felpy.data.samples',
+                 'felpy.data.spb-sfx.hom_refl',
+                 'felpy.data.spb-sfx.kb_refl',
+                 'felpy.data.spb-sfx.mirror_surface',
+                 'felpy.model.analysis',
+                 'felpy.model.src',
+                 'felpy.model.materials',
+                 'felpy.model.beamline'
                 ]
       )
