@@ -20,7 +20,7 @@ import numpy as np
 from scipy.ndimage import gaussian_filter
 from matplotlib import pyplot as plt 
 
-from utils.job_utils import JobScheduler
+from felpy.utils.job_utils import JobScheduler
 
 def genMirrorSurface(nx, ny, mirDim, outdir, mode = 'Flat', plot = False, mirrorName = None):
     """

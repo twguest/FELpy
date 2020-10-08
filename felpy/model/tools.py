@@ -21,6 +21,32 @@ from wpg.srwlib import SRWLOptA as Aperture
 from wpg.generators import build_gauss_wavefront
 from wpg.beamline import Beamline
 
+def propParams(sx, zx, sy, zy, mode = "normal"):
+    """
+    wrapper for propagation parameters
+    
+    :param sx: horizontal scaling factor 
+    :param zx: horizontal zoom factor
+    :param sy: vertical scaling factor
+    :param zy: vertical zoom factor
+    :param mode: normal, semi-analytical, converge or diverge
+    
+    :return propagation parameters:
+    """
+    
+    if mode == "fresnel":
+        m = 0
+    elif mode == "quadratic":
+        m = 1
+    elif mode == "fraunhofer":
+        m = 2
+    elif mode == "diverge":
+        m = 3
+    elif mode == "converge":
+        m = 4
+    
+    return [0,0,1,m,0,sx,zx/sx,sy,zy/sy,0,0,0]
+
 def constructPulse(nx = 512, ny = 512, nz = 5, tau = 1e-06, d2waist = 10):
     
     wfr = Wavefront(build_gauss_wavefront(nx, ny, nz, 5.0, -400e-06, 400e-06, -400e-06, 400e-06, tau, 5e-06, 5e-06, d2waist))

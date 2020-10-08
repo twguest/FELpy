@@ -29,38 +29,14 @@ from wpg.srwlib import SRWLOptA as Aperture
 from wpg.srwlib import SRWLOptT
 from wpg.optical_elements import Mirror_elliptical as MirEl
 
-from model.materials.mirrorSurface import genMirrorSurface
-from model.materials.load_refl import get_refl, load_refl
-from model.src.coherent import coherentSource
+from felpy.model.materials.mirrorSurface import genMirrorSurface
+from felpy.model.materials.load_refl import get_refl, load_refl
+from felpy.model.src.coherent import coherentSource
 from wpg.optical_elements import calculateOPD
 
 from wpg.srwlib import srwl_opt_setup_surf_height_2d as MirPl
 
-def propParams(sx, zx, sy, zy, mode = "normal"):
-    """
-    wrapper for propagation parameters
-    
-    :param sx: horizontal scaling factor 
-    :param zx: horizontal zoom factor
-    :param sy: vertical scaling factor
-    :param zy: vertical zoom factor
-    :param mode: normal, semi-analytical, converge or diverge
-    
-    :return propagation parameters:
-    """
-    
-    if mode == "normal":
-        m = 0
-    elif mode == "quadratic":
-        m = 1
-    elif mode == "farfield":
-        m = 2
-    elif mode == "diverge":
-        m = 3
-    elif mode == "converge":
-        m = 4
-    
-    return [0,0,1,m,0,sx,zx/sx,sy,zy/sy,0,0,0]
+
 
 
 
