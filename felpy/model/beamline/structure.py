@@ -19,7 +19,7 @@ import os
 from os.path import exists
 import json
 import numpy as np
-
+import sys
 from matplotlib import pyplot as plt
 
 from wpg.beamline import Beamline
@@ -29,13 +29,14 @@ from wpg.srwlib import SRWLOptA as Aperture
 from wpg.srwlib import SRWLOptT
 from wpg.optical_elements import Mirror_elliptical as MirEl
 
+from felpy.utils.os_utils import add_path, felpy_path
 from felpy.model.materials.mirrorSurface import genMirrorSurface
 from felpy.model.materials.load_refl import get_refl, load_refl
 from felpy.model.src.coherent import coherentSource
 from wpg.optical_elements import calculateOPD
-
+from felpy.model.beamline.params import get_params
+from felpy.model.tools import propParams
 from wpg.srwlib import srwl_opt_setup_surf_height_2d as MirPl
-
 
 
 
@@ -48,16 +49,22 @@ class BeamlineModel:
     
     
     def __init__(self):
-        #print("Initialising Single Particle Beamline")
+        print("Initialising Single Particle Beamline")
         self.load_params()
-
-    def load_params(self):
+        self.fpath = felpy_path() ### felpy path (for dev. purposes)
+        add_path()
+        
+    def load_params(self, fromFile = False):
         """
-        load beamline parameters from /data/input/
+        load beamline parameters from /data/spb/
         """
-        with open("../../data/input/parameters.json", "r") as read_file:
-            self.params = json.load(read_file)
-    
+        
+        if fromFile:
+            with open("../../data/spb/parameters.json", "r") as read_file:
+                self.params = json.load(read_file)
+        else:
+            self.params = get_params()
+            
     def export_params(self, outdir = None):
         """
         save the current set of beamline parameters in json format
@@ -65,7 +72,7 @@ class BeamlineModel:
         :param outdir: save directory
         """
         if outdir is None:
-            with open('../../data/input/parameters.json', 'w') as f:
+            with open('../../data/spb/parameters.json', 'w') as f:
                 json.dump(self.params, f)
         else:
             with open(outdir + 'parameters.json', 'w') as f:
@@ -85,7 +92,7 @@ class BeamlineModel:
         else: 
             material = "Ru"
             
-        refl_data = load_refl(material, indir = "../../data/kb_refl")
+        refl_data = load_refl(material)
         refl, ang = get_refl(refl_data, ekev, ang, limits = [0, 5.5e-03])
         
         if focus == 'nano':
@@ -191,22 +198,22 @@ class BeamlineModel:
             if overwrite == True:
                 
                 if aperture == True:
-                    genMirrorSurface(500, 500, [self.params["MHP"]['dx'],self.params["MHP"]['dy']], "../../data/input/mhp_", mode = mm, plot = plot, mirrorName = "MHP") 
-                    genMirrorSurface(500, 500, [self.params["MVP"]['dx'],self.params["MVP"]['dy']], "../../data/input/mvp_", mode = mm, plot = plot, mirrorName = "MVP")  
-                    genMirrorSurface(500, 500, [self.params["MHE"]['dx'],self.params["MHE"]['dy']], "../../data/input/mhe_", mode = mm, plot = plot, mirrorName = "MHE")
-                    genMirrorSurface(500, 500, [self.params["MVE"]['dx'],self.params["MVE"]['dy']], "../../data/input/mve_", mode = mm, plot = plot, mirrorName = "MVE")  
-                    genMirrorSurface(500, 500, [self.params["NHE"]['dx'],self.params["NHE"]['dy']], "../../data/input/nhe_", mode = surface, plot = plot, mirrorName = "NHE")
-                    genMirrorSurface(500, 500, [self.params["NVE"]['dx'],self.params["NVE"]['dy']], "../../data/input/nve_", mode = surface, plot = plot, mirrorName = "NVE")  
+                    genMirrorSurface(500, 500, [self.params["MHP"]['dx'],self.params["MHP"]['dy']], "../../data/spb/mirror_surface/mhp_", mode = mm, plot = plot, mirrorName = "MHP") 
+                    genMirrorSurface(500, 500, [self.params["MVP"]['dx'],self.params["MVP"]['dy']], "../../data/spb/mirror_surface/mvp_", mode = mm, plot = plot, mirrorName = "MVP")  
+                    genMirrorSurface(500, 500, [self.params["MHE"]['dx'],self.params["MHE"]['dy']], "../../data/spb/mirror_surface/mhe_", mode = mm, plot = plot, mirrorName = "MHE")
+                    genMirrorSurface(500, 500, [self.params["MVE"]['dx'],self.params["MVE"]['dy']], "../../data/spb/mirror_surface/mve_", mode = mm, plot = plot, mirrorName = "MVE")  
+                    genMirrorSurface(500, 500, [self.params["NHE"]['dx'],self.params["NHE"]['dy']], "../../data/spb/mirror_surface/nhe_", mode = surface, plot = plot, mirrorName = "NHE")
+                    genMirrorSurface(500, 500, [self.params["NVE"]['dx'],self.params["NVE"]['dy']], "../../data/spb/mirror_surface/nve_", mode = surface, plot = plot, mirrorName = "NVE")  
                     
                 elif aperture == False:
-                    genMirrorSurface(500, 500, [100,100], "../../data/input/hom1_", mode = mm, plot = plot, mirrorName = "HOM1") 
-                    genMirrorSurface(500, 500, [100,100], "../../data/input/hom2_", mode = mm, plot = plot, mirrorName = "HOM2")  
-                    genMirrorSurface(500, 500, [100,100], "../../data/input/mhp_", mode = mm, plot = plot, mirrorName = "MHP") 
-                    genMirrorSurface(500, 500, [100,100], "../../data/input/mvp_", mode = mm, plot = plot, mirrorName = "MVP")  
-                    genMirrorSurface(500, 500, [100,100], "../../data/input/mhe_", mode = mm, plot = plot, mirrorName = "MHE")
-                    genMirrorSurface(500, 500, [100,100], "../../data/input/mve_", mode = mm, plot = plot, mirrorName = "MVE")  
-                    genMirrorSurface(500, 500, [100,100], "../../data/input/nhe_", mode = mm, plot = plot, mirrorName = "NHE")
-                    genMirrorSurface(500, 500, [100,100], "../../data/input/nve_", mode = mm, plot = plot, mirrorName = "NVE")  
+                    genMirrorSurface(500, 500, [100,100], "data/spb/mirror_surface/hom1_", mode = mm, plot = plot, mirrorName = "HOM1") 
+                    genMirrorSurface(500, 500, [100,100], "data/spb/mirror_surface/hom2_", mode = mm, plot = plot, mirrorName = "HOM2")  
+                    genMirrorSurface(500, 500, [100,100], "data/spb/mirror_surface/mhp_", mode = mm, plot = plot, mirrorName = "MHP") 
+                    genMirrorSurface(500, 500, [100,100], "data/spb/mirror_surface/mvp_", mode = mm, plot = plot, mirrorName = "MVP")  
+                    genMirrorSurface(500, 500, [100,100], "data/spb/mirror_surface/mhe_", mode = mm, plot = plot, mirrorName = "MHE")
+                    genMirrorSurface(500, 500, [100,100], "../../data/spb/mirror_surface/mve_", mode = mm, plot = plot, mirrorName = "MVE")  
+                    genMirrorSurface(500, 500, [100,100], "../../data/spb/mirror_surface/nhe_", mode = mm, plot = plot, mirrorName = "NHE")
+                    genMirrorSurface(500, 500, [100,100], "../../data/spb/mirror_surface/nve_", mode = mm, plot = plot, mirrorName = "NVE")  
                     
         
         elif surface == 'flat':
@@ -216,48 +223,49 @@ class BeamlineModel:
             if overwrite == True:
                 
                 if aperture == True:
-                    genMirrorSurface(500, 500, [self.params["MHP"]['dx'],self.params["MHP"]['dy']], "../../data/input/mhp_", mode = surface, plot = plot, mirrorName = "MHP") 
-                    genMirrorSurface(500, 500, [self.params["MVP"]['dx'],self.params["MVP"]['dy']], "../../data/input/mvp_", mode = surface, plot = plot, mirrorName = "MVP")  
-                    genMirrorSurface(500, 500, [self.params["MHE"]['dx'],self.params["MHE"]['dy']], "../../data/input/mhe_", mode = surface, plot = plot, mirrorName = "MHE")
-                    genMirrorSurface(500, 500, [self.params["MVE"]['dx'],self.params["MVE"]['dy']], "../../data/input/mve_", mode = surface, plot = plot, mirrorName = "MVE")  
-                    genMirrorSurface(500, 500, [self.params["NHE"]['dx'],self.params["NHE"]['dy']], "../../data/input/nhe_", mode = surface, plot = plot, mirrorName = "NHE")
-                    genMirrorSurface(500, 500, [self.params["NVE"]['dx'],self.params["NVE"]['dy']], "../../data/input/nve_", mode = surface, plot = plot, mirrorName = "NVE")  
+                    genMirrorSurface(500, 500, [self.params["MHP"]['dx'],self.params["MHP"]['dy']], "../../data/spb/mirror_surface/mhp_", mode = surface, plot = plot, mirrorName = "MHP") 
+                    genMirrorSurface(500, 500, [self.params["MVP"]['dx'],self.params["MVP"]['dy']], "../../data/spb/mirror_surface/mvp_", mode = surface, plot = plot, mirrorName = "MVP")  
+                    genMirrorSurface(500, 500, [self.params["MHE"]['dx'],self.params["MHE"]['dy']], "../../data/spb/mirror_surface/mhe_", mode = surface, plot = plot, mirrorName = "MHE")
+                    genMirrorSurface(500, 500, [self.params["MVE"]['dx'],self.params["MVE"]['dy']], "../../data/spb/mirror_surface/mve_", mode = surface, plot = plot, mirrorName = "MVE")  
+                    genMirrorSurface(500, 500, [self.params["NHE"]['dx'],self.params["NHE"]['dy']], "../../data/spb/mirror_surface/nhe_", mode = surface, plot = plot, mirrorName = "NHE")
+                    genMirrorSurface(500, 500, [self.params["NVE"]['dx'],self.params["NVE"]['dy']], "../../data/spb/mirror_surface/nve_", mode = surface, plot = plot, mirrorName = "NVE")  
                 
                 if aperture == False:
-                    genMirrorSurface(500, 500, [100,100], "../../data/input/hom1_", mode = surface, plot = plot, mirrorName = "HOM1") 
-                    genMirrorSurface(500, 500, [100,100], "../../data/input/hom2_", mode = surface, plot = plot, mirrorName = "HOM2")   
-                    genMirrorSurface(500, 500, [100,100], "../../data/input/mhp_", mode = surface, plot = plot, mirrorName = "MHP") 
-                    genMirrorSurface(500, 500, [100,100], "../../data/input/mvp_", mode = surface, plot = plot, mirrorName = "MVP")  
-                    genMirrorSurface(500, 500, [1000,1000], "../../data/input/mhe_", mode = surface, plot = plot, mirrorName = "MHE")
-                    genMirrorSurface(500, 500, [1000,1000], "../../data/input/mve_", mode = surface, plot = plot, mirrorName = "MVE")  
-                    genMirrorSurface(500, 500, [100,100], "../../data/input/nhe_", mode = surface, plot = plot, mirrorName = "NHE")
-                    genMirrorSurface(500, 500, [100,100], "../../data/input/nve_", mode = surface, plot = plot, mirrorName = "NVE")  
+                    genMirrorSurface(500, 500, [100,100], "data/spb/mirror_surface/hom1_", mode = surface, plot = plot, mirrorName = "HOM1") 
+                    genMirrorSurface(500, 500, [100,100], "data/spb/mirror_surface/hom2_", mode = surface, plot = plot, mirrorName = "HOM2")   
+                    genMirrorSurface(500, 500, [100,100], "../../data/spb/mirror_surface/mhp_", mode = surface, plot = plot, mirrorName = "MHP") 
+                    genMirrorSurface(500, 500, [100,100], "../../data/spb/mirror_surface/mvp_", mode = surface, plot = plot, mirrorName = "MVP")  
+                    genMirrorSurface(500, 500, [1000,1000], "../../data/spb/mirror_surface/mhe_", mode = surface, plot = plot, mirrorName = "MHE")
+                    genMirrorSurface(500, 500, [1000,1000], "../../data/spb/mirror_surface/mve_", mode = surface, plot = plot, mirrorName = "MVE")  
+                    genMirrorSurface(500, 500, [100,100], "../../data/spb/mirror_surface/nhe_", mode = surface, plot = plot, mirrorName = "NHE")
+                    genMirrorSurface(500, 500, [100,100], "../../data/spb/mirror_surface/nve_", mode = surface, plot = plot, mirrorName = "NVE")  
                 
         
         if aperture == True:
-            self.params['HOM1']['mirror profile'] = "../../data/input/hom1_mir_{}.dat".format(surface)
-            self.params['HOM2']['mirror profile'] = "../../data/input/hom2_mir_{}.dat".format(surface)
+            self.params['HOM1']['mirror profile'] = "data/spb/mirror_surface/hom1_mir_{}.dat".format(surface)
+            self.params['HOM2']['mirror profile'] = "data/spb/mirror_surface/hom2_mir_{}.dat".format(surface)
         else:
-            self.params['HOM1']['mirror profile'] = "../../data/input/hom1_mir_{}.dat".format(mm)
-            self.params['HOM2']['mirror profile'] = "../../data/input/hom2_mir_{}.dat".format(mm)
+            self.params['HOM1']['mirror profile'] = "data/spb/mirror_surface/hom1_mir_{}.dat".format(mm)
+            self.params['HOM2']['mirror profile'] = "data/spb/mirror_surface/hom2_mir_{}.dat".format(mm)
             self.params['MHE']["length"] = 10
             self.params['MVE']["length"] = 10
             
-        self.params['MHP']['mirror profile'] = "../../data/input/mhp_mir_{}.dat".format(mm)
-        self.params['MVP']['mirror profile'] = "../../data/input/mvp_mir_{}.dat".format(mm)
-        self.params['MHE_error']['mirror profile'] = "../../data/input/mhe_mir_{}.dat".format(mm)
-        self.params['MVE_error']['mirror profile'] = "../../data/input/mve_mir_{}.dat".format(mm)
-        self.params['NHE_error']['mirror profile'] = "../../data/input/nhe_mir_{}.dat".format(mm)
-        self.params['NVE_error']['mirror profile'] = "../../data/input/nve_mir_{}.dat".format(mm)
+        self.params['MHP']['mirror profile'] = "data/spb/mirror_surface/mhp_mir_{}.dat".format(mm)
+        self.params['MVP']['mirror profile'] = "data/spb/mirror_surface/mvp_mir_{}.dat".format(mm)
+        self.params['MHE_error']['mirror profile'] = "data/spb/mirror_surface/mhe_mir_{}.dat".format(mm)
+        self.params['MVE_error']['mirror profile'] = "data/spb/mirror_surface/mve_mir_{}.dat".format(mm)
+        self.params['NHE_error']['mirror profile'] = "data/spb/mirror_surface/nhe_mir_{}.dat".format(mm)
+        self.params['NVE_error']['mirror profile'] = "data/spb/mirror_surface/nve_mir_{}.dat".format(mm)
         
         
  
     def buildElements(self, focus = "micron"):
-       
+        
+
         self.d1 =  Drift(self.params["HOM1"]['distance from source'])
         self.d1.name = self.params["d1"]['name']
         
-        self.HOM1 = MirPl(np.loadtxt(self.params['HOM1']['mirror profile']),
+        self.HOM1 = MirPl(np.loadtxt(self.fpath + self.params['HOM1']['mirror profile']),
                      _dim = self.params['HOM1']['orientation'],
                      _ang = self.params['HOM1']['incidence angle'], 
                      _amp_coef = 1,
@@ -269,7 +277,7 @@ class BeamlineModel:
         self.d2 =  Drift(self.params["HOM2"]['distance from source']-self.params["HOM1"]['distance from source'])
         self.d2.name = self.params["d2"]['name']
         
-        self.HOM2 = MirPl(np.loadtxt(self.params['HOM2']['mirror profile']),
+        self.HOM2 = MirPl(np.loadtxt(self.fpath + self.params['HOM2']['mirror profile']),
                      _dim = self.params['HOM2']['orientation'],
                      _ang = self.params['HOM2']['incidence angle'], 
                      _amp_coef = 1,
@@ -296,7 +304,7 @@ class BeamlineModel:
             self.d4.name = self.params["d4"]['name']
             
 
-            self.MHP = MirPl(np.loadtxt(self.params['MHP']['mirror profile']),
+            self.MHP = MirPl(np.loadtxt(self.fpath + self.params['MHP']['mirror profile']),
                          _dim = self.params['MHP']['orientation'],
                          _ang = self.params['MHP']['incidence angle'], 
                          _refl = self.params['MHP']['transmission'],
@@ -306,7 +314,7 @@ class BeamlineModel:
             self.d5 =  Drift(self.params["d5"]['distance'])
             self.d5.name = self.params["d5"]['name']
             
-            self.MHE_error = MirPl(np.loadtxt(self.params['MHE_error']['mirror profile']),
+            self.MHE_error = MirPl(np.loadtxt(self.fpath + self.params['MHE_error']['mirror profile']),
              _dim = self.params['MHE_error']['orientation'],
              _ang = self.params['MHE_error']['incidence angle'], 
              _refl = self.params['MHE_error']['transmission'],
@@ -315,7 +323,7 @@ class BeamlineModel:
             self.MHE_error.name = self.params['MHE_error']['name']
             
 
-            self.MVE_error = MirPl(np.loadtxt(self.params['MVE_error']['mirror profile']),
+            self.MVE_error = MirPl(np.loadtxt(self.fpath + self.params['MVE_error']['mirror profile']),
              _dim = self.params['MVE_error']['orientation'],
              _ang = self.params['MVE_error']['incidence angle'], 
              _refl = self.params['MVE_error']['transmission'],
@@ -354,7 +362,7 @@ class BeamlineModel:
             self.d8 =  Drift(self.params["d8"]['distance'])
             self.d8.name = self.params["d8"]['name']
             
-            self.MVP = MirPl(np.loadtxt(self.params['MVP']['mirror profile']),
+            self.MVP = MirPl(np.loadtxt(self.fpath + self.params['MVP']['mirror profile']),
                      _dim = self.params['MVP']['orientation'],
                      _ang = self.params['MVP']['incidence angle'], 
                      _refl = self.params['MVP']['transmission'],
@@ -399,7 +407,7 @@ class BeamlineModel:
             
             self.NVE.name = self.params["NVE"]["name"]
             
-            self.NVE_error = MirPl(np.loadtxt(self.params['NVE_error']['mirror profile']),
+            self.NVE_error = MirPl(np.loadtxt(self.fpath + self.params['NVE_error']['mirror profile']),
                             _dim = self.params['NVE_error']['orientation'],
                             _ang = self.params['NVE_error']['incidence angle'], 
                             _refl = self.params['NVE_error']['transmission'],
@@ -407,7 +415,7 @@ class BeamlineModel:
             
             self.NVE_error.name = self.params['NVE_error']['name']
             
-            self.NHE_error = MirPl(np.loadtxt(self.params['NHE_error']['mirror profile']),
+            self.NHE_error = MirPl(np.loadtxt(self.fpath + self.params['NHE_error']['mirror profile']),
                 _dim = self.params['NHE_error']['orientation'],
                 _ang = self.params['NHE_error']['incidence angle'], 
                 _refl = self.params['NHE_error']['transmission'],
@@ -444,45 +452,45 @@ class BeamlineModel:
         if focus == "micron":
             
             
-            self.bl.append(self.d1, propParams(1,1,1,1, mode = "farfield"))
+            self.bl.append(self.d1, propParams(1,1,1,1, mode = "fraunhofer"))
     
-            self.bl.append(self.HOM1, propParams(1, 1, 1, 1, mode = 'normal'))
+            self.bl.append(self.HOM1, propParams(1, 1, 1, 1, mode = 'fresnel'))
             self.bl.append(self.d2, propParams(1, 1, 1, 1, mode = 'quadratic'))
-            self.bl.append(self.HOM2,  propParams(1, 1, 1, 1, mode = 'normal'))
-            self.bl.append(self.d3, propParams(1,1,1,1, mode = 'farfield'))
+            self.bl.append(self.HOM2,  propParams(1, 1, 1, 1, mode = 'fresnel'))
+            self.bl.append(self.d3, propParams(1,1,1,1, mode = 'fraunhofer'))
             
-            self.bl.append(self.MKB_pslit, propParams(1/5, 1, 1/5, 1, mode = 'normal'))
+            self.bl.append(self.MKB_pslit, propParams(1/5, 1, 1/5, 1, mode = 'fresnel'))
             self.bl.append(self.d4, propParams(1, 1, 1, 1, mode = 'quadratic'))
-            self.bl.append(self.MHP, propParams(1, 1, 1, 1, mode = 'normal'))
+            self.bl.append(self.MHP, propParams(1, 1, 1, 1, mode = 'fresnel'))
             self.bl.append(self.d5, propParams(1, 1, 1, 1, mode = 'quadratic'))
-            self.bl.append(self.MHE, propParams(1, 1, 1, 1, mode = 'normal'))
-            self.bl.append(self.MHE_error, propParams(1, 1, 1, 1, mode = 'normal'))
+            self.bl.append(self.MHE, propParams(1, 1, 1, 1, mode = 'fresnel'))
+            self.bl.append(self.MHE_error, propParams(1, 1, 1, 1, mode = 'fresnel'))
             self.bl.append(self.d6, propParams(1, 1, 1, 1, mode = 'quadratic'))
-            self.bl.append(self.MVE, propParams(1, 1, 1, 1, mode = 'normal'))
-            self.bl.append(self.MVE_error, propParams(1, 1, 1, 1, mode = 'normal'))
+            self.bl.append(self.MVE, propParams(1, 1, 1, 1, mode = 'fresnel'))
+            self.bl.append(self.MVE_error, propParams(1, 1, 1, 1, mode = 'fresnel'))
             self.bl.append(self.d8, propParams(1, 1, 1, 1, mode = 'quadratic'))
         
-            self.bl.append(self.MVP, propParams(1, 1, 1, 1, mode = 'normal'))
+            self.bl.append(self.MVP, propParams(1, 1, 1, 1, mode = 'fresnel'))
             self.bl.append(self.df, propParams(1,1,1,1, mode = 'converge'))
        
         elif focus == "nano":
             
-            self.bl.append(self.d1, propParams(1,1,1,1, mode = "farfield"))
+            self.bl.append(self.d1, propParams(1,1,1,1, mode = "fraunhofer"))
     
-            self.bl.append(self.HOM1, propParams(1, 1, 1, 1, mode = 'normal'))
+            self.bl.append(self.HOM1, propParams(1, 1, 1, 1, mode = 'fresnel'))
             self.bl.append(self.d2, propParams(1, 1, 1, 1, mode = 'quadratic'))
-            self.bl.append(self.HOM2,  propParams(1, 1, 1, 1, mode = 'normal'))
-            self.bl.append(self.d3, propParams(1,1,1,1, mode = 'farfield'))
+            self.bl.append(self.HOM2,  propParams(1, 1, 1, 1, mode = 'fresnel'))
+            self.bl.append(self.d3, propParams(1,1,1,1, mode = 'fraunhofer'))
             
-            self.bl.append(self.NKB_pslit, propParams(1/10, 1, 1/10,  1, mode = 'normal'))
+            self.bl.append(self.NKB_pslit, propParams(1/10, 1, 1/10,  1, mode = 'fresnel'))
             self.bl.append(self.d4, propParams(1, 1, 1, 1, mode = 'quadratic'))
-            self.bl.append(self.NHE_error, propParams(1, 1, 1, 1, mode = 'normal'))
-            self.bl.append(self.NHE, propParams(1, 1, 1, 1, mode = 'normal'))
+            self.bl.append(self.NHE_error, propParams(1, 1, 1, 1, mode = 'fresnel'))
+            self.bl.append(self.NHE, propParams(1, 1, 1, 1, mode = 'fresnel'))
             
             
             self.bl.append(self.d5, propParams(1, 1, 1, 1, mode = 'quadratic'))
-            self.bl.append(self.NVE_error, propParams(1, 1, 1, 1, mode = 'normal'))
-            self.bl.append(self.NVE, propParams(1, 1, 1, 1, mode = 'normal'))
+            self.bl.append(self.NVE_error, propParams(1, 1, 1, 1, mode = 'fresnel'))
+            self.bl.append(self.NVE, propParams(1, 1, 1, 1, mode = 'fresnel'))
             
             
             self.bl.append(self.df, propParams(5,1,5,1, mode = 'converge'))

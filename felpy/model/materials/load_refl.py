@@ -31,7 +31,7 @@ def treat_refl(material = 'B4C', indir = None):
     """
     
     if indir is None:
-        excel = pd.read_excel("../../data/hom_refl/{}_refl.xlsx".format(material),header = None)
+        excel = pd.read_excel("../../data/spb/hom_refl/{}_refl.xlsx".format(material),header = None)
     else:
         excel = pd.read_excel(indir + "{}_refl.xlsx".format(material),header = None)
     df = pd.DataFrame(excel)
@@ -39,7 +39,7 @@ def treat_refl(material = 'B4C', indir = None):
     refl = np.asarray(df.values)
     
     if indir is None: 
-        np.save("../../data/hom_refl/{}_refl.npy".format(material), refl)
+        np.save("data/hom_refl/spb/{}_refl.npy".format(material), refl)
     else:
         np.save(indir + "{}_refl.npy".format(material), refl)
     
@@ -49,9 +49,12 @@ def load_refl(material = 'B4C', indir = None):
     
     :param material: mirror material which data is defined for
     """
-    
+
     if indir is None:
-        refl = np.load("../../data/hom_refl/{}_refl.npy".format(material))
+        import os
+        fpath = os.path.dirname(os.path.realpath(__file__)) ## function path
+        fpath = os.path.join(fpath, "../../data/spb/hom_refl/")
+        refl = np.load(fpath +"{}_refl.npy".format(material))
     else:
         refl = np.load(indir + "/{}_refl.npy".format(material))
     return refl
@@ -85,5 +88,5 @@ def get_refl(refl, ekev, ang = 'max', limits = [0,2*np.pi]):
 if __name__ == '__main__':
 
     treat_refl("B4C")
-    refl = load_refl("B4C", "../../data/hom_refl/")
+    refl = load_refl("B4C", "../../data/spb/hom_refl/")
     get_refl(refl, 9.2, ang = 'max',  limits = [1.1e-03, 3.6e-03])

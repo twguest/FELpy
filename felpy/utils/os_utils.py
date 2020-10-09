@@ -7,6 +7,7 @@ Created on Fri Aug 14 13:26:11 2020
 """
 
 import os
+import sys
 
 def mkdir_p(dir):
     '''make a directory (dir) if it doesn't exist'''
@@ -26,3 +27,23 @@ def np_size(nrows, ncols, ndepth, dtype=32, out="GB"):
    """
    sizes = {v: i for i, v in enumerate("BYTES KB MB GB TB".split())}
    return nrows * ndepth * ncols * dtype / 8 / 1024. ** sizes[out] 
+
+
+def add_path():
+    """ 
+    adds felpy filepath to python path
+    """
+    
+    fpath = os.path.dirname(os.path.realpath(__file__))
+    fpath = fpath.split("felpy/")[0]
+    print("Adding {} to Python path".format(os.path.join(fpath)))
+    sys.path.append(fpath)
+     
+def felpy_path():
+    """
+    get felpy path
+    """
+    fpath = os.path.dirname(os.path.realpath(__file__))
+    fpath = os.path.join(fpath.split("felpy/")[0] + "/felpy/")
+    
+    return fpath

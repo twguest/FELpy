@@ -23,11 +23,11 @@ import datetime
 import numpy as np
 
 def export(params):
-    with open('../../data/input/parameters.json', 'w') as f:
+    with open('../../data/spb/parameters.json', 'w') as f:
         json.dump(params, f)
-        
-if __name__ == "__main__":
 
+def get_params():
+    
     date = datetime.datetime.now()
     mn,h,d,m,y = date.minute, date.hour, date.day, date.month, date.year
 
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     params["HOM1"] = {"name": "HOM1",
                       "distance from source": 246.5,
                       "description": "First Horizontal Offset Mirror",
-                      "mirror profile": "../../data/input/hom1_mir_real.dat",
+                      "mirror profile": "data/input/hom1_mir_real.dat",
                       "orientation": 'x',
                       "incidence angle": 2.1e-03,
                       "xc": 0,
@@ -256,7 +256,11 @@ if __name__ == "__main__":
                            "dy": 0.0038,
                            "xc": 0,
                            "yc": 0}
-                              
+
+    return params
+                 
+if __name__ == "__main__":
+    params = get_params()
     export(params)
     
         

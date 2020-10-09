@@ -90,7 +90,7 @@ def setupHOMsurface():
     surface[0,:] = ypos
     surface[1:,0] = xpos
         
-    np.savetxt("../../data/input/hom{}".format(i)+"_mir_real.dat", surface, delimiter='\t')
+    np.savetxt("data/input/hom{}".format(i)+"_mir_real.dat", surface, delimiter='\t')
     return surface
 
 def binArray(data, axis, binstep, binsize, func=np.nanmean):

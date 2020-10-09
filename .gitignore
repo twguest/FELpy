@@ -1,13 +1,6 @@
 # Byte-compiled / optimized / DLL files
 
-
-
-
-
-
-
-
-
+labwork/
 __pycache__/
 *.py[cod]
 *$py.class
