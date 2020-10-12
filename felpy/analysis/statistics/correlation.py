@@ -102,6 +102,6 @@ if __name__ == '__main__':
     a = np.random.rand(100,100,4)
     b = np.random.rand(100,100,4)
 
-    norm_difference(a, b, plot = True)
+    c = norm_difference(a, b, plot = True)
     ed = euclidian_distance(a, b)
     print(ed)

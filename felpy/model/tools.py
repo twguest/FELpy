@@ -20,7 +20,7 @@ from wpg.srwlib import SRWLOptA as Aperture
 from wpg.generators import build_gauss_wavefront
 from wpg.beamline import Beamline
 
-def propParams(sx, zx, sy, zy, mode = "normal"):
+def propParams(sx, zx, sy, zy, mode = "fresnel"):
     """
     wrapper for propagation parameters
     

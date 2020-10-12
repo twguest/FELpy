@@ -4,7 +4,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib as mpl
 
-from felpy.model.analysis.statistics.correlation import norm as normalise
+from felpy.analysis.statistics.correlation import norm as normalise
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 

@@ -74,9 +74,9 @@ from model.tools import mkdir_p, memoryMap, readMap
 
 from model.tools import constructPulse ## for testing
 
-from model.analysis.coherence import run as coherence
-from model.analysis.enclosedEnergy import run as beamSize
-from model.analysis.energyStatistics import getPulseEnergy
+from model.coherence import run as coherence
+from model.enclosedEnergy import run as beamSize
+from model.energyStatistics import getPulseEnergy
 
 from wpg.wavefront import Wavefront
 

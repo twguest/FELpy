@@ -5,7 +5,7 @@ Created on Sun Aug 16 20:06:28 2020
 
 @author: twguest
 """
- 
+import shutil 
 import numpy as np
 
 from matplotlib import pyplot as plt
@@ -79,3 +79,77 @@ def arr2gif(fname, array, fps=10, scale=1.0):
     clip = ImageSequenceClip(list(array), fps=fps).resize(scale)
     clip.write_gif(filename, fps=fps)
     print("gif saved @: {}".format(fname))
+    
+def animate(indir, outdir, fname, delay = 0.1, rmdir = False):
+    """
+    create gif from pngs in directory
+    """        
+    os.system("convert -delay {} {}/*.png {}{}.gif".format(delay, indir, outdir, fname) )
+    
+    if rmdir == True:
+        shutil.rmtree(indir)
+        
+
+def extract_animation(ii, mesh, fname, sdir, mode = 'train'):
+    
+    tdir = sdir + "/tmp/"
+    mkdir_p(tdir)
+    
+    if mode == 'all':
+        for train in range(ii.shape[-1]):
+            for pulse in range(ii.shape[-2]):
+                
+                basic_plot(ii[:,:,pulse,train], mesh,
+                           sdir = tdir + "train_{}_pulse_{}.png".format(train, pulse),
+                           label = "train/pulse: {}/{}".format(train+1,pulse+1))
+    if mode == 'train':
+        
+        ii = mean_intensity(ii, mode = 'train')
+        
+        for train in range(ii.shape[-1]):
+            
+            basic_plot(ii[:,:,train], mesh,
+                       sdir = tdir + "train_{}.png".format(train),
+                       label = 'train: {}'.format(train+1))
+        
+    animate(indir = tdir, outdir = sdir, fname = fname, delay = 0.06)
+
+
+def basic_plot(ii, mesh, sdir = None,
+               label = None,
+               title = None,
+               cmap = 'bone'):
+    """ 
+    a simple plot of some two-dimensional intensity array
+    
+    :param ii: 2D intensity array
+    :param mesh: coordinate mesh [np array]
+    """
+    
+    fig, ax1 = plt.subplots()
+    
+    img = ax1.imshow(ii, cmap = cmap,
+                     extent = [np.min(mesh[1])*1e6, np.max(mesh[1])*1e6,
+                               np.min(mesh[0])*1e6, np.max(mesh[0])*1e6])
+    divider = make_axes_locatable(ax1)
+    cax = divider.append_axes('right', size='7.5%', pad=0.05)
+    
+    cbar = fig.colorbar(img, cax)
+    cbar.set_label("Intensity (a.u.)")
+    
+    ax1.set_xlabel("x [$\mu$m]")
+    ax1.set_ylabel("y [$\mu$m]")
+    
+    if title != None:
+        ax1.set_title = title
+    if label != None:
+        ax1.annotate(label, horizontalalignment = 'left',
+                     verticalalignment = 'bottom',
+                     xy = (0,1),
+                     c = 'white')
+    if sdir is None:
+        plt.show()
+    else:
+        fig.savefig(sdir)
+        plt.show()
+    

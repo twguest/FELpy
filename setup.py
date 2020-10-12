@@ -56,7 +56,7 @@ setup(name='FELpy',
                  'felpy.data.spb-sfx.hom_refl',
                  'felpy.data.spb-sfx.kb_refl',
                  'felpy.data.spb-sfx.mirror_surface',
-                 'felpy.model.analysis',
+                 'felpy.analysis',
                  'felpy.model.src',
                  'felpy.model.materials',
                  'felpy.model.beamline'
