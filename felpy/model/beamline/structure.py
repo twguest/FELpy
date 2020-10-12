@@ -471,7 +471,7 @@ class BeamlineModel:
             self.bl.append(self.d8, propParams(1, 1, 1, 1, mode = 'quadratic'))
         
             self.bl.append(self.MVP, propParams(1, 1, 1, 1, mode = 'fresnel'))
-            self.bl.append(self.df, propParams(1,1,1,1, mode = 'converge'))
+            self.bl.append(self.df, propParams(5,1,5,1, mode = 'converge'))
        
         elif focus == "nano":
             
