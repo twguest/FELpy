@@ -4,6 +4,7 @@
 utilities to help with daq output at the EuXFEL. 
 to be used in conjunction with extra/karabo_data
 """
+from karabo_data import RunDirectory
 
 def load_data(run, proposal, exp, VERBOSE = False):
     
