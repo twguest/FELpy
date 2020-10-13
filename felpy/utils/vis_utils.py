@@ -10,11 +10,12 @@ import numpy as np
 
 from matplotlib import pyplot as plt
 import matplotlib as mpl
-
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 import os
 from moviepy.editor import ImageSequenceClip
 from sklearn.preprocessing import minmax_scale as norm
-
+from felpy.utils.os_utils import mkdir_p
+from felpy.analysis.statistics.univariate import mean_intensity
 
 def triple(ii, title = None, xlabel = None, ylabel = None, clabel = None,
            extent = None, cmap = 'hot', vmin = None, vmax = None, savedir = None,

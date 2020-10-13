@@ -79,7 +79,7 @@ def norm_difference(arr1, arr2, plot = True, sdir = None, VERBOSE = False):
             else:
                 pass
             
-    return arr3  
+    return abs(arr3)  
 
 
 def euclidian_distance(arr1, arr2, VERBOSE = False):
