@@ -3,10 +3,11 @@
 import numpy as np
 import seaborn as sns
 import matplotlib as mpl
-
+from multiprocessing import pool, cpu_count
 from felpy.analysis.statistics.correlation import norm as normalise
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from os import listdir
 
 def get_centroid(arr):
     
@@ -50,6 +51,9 @@ def get_centroid(arr):
                 
 
     return centroid
+
+
+
 
 def plot_centroid(centroid, arg = None, clabel = None):
     
@@ -192,7 +196,7 @@ def plot_centroid(centroid, arg = None, clabel = None):
             cbar.set_label("Train Number", fontsize = 14)
                 
         plt.show()
-            
+        
 
 
 if __name__ == '__main__':

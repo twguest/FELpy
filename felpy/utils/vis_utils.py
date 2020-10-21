@@ -153,4 +153,88 @@ def basic_plot(ii, mesh, sdir = None,
     else:
         fig.savefig(sdir)
         plt.show()
+
+    
+
+def scatter_3D(x, y, z,
+               xlabel = "", ylabel = "", zlabel = "",
+               azim = 60, elev = 10, get_2D = False,
+               sdir = None):
+  
+    fig = plt.figure()
+    
+    ax1 = fig.add_subplot(projection = '3d')
+    ax1.view_init(elev=elev, azim=azim)
+    
+    if x.ndim == 2 and y.ndim == 2:
+        for itr in range(x.shape[-1]):
+            ax1.scatter(x[:,itr], z, y[:,itr])
+    else:
+        for pos in range(len(x)):
+            ax1.scatter(x[pos],z[pos],y[pos])
+        
+    ax1.set_xlabel(xlabel)
+    ax1.set_zlabel(ylabel)
+    ax1.set_ylabel(zlabel)
+    
+    if get_2D is True:
+        fig2, ax2 = plt.subplots()
+        
+        if x.ndim == 2: 
+            ax2 = plt.scatter(x.mean(axis = -1),z)
+            ax2.set_xlabel(xlabel)
+            ax2.set_ylabel(zlabel)
+        
+            fig3, ax3 = plt.subplots()
+            
+            ax3 = plt.scatter(y.mean(axis = -1),z)
+            ax3.set_xlabel(ylabel)
+            ax3.set_ylabel(zlabel)
+            
+        else:
+            ax2 = plt.scatter(x,z)
+            ax2.set_xlabel(xlabel)
+            ax2.set_ylabel(zlabel)
+            plt.show()
+            
+            fig3, ax3 = plt.subplots()
+            
+            ax3 = plt.scatter(y,z)
+            ax3.set_xlabel(ylabel)
+            ax3.set_ylabel(zlabel)
+            plt.show()
+    
+    if sdir is not None:
+        fig.savefig(sdir)
+        
+        if get_2D is True:
+            fig2.savefig(sdir + "2D_xz.png")
+            fig3.savefig(sdir + "2D_yz.png")
+            
+def generate_3D_animation(x, y, z,
+                          sdir,
+                          title = "",
+                          npts = 360,
+                          xlabel = "",
+                          ylabel = "",
+                          zlabel = "",
+                          mode = 'default', 
+                          get_2D = True):
+    
+    tdir = sdir + "/tmp/"
+    mkdir_p(tdir)
+    
+    if mode == 'default':
+        alim, elim = 360, 360
+    
+    for ang in range(0, 360, int(360/npts)):
+        scatter_3D(x, y, z, 
+                   sdir = tdir + "{:4d}.png".format(ang),
+                   azim = ang % alim,
+                   elev = ang % alim,
+                   xlabel = xlabel,
+                   ylabel = ylabel, zlabel = zlabel)
+    
+    animate(tdir, sdir, title + "_3D_animation",
+            rmdir = True)
     
