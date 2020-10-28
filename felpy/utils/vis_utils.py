@@ -16,7 +16,7 @@ from moviepy.editor import ImageSequenceClip
 from sklearn.preprocessing import minmax_scale as norm
 from felpy.utils.os_utils import mkdir_p
 from felpy.analysis.statistics.univariate import mean_intensity
-
+from mpl_toolkits.mplot3d import Axes3D
 def triple(ii, title = None, xlabel = None, ylabel = None, clabel = None,
            extent = None, cmap = 'hot', vmin = None, vmax = None, savedir = None,
            cticks = None, clabels = None, resolution = 100):
@@ -117,6 +117,7 @@ def extract_animation(ii, mesh, fname, sdir, mode = 'train'):
 
 
 def basic_plot(ii, mesh, sdir = None,
+               crop = None,
                label = None,
                title = None,
                cmap = 'bone'):
@@ -229,7 +230,7 @@ def generate_3D_animation(x, y, z,
     
     for ang in range(0, 360, int(360/npts)):
         scatter_3D(x, y, z, 
-                   sdir = tdir + "{:4d}.png".format(ang),
+                   sdir = tdir + "{:5d}.png".format(ang),
                    azim = ang % alim,
                    elev = ang % alim,
                    xlabel = xlabel,

@@ -19,3 +19,16 @@ def get_mesh(ii, dx, dy):
     grid = np.array(np.meshgrid(xc, yc))
     
     return grid
+
+def get_wpg_mesh(wfr):
+    
+    dx, dy = wfr.pixelsize()
+    
+    nx, ny = wfr.params.Mesh.nx, wfr.params.Mesh.ny
+    
+    ii = np.zeros([nx, ny])
+    
+    mesh = get_mesh(ii, dx, dy)
+    
+    return mesh
+
