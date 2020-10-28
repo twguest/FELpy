@@ -17,6 +17,8 @@ from sklearn.preprocessing import minmax_scale as norm
 from felpy.utils.os_utils import mkdir_p
 from felpy.analysis.statistics.univariate import mean_intensity
 from mpl_toolkits.mplot3d import Axes3D
+from felpy.utils.np_utils import extent_from_mesh
+
 def triple(ii, title = None, xlabel = None, ylabel = None, clabel = None,
            extent = None, cmap = 'hot', vmin = None, vmax = None, savedir = None,
            cticks = None, clabels = None, resolution = 100):
@@ -117,10 +119,14 @@ def extract_animation(ii, mesh, fname, sdir, mode = 'train'):
 
 
 def basic_plot(ii, mesh, sdir = None,
+               xlims = None,
+               ylims = None,
                crop = None,
                label = None,
                title = None,
-               cmap = 'bone'):
+               cmap = 'bone',
+               scale = 1e6):
+    
     """ 
     a simple plot of some two-dimensional intensity array
     
@@ -128,19 +134,40 @@ def basic_plot(ii, mesh, sdir = None,
     :param mesh: coordinate mesh [np array]
     """
     
+    if scale == 1e6:
+        mode = '[$\mu$m]'
+        
+    elif scale == 1e3:
+        mode = '[mm]'
+        
+    elif scale == 1:
+        mode = '[m]'
+        
+    else:
+        mode = "[" + str(scale) + "m]"
+        
     fig, ax1 = plt.subplots()
     
-    img = ax1.imshow(ii, cmap = cmap,
-                     extent = [np.min(mesh[1])*1e6, np.max(mesh[1])*1e6,
-                               np.min(mesh[0])*1e6, np.max(mesh[0])*1e6])
+    if xlims is not None and ylims is not None:
+        roi = extent_from_mesh(mesh, xlims, ylims)
+        ii = ii[roi[0]:roi[1], roi[2]:roi[3]]
+            
+        img = ax1.imshow(ii, cmap = cmap,
+                         extent = [mesh[0,0,roi[0]], mesh[0,0,roi[1]],
+                                   mesh[1,roi[2],0], mesh[1,roi[3],0]])
+    else:
+        img = ax1.imshow(ii, cmap = cmap,
+                         extent = [np.min(mesh[1])*scale, np.max(mesh[1])*scale,
+                                   np.min(mesh[0])*scale, np.max(mesh[0])*scale])
+  
     divider = make_axes_locatable(ax1)
     cax = divider.append_axes('right', size='7.5%', pad=0.05)
     
     cbar = fig.colorbar(img, cax)
     cbar.set_label("Intensity (a.u.)")
     
-    ax1.set_xlabel("x [$\mu$m]")
-    ax1.set_ylabel("y [$\mu$m]")
+    ax1.set_xlabel("x {}".format(mode))
+    ax1.set_ylabel("y {}".format(mode))
     
     if title != None:
         ax1.set_title = title
