@@ -162,7 +162,7 @@ def scatter_3D(x, y, z,
                sdir = None):
   
     fig = plt.figure()
-    
+
     ax1 = fig.add_subplot(projection = '3d')
     ax1.view_init(elev=elev, azim=azim)
     
@@ -179,27 +179,26 @@ def scatter_3D(x, y, z,
     
     if get_2D is True:
         fig2, ax2 = plt.subplots()
-        
+        fig3, ax3 = plt.subplots()
         if x.ndim == 2: 
-            ax2 = plt.scatter(x.mean(axis = -1),z)
+            ax2.scatter(x.mean(axis = -1),z)
             ax2.set_xlabel(xlabel)
             ax2.set_ylabel(zlabel)
         
-            fig3, ax3 = plt.subplots()
             
-            ax3 = plt.scatter(y.mean(axis = -1),z)
+            
+            ax3.scatter(y.mean(axis = -1),z)
             ax3.set_xlabel(ylabel)
             ax3.set_ylabel(zlabel)
             
         else:
-            ax2 = plt.scatter(x,z)
+            ax2.scatter(x,z)
             ax2.set_xlabel(xlabel)
             ax2.set_ylabel(zlabel)
             plt.show()
             
-            fig3, ax3 = plt.subplots()
             
-            ax3 = plt.scatter(y,z)
+            ax3.scatter(y,z)
             ax3.set_xlabel(ylabel)
             ax3.set_ylabel(zlabel)
             plt.show()
@@ -210,7 +209,8 @@ def scatter_3D(x, y, z,
         if get_2D is True:
             fig2.savefig(sdir + "2D_xz.png")
             fig3.savefig(sdir + "2D_yz.png")
-            
+    
+    plt.show()
 def generate_3D_animation(x, y, z,
                           sdir,
                           title = "",

@@ -34,3 +34,8 @@ def shimadzu_reshape(arr, VERBOSE = False):
     
     return arr
 
+
+
+
+if __name__ == '__main__':
+    pass
