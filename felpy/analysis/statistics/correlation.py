@@ -97,11 +97,55 @@ def euclidian_distance(arr1, arr2, VERBOSE = False):
     
     return 0.5*(np.std(arr1-arr2)**2) / (np.std(arr1)**2+np.std(arr2)**2)
 
+ 
+def correlation_plot(corr, mesh, label = "", title = "", sdir = None, cmap = 'jet'):
+    """ 
+    plot the correlation function of a pair of 2D arrays (x,y)
+    
+    :param corr: 2D correlation array (via get_correlation)
+    :param mesh: coordinate mesh [np array]
+    :param sdir: save directory for output .png
+    :param label: figure label
+    :param title: figure title
+    :param cmap: figure color map
+    """
+    
+    fig, ax1 = plt.subplots()
+    
+    img = ax1.imshow(corr, cmap = cmap,
+                     extent = [np.min(mesh[1])*1e6, np.max(mesh[1])*1e6,
+                               np.min(mesh[0])*1e6, np.max(mesh[0])*1e6],
+                     vmin = 0, vmax = 0.5)
+    
+    fig.suptitle = title
+
+    divider = make_axes_locatable(ax1)
+    cax = divider.append_axes('right', size='7.5%', pad=0.05)
+
+    cbar = fig.colorbar(img, cax)
+    cbar.set_label("Normalised Difference")
+    
+    ax1.set_xlabel("x [$\mu$m]")
+    ax1.set_ylabel("y [$\mu$m]")
+    
+    ax1.annotate(label, horizontalalignment = 'left',   
+                    verticalalignment = 'bottom',
+                    xy = (0,1),
+                    c = 'white')
+    if sdir is None:
+        fig.show()
+    else:
+        fig.savefig(sdir)
+        plt.show()
+        
+        
+
 if __name__ == '__main__':
     
-    a = np.random.rand(100,100,4)
-    b = np.random.rand(100,100,4)
-
-    c = norm_difference(a, b, plot = True)
-    ed = euclidian_distance(a, b)
-    print(ed)
+    mode = input("wpg/exp: ")
+    
+    if mode == 'exp':
+        
+        proposal = input("Proposal ID: ")
+        exp = input("Exp ID: ")
+        run = input("run ID: ")

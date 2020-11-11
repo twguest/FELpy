@@ -19,6 +19,7 @@ from wpg.srwlib import SRWLOptD as Drift
 from wpg.srwlib import SRWLOptA as Aperture
 from wpg.generators import build_gauss_wavefront
 from wpg.beamline import Beamline
+from felpy.utils.np_utils import gaussian_2d
 
 def propParams(sx, zx, sy, zy, mode = "fresnel"):
     """
@@ -148,15 +149,15 @@ def argmax2d(X):
     i, j = k // m, k % m
     return i, j
 
-def memoryMap(savedir, fname, shape, dtype = 'float64'):
+def memoryMap(sdir, fname, shape, dtype = 'float64'):
     """
     construct a memory map
     """
-    if os.path.exists(savedir + fname):
-        memmap = np.memmap(savedir + fname, mode = "r+",
-                           shape = shape, dtype = dtype)
+
+    if os.path.exists(sdir + fname):
+        memmap = readMap(sdir + fname, shape, dtype)
     else:
-        memmap = np.memmap(savedir + fname, mode = "w+",
+        memmap = np.memmap(sdir + fname, mode = "w+",
                            shape = shape, dtype = dtype)
     return memmap
 
@@ -189,3 +190,6 @@ def generateTestPulses(savedir, nx = 1024, ny = 1024, N = 5):
         
         wfr.store_hdf5(savedir + "testWavefront_{}.h5".format(n))
         print("Storing Wavefront @" + savedir + "testWavefront_{}.h5".format(n))    
+        
+
+

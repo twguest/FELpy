@@ -53,15 +53,20 @@ def extent_from_mesh(mesh, xlims, ylims):
     
     return extent
     
+def gaussian_2d(nx, ny):
+    """
+    generate a 2d gaussian-like beam in array form
     
+    :param nx: number of columns
+    :param ny: number of rows
+    """
+    x, y = np.meshgrid(np.linspace(-1,1,nx), np.linspace(-1,1,ny))
+    d = np.sqrt(x*x+y*y)
+    sigma, mu = 1.0, 0.0
+    g = np.exp(-( (d-mu)**2 / ( 2.0 * sigma**2 ) ) )
+    return g
+
 if __name__ == '__main__':
     from matplotlib import pyplot as plt
-    ii = np.random.rand(1000,1000)
-    mesh = get_mesh(ii, 1, 1)
-    
-    arr = mesh[0]
-    
-    extent = extent_from_mesh(mesh, (10,1000), (49, 1003))
-    plt.imshow(ii[extent[0]:extent[1], extent[2]:extent[3]])
-    print(ii[extent[0]:extent[1], extent[2]:extent[3]].shape)
-    
+    g = gaussian_2d(10,25)
+    plt.imshow(g)
