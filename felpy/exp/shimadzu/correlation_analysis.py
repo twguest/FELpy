@@ -1,201 +1,134 @@
 import numpy as np
+from matplotlib import pyplot as plt
 from felpy.analysis.statistics.correlation import norm_difference
 from multiprocessing import Pool, cpu_count
-from felpy.model.tools import memoryMap#### correlation methods
+from felpy.model.tools import memoryMap
+from felpy.exp.shimadzu.preprocess import shimadzu_test_data
+from felpy.utils.os_utils import mkdir_p
+import shutil
+from functools import partial
+from felpy.exp.shimadzu.methods import positional_pulse_correlation, inter_train_correlation, intra_train_correlation, sequential_pulse_correlation
 
-def correlation_method_a(arr, mpi = False):
-    ### this is equivalent to 'inter' analysis
+class correlation_analysis():
     
-    marr = arr.mean(axis = -1).mean(axis = -1) ## mean array
-    
-    
-    corr = np.zeros([arr.shape[0], arr.shape[1], arr.shape[-1]])
-    
-    ### get mean correlation between all sequential pulses
-    for train in range(arr.shape[-1]):
+    def __init__(self, arr, mpi = False, VERBOSE = True):
         
-        tmp = np.zeros([arr.shape[0], arr.shape[1], arr.shape[2]])
-
-        for pulse in range(arr.shape[-2]):
-        
-            tmp[:,:, pulse] = norm_difference(arr[:,:,pulse,train],
-                                               marr,
-                                               plot = False)
+        if VERBOSE:
+            print("Only MPI Supported.")
             
-        corr[:,:,train] = tmp.mean(axis = -1)
+        self.arr = arr
+        self.mpi = mpi
+        
+        self.output_shape = None
+        self.tmp = None
+        
+        self.processes = cpu_count()//2
+        
+        if VERBOSE:    
+            if self.mpi: 
+                print("MPI Enabled: {} Proc".format(self.processes))
+ 
+        self.p = Pool(processes=self.processes)
+        
+
+
+    def intra_train_correlation(self):
+        """
+        intra-train correlation. 
+        
+        approaches the question: how well correlated is each pulse in a train
+        w/ the average pulse intensity for that train.
+        """
+                
+
+        
+        
+        if self.mpi:
+
+
+            corr = self.p.map(partial(intra_train_correlation, arr = self.arr),
+                         range(self.arr.shape[-1]))
+ 
+            corr = np.dstack(corr)
+ 
+        else:
+            pass
+               
+        return corr
+
+
+    def inter_train_correlation(self):
+        
+
+        if self.mpi:
+
+
+            corr = self.p.map(partial(inter_train_correlation, arr = self.arr),
+                         range(self.arr.shape[-1]))
+            
+            corr = np.stack(corr)
+ 
+            
+        
+        else:
+            pass
+
+        return corr
+   
+    def positional_pulse_correlation(self):
+        
+
+    
+        if self.mpi:
+
+
+            corr = self.p.map(partial(positional_pulse_correlation,
+                                      arr = self.arr),
+                              range(self.arr.shape[-2]))
+            
+            corr = np.moveaxis(np.stack(corr), 0, -2) 
+ 
+            
+        
+        else:
+            pass
+
+        return corr
+    
+    
+    def sequential_pulse_correlation(self):
+             
+    
+        if self.mpi:
+
+
+            corr = self.p.map(partial(sequential_pulse_correlation,
+                                      arr = self.arr),
+                              range(self.arr.shape[-2]))
+            
+            corr = np.moveaxis(np.stack(corr), 0, -1) 
+ 
+        else:
+            pass
         
         return corr
     
-
-
-def get_correlation(arr, mode = 'sequential'):
     
-    if mode == 'sequential':
-        
-        tcorr = np.zeros([arr.shape[0], arr.shape[1], arr.shape[2]-1, arr.shape[-1]])
-
-        ### get mean correlation between all sequential pulses
-        for train in range(arr.shape[-1]):
-            
-
-            for pulse in range(tcorr.shape[-2]):
-            
-                tcorr[:,:, pulse, train] = norm_difference(arr[:,:,pulse,train],
-                                                   arr[:,:,pulse+1,train],
-                                                   plot = False)         
+if __name__ == '__main__':
     
-    elif mode == 'inter':
-        ### get mean correlation between each train and the mean wavefield
-        
-        marr = arr.mean(axis = -1).mean(axis = -1) ## mean array
-        
-        tcorr = np.zeros([arr.shape[0], arr.shape[1], arr.shape[-1]])
-        
-        ### get mean correlation between all sequential pulses
-        for train in range(arr.shape[-1]):
-            
-            tmp = np.zeros([arr.shape[0], arr.shape[1], arr.shape[2]])
+    from time import time
+    ii = shimadzu_test_data(250,250,20,10)
+     
+    start = time()
+    C = correlation_analysis(ii, mpi = True)
+    corr_a = C.inter_train_correlation( )
+    fin = time()
+    print("MPI: {:.4f} s".format(fin-start))
+    #quick_plot(corr_a)
 
-            for pulse in range(arr.shape[-2]):
-            
-                tmp[:,:, pulse] = norm_difference(arr[:,:,pulse,train],
-                                                   marr,
-                                                   plot = False)
-                
-            tcorr[:,:,train] = tmp.mean(axis = -1)
-    
-    
-    elif mode == 'intra':
-        ### get the mean correlation between all pulses in a train
-        ### looks to be heavy
-        
-        tcorr = np.zeros([arr.shape[0], arr.shape[1], arr.shape[-1]])
-             
-        ### get mean correlation between all sequential pulses
-        for train in range(arr.shape[-1]):
-            
-            tmp = np.zeros([arr.shape[0], arr.shape[1], arr.shape[2]])
-            marr = arr[:,:,:,train].mean(axis = -1)
-            
-            for pulse in range(arr.shape[-2]):
-    
-                tmp[:,:, pulse] = norm_difference(arr[:,:,pulse,train],
-                                                   marr,
-                                                   plot = False)
-                
-            tcorr[:,:,train] = tmp.mean(axis = -1)
-            
-    elif mode == 'position':
-        ### get the correlation between pulses position wise
-
-        
-        tcorr = np.zeros([arr.shape[0], arr.shape[1], arr.shape[-2]])
-             
-        ### get mean correlation between all sequential pulses
-        for pulse in range(arr.shape[-2]):
-            
-            tmp = np.zeros([arr.shape[0], arr.shape[1], arr.shape[-1]])
-            marr = arr[:,:,pulse,:].mean(axis = -1)
-            
-            for train in range(arr.shape[-1]):
-    
-                tmp[:,:, train] = norm_difference(arr[:,:,pulse,train],
-                                                  marr,
-                                                  plot = False)
-                
-            tcorr[:,:,train] = tmp.mean(axis = -1)
-            
-    return tcorr
-
-    
-    
-
-def generate_correlation_data(arr, mode, mesh, sdir, fname, delay = 0.06):
-
-    
-    if mode == 'sequential':
-        
-        tcorr = get_correlation(arr, mode = 'sequential')
-        
-        for train in range(arr.shape[-1]):
-               
-            tdir = sdir + "/tmp/"
-            mkdir_p(tdir)
-            
-            for pulse in range(tcorr.shape[-2]):
-
-                correlation_plot(tcorr[:,:,pulse,train], mesh,
-                                 sdir = tdir + "train_{:04d}_pulse_{:04d}.png".format(train, pulse),
-                                 label = "train_{}".format(train))
-                
-        
-            animate(indir = tdir, outdir = sdir,
-                    fname = fname + "_sequential_correlation",
-                    delay = 0.06,
-                    rmdir = True)
-            
-        np.save(sdir + "/sequential_correlation", tcorr)
-            
-    if mode == 'inter':
-        
-        tcorr = get_correlation(arr, mode = 'inter')
-        
-        for train in range(arr.shape[-1]):
-               
-            tdir = sdir + "/tmp/"
-            mkdir_p(tdir)
-            
-       
-            correlation_plot(tcorr[:,:,train], mesh,
-                             sdir = tdir + "train_{:04d}.png".format(train),
-                             label = "train_{}".format(train))
-            
-    
-        animate(indir = tdir, outdir = sdir,
-                fname = fname + "_interpulse_correlation",
-                delay = 0.06,
-                rmdir = True)
-        
-        np.save(sdir + "/interpulse_correlation", tcorr)
-        
-    if mode == 'intra':
-        
-        tcorr = get_correlation(arr, mode = 'intra')
-        
-        for train in range(arr.shape[-1]):
-               
-            tdir = sdir + "/tmp/"
-            mkdir_p(tdir)
- 
-            correlation_plot(tcorr[:,:,train], mesh,
-                             sdir = tdir + "train_{:04d}.png".format(train),
-                             label = "train_{}".format(train))
-            
-
-        animate(indir = tdir, outdir = sdir,
-                fname = fname + "_intrapulse_correlation",
-                delay = 0.06,
-                    rmdir = True)
-
-        np.save(sdir + "/intrapulse_correlation", tcorr)
-
-    if mode == 'position':
-        
-        tcorr = get_correlation(arr, mode = 'position')
-
-               
-        tdir = sdir + "/tmp/"
-        mkdir_p(tdir)
-        
-        for pulse in range(arr.shape[-2]):
-
-            correlation_plot(tcorr[:,:,pulse], mesh,
-                             sdir = tdir + "pulse_{:04d}.png".format(pulse),
-                             label = "pulse position {}".format(pulse))
-            
-        
-        animate(indir = tdir, outdir = sdir,
-                fname = fname + "_positional_correlation",
-                delay = 0.06,
-                rmdir = True)
-        np.save(sdir + "/positional_correlation", tcorr)
+    start = time()
+    C = correlation_analysis(ii, mpi = True)
+    corr_b = C.sequential_pulse_correlation()
+    fin = time()
+    print("MPI: {:.4f} s".format(fin-start))
+    quick_plot(abs(corr_b-corr_a))

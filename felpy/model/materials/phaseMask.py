@@ -19,13 +19,13 @@ sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
 import numpy as np
 
 from wpg.srwlib import SRWLOptD as Drift
-from model.src.coherent import coherentSource
-from model.beamline.structure import propParams
+from felpy.model.src.coherent import coherentSource
+from felpy.model.beamline.structure import propParams
 from wpg.beamline import Beamline
 from wpg.srwlib import srwl_opt_setup_surf_height_2d as OPD
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
 from matplotlib import pyplot as plt
-from model.materials.material_utils import add_extent
+from felpy.model.materials.material_utils import add_extent
 
 def pltPhase(wfr):
     phase = wfr.get_phase()[:,:,0]

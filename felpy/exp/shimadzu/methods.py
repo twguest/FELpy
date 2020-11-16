@@ -9,86 +9,72 @@ import shutil
 from functools import partial
 #### correlation methods
 
-def intra_train_correlation(train, arr, mode = 'lite'):
-    
-    if mode == 'lite':
-        
-        marr = arr.mean(axis = -2) ## mean array
-        
-        tmp = np.zeros([arr.shape[0],
-                        arr.shape[1],
-                        arr.shape[-1]])
-    
-        for pulse in range(arr.shape[-1]):
-            
-            tmp[:,:,pulse] = norm_difference(arr[:,:,pulse,train],
-                                  marr[:,:,train],
-                                  plot = False)
-            
-            return tmp.mean(axis = -1)
+def intra_train_correlation(train, arr):
 
-def inter_train_correlation(train, arr, mode = 'lite'):
-    
-    if mode == 'lite':
+    tmp = np.zeros([arr.shape[0],
+                    arr.shape[1],
+                    arr.shape[-2],
+                    arr.shape[-2]])
+
+    for p1 in range(arr.shape[-2]):
+        for p2 in range(arr.shape[-2]):
+            
+            tmp[:,:,p1,p2] = norm_difference(arr[:,:,p1,train],
+                                             arr[:,:,p2, train],
+                                  plot = False)
         
-        tmp = np.zeros([arr.shape[0],
+    return tmp.mean(axis = -1).mean(axis = -1)
+
+def inter_train_correlation(train, arr):
+    
+    tmp = np.zeros([arr.shape[0],
                     arr.shape[1],
                     arr.shape[-1]])
-       
-        marr = arr.mean(axis = -1).mean(axis = -1) ## mean array
-
-        tmp = norm_difference(arr[:,:,:,train].mean(axis = -1), marr,
-                                         plot = False)
+    
+    for t2 in range(arr.shape[-1]):
         
+        a = norm_difference(arr[:,:,:,train],
+                            arr[:,:,:,t2],
+                            plot = False)
+        tmp[:,:, t2] = a.mean(axis = -1)
+
     return tmp
 
-def pulse_position_correlation(position, arr, mode = 'lite'):
+def positional_pulse_correlation (position, arr):
+ 
+            
+    tmp = np.zeros([arr.shape[0],
+                    arr.shape[1],
+                    arr.shape[-1],
+                    arr.shape[-1]])
     
-    if mode == 'lite':
-            
-        tmp = np.zeros([arr.shape[0],
-                        arr.shape[1],
-                        arr.shape[-1]])
-        
-        marr = arr.mean(axis = -1) ## mean array
-
-        for train in range(arr.shape[-1]):
-            tmp[:,:, train] = norm_difference(arr[:,:,position,train],
-                                              marr[:,:,position],
-                                              plot = False)
-            
-        return tmp.mean(axis = -1)          
     
-def sequential_pulse_correlation(position, arr, mode = 'lite'):
-    
-    if mode == 'lite':
+    for t1 in range(arr.shape[-1]):
         
-        tmp = np.zeros([arr.shape[0], arr.shape[1],
-                        arr.shape[2]])
-
-        arr = arr.mean(axis = -1)
-        
-        
-        for p in range(arr.shape[-1]):
-
-            tmp[:,:,p] = norm_difference(arr[:,:,position],
-                                         arr[:,:,p],
-                                         plot = False)
+        for t2 in range(arr.shape[-1]):
             
-    if mode == 'full':
-        
-        tmp = np.zeros([arr.shape[0], arr.shape[1],
-                       arr.shape[2], arr.shape[-1]])
-        
-        for t in range(arr.shape[-1]):
-            
-            for p in range(arr.shape[-2]):
-                tmp[:,:,p,t] = norm_difference(arr[:,:, position, t],
-                                               arr[:,:, p,t],
+
+            tmp[:,:, t1, t2] = norm_difference(arr[:,:,position,t1],
+                                               arr[:,:,position,t2],
                                                plot = False)
-                
-        tmp = tmp.mean(axis = -1)
         
+    return tmp.mean(axis = -1)          
+    
+def sequential_pulse_correlation(position, arr):
+    
+
+    tmp = np.zeros([arr.shape[0], arr.shape[1],
+                   arr.shape[2], arr.shape[-1]])
+    
+    for t in range(arr.shape[-1]):
+        
+        for p in range(arr.shape[-2]):
+            tmp[:,:,p,t] = norm_difference(arr[:,:, position, t],
+                                           arr[:,:, p,t],
+                                           plot = False)
+            
+    tmp = tmp.mean(axis = -1)
+    
     return tmp
             
         
@@ -96,115 +82,6 @@ def sequential_pulse_correlation(position, arr, mode = 'lite'):
         
             
             
-            
-
-
-class correlation_analysis():
-    
-    def __init__(self, arr, mpi = False, VERBOSE = True):
-        
-        if VERBOSE:
-            print("Only MPI Supported.")
-            
-        self.arr = arr
-        self.mpi = mpi
-        
-        self.output_shape = None
-        self.tmp = None
-        
-        self.processes = cpu_count()//2
-        
-        if VERBOSE:    
-            if self.mpi: 
-                print("MPI Enabled: {} Processes".format(self.processes))
- 
-        self.p = Pool(processes=self.processes)
-        
-
-
-    def intra_train_correlation(self, mode = 'lite'):
-        """
-        intra-train correlation. 
-        
-        approaches the question: how well correlated is each pulse in a train
-        w/ the average pulse intensity for that train.
-        """
-                
-
-        
-        
-        if self.mpi:
-
-
-            corr = self.p.map(partial(intra_train_correlation, arr = self.arr),
-                         range(self.arr.shape[-1]))
- 
-            corr = np.dstack(corr)
- 
-        else:
-            pass
-               
-        return corr
-
-
-    def inter_train_correlation(self, mode = 'lite'):
-        
-
-        if self.mpi:
-
-
-            corr = self.p.map(partial(inter_train_correlation, arr = self.arr),
-                         range(self.arr.shape[-1]))
-            
-            corr = np.dstack(corr)
- 
-            
-        
-        else:
-            pass
-
-        return corr
-   
-    def pulse_position_correlation(self, mode = 'lite'):
-        
-
-    
-        if self.mpi:
-
-
-            corr = self.p.map(partial(pulse_position_correlation,
-                                      arr = self.arr),
-                              range(self.arr.shape[-2]))
-            
-            corr = np.dstack(corr)
- 
-            
-        
-        else:
-            pass
-
-        return corr
-    
-    
-    def sequential_pulse_correlation(self, mode = 'lite'):
-             
-    
-        if self.mpi:
-
-
-            corr = self.p.map(partial(sequential_pulse_correlation,
-                                      arr = self.arr,
-                                      mode = mode),
-                              range(self.arr.shape[-2]))
-            
-            corr = np.moveaxis(np.stack(corr), 0, -1) 
- 
-            
-        
-        else:
-            pass
-        
-        return corr
         
 def quick_plot(arr):
     
@@ -222,14 +99,14 @@ if __name__ == '__main__':
      
     start = time()
     C = correlation_analysis(ii, mpi = True)
-    corr_a = C.sequential_pulse_correlation(mode = 'lite')
+    corr_a = C.inter_train_correlation( )
     fin = time()
     print("MPI: {:.4f} s".format(fin-start))
     #quick_plot(corr_a)
 
     start = time()
     C = correlation_analysis(ii, mpi = True)
-    corr_b = C.sequential_pulse_correlation(mode = 'full')
+    corr_b = C.sequential_pulse_correlation()
     fin = time()
     print("MPI: {:.4f} s".format(fin-start))
     quick_plot(abs(corr_b-corr_a))
