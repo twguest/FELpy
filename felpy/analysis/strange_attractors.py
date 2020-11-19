@@ -6,6 +6,8 @@ from labwork.about import dCache
 from felpy.utils.os_utils import mkdir_p
 from felpy.utils.vis_utils import animate
 import seaborn as sns
+
+
 def generate_attractor_animation(data,
                                  sdir,
                                  xlabel = "",
@@ -21,13 +23,17 @@ def generate_attractor_animation(data,
     if data.ndim == 1:
         
         for n in range(data.shape[-1] - 1):
-            fig, ax1 = plt.subplots()      
+            
+            fig, ax1 = plt.subplots(1,1)     
+            
             ax1.plot(data[:n], np.roll(data, 1)[:n])
             ax1.set_xlabel(xlabel)
             ax1.set_ylabel(ylabel)
             ax1.set_title(title)
             
-            fig.savefig(tdir + "{:4d}".format(n))
+
+            
+            fig.savefig(tdir + "{:04d}".format(n))
         
             
             

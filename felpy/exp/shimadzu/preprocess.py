@@ -27,6 +27,7 @@ from felpy.analysis.optics.scalar.enclosed_energy import get_enclosed_energy
 
 from felpy.analysis.statistics.kde import get_kde_kernel, plot_kde, get_kde
 from felpy.analysis.statistics.cdf import get_cdf, plot_cdf_data
+from felpy.utils.daq_utils import load_data, shimadzu_reshape
 
 
 def shimadzu_test_data(nx, ny, npulses, ntrains, weight = 0.1,
