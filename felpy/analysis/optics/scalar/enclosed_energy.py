@@ -21,7 +21,7 @@ from felpy.model.tools import argmax2d
 from wpg import srwlib
 from tqdm import tqdm
 from felpy.model.tools import create_circular_mask
-
+from felpy.analysis.optics.scalar.centroid import get_com
 from wpg.wpg_uti_wf import getAxis
 
 
@@ -118,8 +118,8 @@ def plotEnclosed(ii, r, c, label = None, outdir = None):
 def get_enclosed_energy(ii, dx, dy, efraction = 0.5, sdir = None, plot = False, VERBOSE = False):
     
     nx, ny = ii.shape
-    c = argmax2d(ii)
-    
+    c = get_com(ii)
+    print(c)
     results, err = finder(ii, nx, ny, c, efraction, VERBOSE = VERBOSE)
     
     
@@ -134,9 +134,12 @@ def get_enclosed_energy(ii, dx, dy, efraction = 0.5, sdir = None, plot = False, 
  
 
 if __name__ == '__main__':
-    
-    ii = np.random.rand(100,100)
-    
+    from scipy.ndimage import gaussian_filter
+    ii = np.zeros([50,50])
+    ii[10,10] = 100
+    ii = gaussian_filter(ii, 5)
+    ii[40,40] = 0.0001
+    ii = gaussian_filter(ii, 5)
     dx = 1e-06
     dy = 1e-06
     
