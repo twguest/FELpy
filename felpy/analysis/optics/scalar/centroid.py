@@ -8,12 +8,14 @@ from felpy.analysis.statistics.correlation import norm as normalise
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from os import listdir
+from scipy.ndimage import center_of_mass
 
-def get_centroid(arr):
+
+def get_com(arr):
     
     """ 
-    return the centroid of a 2D array. If the input array is three-dimensional,
-    return the slice wise list of centroids. If four-dimensional, likewise, iterate
+    return the center of mass of a 2D array. If the input array is three-dimensional,
+    return the slice wise list of center. If four-dimensional, likewise, iterate
     over the third and fourth dimensions.
     
     assumes dimensions [nx, ny, nz, nt] or likewise
@@ -26,29 +28,22 @@ def get_centroid(arr):
     if arr.ndim == 2:
         
         ### centroid is a tuple
-        centroid = np.unravel_index(arr.argmax(), arr.shape)
+        centroid = center_of_mass(arr)
  
     elif arr.ndim == 3:
         
         ### centroid shape [nz, 2]
-        centroid = np.zeros([arr.shape[-1],2])
-        
-        for slc in range(arr.shape[-1]):
-            centroid[slc,:] = np.unravel_index(
-                arr[:,:,slc].argmax(), arr[:,:,slc].shape)
-
+        centroid = [center_of_mass(arr[:,:,i]) for i in range(arr.shape[-1])]
+    
     elif arr.ndim == 4:
         
-        ### centroid shape [nz, 2, nt]
-        centroid = np.zeros([arr.shape[-2],2, arr.shape[-1]])
+        centroid = np.zeros([arr.shape[-2], 2, arr.shape[-1]])
         
         for itr in range(arr.shape[-1]):
         
-            for slc in range(arr.shape[-2]):
-            
-                centroid[slc,:, itr] = np.unravel_index(
-                    arr[:,:,slc, itr].argmax(), arr[:,:,slc, itr].shape)
-                
+            c = [center_of_mass(arr[:,:,i,itr]) for i in range(arr.shape[-2])]
+            centroid[:,:,itr] = np.asarray(c)
+    centroid = np.asarray(centroid)
 
     return centroid
 
@@ -92,7 +87,7 @@ def plot_centroid(centroid, arg = None, clabel = None):
             
             arg = np.linspace(0, centroid.shape[0], centroid.shape[0])
             
-            im1 = ax1.scatter(centroid[:, 0]*1e6, centroid[:,1]*1e6,
+            im1 = ax1.scatter(centroid[:, 0]*1e6, centroid[:,2], d[:,1]*1e6,
                         c = arg,
                         s = 16)
             
@@ -184,7 +179,7 @@ def plot_centroid(centroid, arg = None, clabel = None):
                                   alpha = 0.60)
             
             ax1.set_title("Centroid Position", fontsize = 16)
-            
+            1
             ax1.set_xlabel("x [$\mu$m]", fontsize = 14)
             ax1.set_ylabel("y [$\mu$m]", fontsize = 14)
             
@@ -201,9 +196,9 @@ def plot_centroid(centroid, arg = None, clabel = None):
 
 if __name__ == '__main__':
     
-    arr = np.random.rand(100,100, 1, 128)*50
+    arr = np.random.rand(100,100, 128, 5)*50
     
-    cnt = get_centroid(arr)
+    cnt = get_com(arr)
  
-    arg = np.random.rand(arr.shape[-1], arr.shape[-2])
-    plot_centroid(cnt, arg,clabel = "Energy")
+    #arg = np.random.rand(arr.shape[-1], arr.shape[-2])
+    #plot_centroid(cnt, arg,clabel = "Energy")
