@@ -144,6 +144,7 @@ class JobScheduler:
         elif self.jobType == 'array':
             if type(self.jobArray) == str:
                 arrItem = os.listdir(self.jobArray)[np.random.randint(len(os.listdir(self.jobArray)))]
+
             else:
                 arrItem = self.jobArray[np.random.randint(len(self.jobArray))]
         
@@ -252,7 +253,14 @@ class JobScheduler:
                     print(arrItem)
                     jName = self.jobName + arrItem
                     self.jobScript(jName, arrItem)
+                    
+            if type(self.jobArray) == list:
                 
+                for arrItem in self.jobArray:
+                    print(arrItem)
+                    jName = self.jobName + str(arrItem)
+                    self.jobScript(jName, arrItem)
+            
             else:
                 
                 for arrItem in self.jobArray:

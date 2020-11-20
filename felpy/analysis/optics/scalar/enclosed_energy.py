@@ -115,11 +115,10 @@ def plotEnclosed(ii, r, c, label = None, outdir = None):
         
 
 
-def get_enclosed_energy(ii, dx, dy, efraction = 0.5, sdir = None, plot = False, VERBOSE = False):
+def get_enclosed_energy(ii, dx, dy, efraction = 0.5, sdir = None, plot = False, VERBOSE = True):
     
     nx, ny = ii.shape
     c = get_com(ii)
-    print(c)
     results, err = finder(ii, nx, ny, c, efraction, VERBOSE = VERBOSE)
     
     

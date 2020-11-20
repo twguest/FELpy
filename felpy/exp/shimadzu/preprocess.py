@@ -22,7 +22,7 @@ from copy import copy
 import seaborn as sns
 from statsmodels.distributions.empirical_distribution import ECDF
 from scipy.stats import gaussian_kde
-from felpy.analysis.optics.scalar.centroid import get_centroid
+from felpy.analysis.optics.scalar.centroid import get_com
 from felpy.analysis.optics.scalar.enclosed_energy import get_enclosed_energy
 
 from felpy.analysis.statistics.kde import get_kde_kernel, plot_kde, get_kde
