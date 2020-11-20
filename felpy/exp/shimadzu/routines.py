@@ -11,9 +11,8 @@ from felpy.utils.vis_utils import extract_animation
 from labwork.about import dCache, logs
 from felpy.utils.job_utils import JobScheduler
 from felpy.exp.shimadzu.correlation_analysis import correlation_analysis
-from felpy.analysis.optics.scalar import enclosed_energy
- 
-
+from felpy.analysis.optics.scalar.enclosed_energy import get_enclosed_energy
+import sys
 def extract_whitefield_animation(ii, mesh, sdir, run, modes = ['all']):
        
     for m in modes:
@@ -47,19 +46,18 @@ def full_correlation_analysis(ii, mesh, sdir, run):
 
 def beam_size_analysis(ii, mesh, sdir, run):
     
-    ntrains = data.shape[-1]
-    npulses = data.shape[-2]
+    ntrains = ii.shape[-1]
+    npulses = ii.shape[-2]
     
     area = np.zeros([npulses, ntrains])
     
-    px = abs(mesh[0,0,0]-mesh[0,0,1])
-    py = abs(mesh[1,0,0]-mesh[1,1,0])
+    px = py = 28.89e-06
     
     
     for train in range(ntrains):
         for pulse in range(npulses):
             print("Analysis of: Pulse {} // Train {}".format(pulse, train))
-            rx, ry = get_enclosed_energy(ii[:,:,0,0], px, px)
+            rx, ry = get_enclosed_energy(ii[:,:,0,0], px, py)
             area[pulse,train] = np.pi*rx*ry
 
     
@@ -81,13 +79,13 @@ def launch(methods):
     
     
 if __name__ == '__main__':
-    method = sys.argv[1]
+    method = globals()[sys.argv[1]]
     sdir = dCache + "whitefield_data/"
     
     run = 'r0046'
     ci = np.load(sdir + "cropped_intensity_{}.npy".format(run))
     cmesh = np.load(sdir + "cropped_mesh_{}.npy".format(run))
 
-    ii = np.load(sdir + "cropped_intensity_{}.npy".format(run))
-    mesh = np.load(sdir + "cropped_mesh_{}.npy".format(run))
+    ii = np.load(sdir + "intensity_{}.npy".format(run))
+    mesh = np.load(sdir + "mesh_{}.npy".format(run))
     method(ii, mesh, sdir, run)

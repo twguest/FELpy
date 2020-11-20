@@ -258,8 +258,8 @@ class JobScheduler:
                 
                 for arrItem in self.jobArray:
                     print(arrItem)
-                    jName = self.jobName + str(arrItem)
-                    self.jobScript(jName, arrItem)
+                    jName = self.jobName + arrItem.__name__
+                    self.jobScript(jName, arrItem.__name__)
             
             else:
                 
