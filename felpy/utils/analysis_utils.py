@@ -55,7 +55,7 @@ def checkRoot(n):
         BOOL = False
     return BOOL
 
-def getWindows(arr, n):
+def get_windows(arr, n):
     """
     useful wrapper for window - returns n windows, where sqrt(n) % 0 must be true
     
