@@ -11,6 +11,7 @@ from os import system
 from distutils.core import setup
 
 from distutils.command.install import install as DistutilsInstall
+from setuptools import find_packages
 
 
 class MyInstall(DistutilsInstall):
@@ -46,19 +47,5 @@ setup(name='FELpy',
                          'wheel>=0.34.2'
                          ],
       
-      packages=[ 'felpy',
-                 'felpy.data',
-                 'felpy.exp',
-                 'felpy.utils',
-                 'felpy.model',
-                 '',
-                 'felpy.data.samples',
-                 '',
-                 '',
-                 '',
-                 'felpy.analysis',
-                 'felpy.model.src',
-                 'felpy.model.materials',
-                 'felpy.model.beamline'
-                ]
+      packages=find_packages()
       )

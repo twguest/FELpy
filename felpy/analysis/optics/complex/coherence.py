@@ -20,16 +20,16 @@ import os
 import numpy as np
 from time import time
 from wpg import srwlib
-from model.tools import radial_profile, binArray
-from model.tools import constructPulse ## for testings
+from felpy.model.tools import radial_profile, binArray
+from felpy.model.tools import constructPulse ## for testings
 from wpg.wpg_uti_wf import getAxis
 from wpg.wavefront import Wavefront 
 from tqdm import tqdm
-from utils.job_utils import JobScheduler
+from felpy.utils.job_utils import JobScheduler
 
 
 
-def coherenceTime(wfr, tStep, bins = 1, VERBOSE = True):
+def get_coherence_time(wfr, tStep, bins = 1, VERBOSE = True):
     """
     Calculate the coherence time of complex wavefield of shape
     [nx, ny, nt].
@@ -75,7 +75,7 @@ def coherenceTime(wfr, tStep, bins = 1, VERBOSE = True):
     return tau*tStep
 
 
-def coherenceLen(wfr, dx, dy, VERBOSE = True):
+def get_coherence_len(wfr, dx, dy, VERBOSE = True):
     """
     Calculate coherence length of a complex wavefield of shape
     [nx, ny. nz]
@@ -118,13 +118,13 @@ def coherenceLen(wfr, dx, dy, VERBOSE = True):
         print("Coherence Length: {:.2f} um".format(clen*1e6))
     return clen
 
-def transverseDOC(wfr, VERBOSE = True):
+def get_transverse_doc(wfr, VERBOSE = True):
     """
     get transverse degree of coherence of the wavefront across each of the
     transverse dimensions slices
     """
     
-    p, r =  complexRadialProfile(wfr)
+    p, r =  get_complex_radial_profile(wfr)
     nt = wfr.shape[-1]
     J = np.dot(p, p.T.conjugate())/nt
     
@@ -136,7 +136,7 @@ def transverseDOC(wfr, VERBOSE = True):
     
     return tdoc
 
-def complexRadialProfile(wfr):
+def get_complex_radial_profile(wfr):
     """
     Calculate the radial profile of a complex array by azimuthal averaging:
     
@@ -184,7 +184,7 @@ def speedTest(nx = 1024, ny = 1024, nz = 5, N = 2000):
         wfr = wfr.toComplex()[0,:,:,:] 
 
         start = time()
-        coherenceTime(wfr, tStep = 1, VERBOSE = False)
+        get_coherence_time(wfr, tStep = 1, VERBOSE = False)
         fin = time()
         
         print("Time Per-Slice in minutes for {} Slices: {}".format(t, (fin-start)/60))
@@ -225,10 +225,10 @@ def testUsage():
     
     for b in range(1, 10):
         print("bins {}".format(b))
-        tau = coherenceTime(wfr, tstep, bins = b)
+        tau = get_coherence_time(wfr, tstep, bins = b)
         
-    clen = coherenceLen(wfr, xstep, ystep)
-    tdoc = transverseDOC(wfr)
+    clen = get_coherence_len(wfr, xstep, ystep)
+    tdoc = get_transverse_doc(wfr)
 
     del tau, clen, tdoc
     
@@ -243,9 +243,9 @@ def run(wfr):
     wfr = wfr.toComplex()[0,:,:,:]
     
     
-    tau = coherenceTime(wfr, tstep, VERBOSE=True)
-    clen = coherenceLen(wfr, xstep, ystep, VERBOSE=True)
-    tdoc = transverseDOC(wfr, VERBOSE=True)
+    tau = get_coherence_time(wfr, tstep, VERBOSE=True)
+    clen = get_coherence_len(wfr, xstep, ystep, VERBOSE=True)
+    tdoc = get_transverse_doc(wfr, VERBOSE=True)
     
     return tau, clen, tdoc
 
@@ -258,7 +258,7 @@ def binTest(bins):
     tstep = tstep[1]-tstep[0]
     
     wfr.toComplex()[0,:,:,:]
-    tau = coherenceTime(wfr, tstep, VERBOSE = True)
+    tau = get_coherence_time(wfr, tstep, VERBOSE = True)
     print("{} bins: {}".format(bins, tau))
     
 

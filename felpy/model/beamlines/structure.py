@@ -34,7 +34,7 @@ from felpy.model.materials.mirrorSurface import genMirrorSurface
 from felpy.model.materials.load_refl import get_refl, load_refl
 from felpy.model.src.coherent import coherentSource
 from wpg.optical_elements import calculateOPD
-from felpy.model.beamline.params import get_params
+from felpy.model.beamlines.params.exfel_spb import get_params
 from felpy.model.tools import propParams
 from wpg.srwlib import srwl_opt_setup_surf_height_2d as MirPl
 
@@ -60,7 +60,7 @@ class BeamlineModel:
         """
         
         if fromFile:
-            with open("../../data/spb/parameters.json", "r") as read_file:
+            with open("../../data/params/exfel_spb.json", "r") as read_file:
                 self.params = json.load(read_file)
         else:
             self.params = get_params()

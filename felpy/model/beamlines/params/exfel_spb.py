@@ -23,7 +23,7 @@ import datetime
 import numpy as np
 
 def export(params):
-    with open('../../data/spb/parameters.json', 'w') as f:
+    with open('../../../data/params/exfel_spb.json', 'w') as f:
         json.dump(params, f)
 
 def get_params():
@@ -40,7 +40,7 @@ def get_params():
     params["HOM1"] = {"name": "HOM1",
                       "distance from source": 246.5,
                       "description": "First Horizontal Offset Mirror",
-                      "mirror profile": "data/input/hom1_mir_real.dat",
+                      "mirror profile": "data/spb/mirror_surface/hom1_mir_real.dat",
                       "orientation": 'x',
                       "incidence angle": 2.1e-03,
                       "xc": 0,
@@ -54,7 +54,7 @@ def get_params():
     params["HOM2"] = {"name": "HOM2",
                       "description": "Second Horizontal Offset Mirror",
                       "distance from source": 257.86,
-                      "mirror profile": "../../data/hom2_mir_real.dat",
+                      "mirror profile": "data/spb/mirror_surface/hom2_mir_real.dat",
                       "orientation": 'x',
                       "incidence angle": 2.4e-03,
                       "transmission": 1,
@@ -82,7 +82,7 @@ def get_params():
     
     
     params["MHP"] = {"name": "MHP",
-                     "mirror profile": "../../data/mhp_mir_Flat.dat",
+                     "mirror profile": "data/spb/mirror_surface/mhp_mir_flat.dat",
                      "distance from source": 893.729,
                      "orientation": 'x',
                      "incidence angle": 1.1e-03,
@@ -122,7 +122,7 @@ def get_params():
     params["MHE_error"] = {"name": "MHE_error",
                            "orientation": 'x',
                            "description": "Micron Focus Horizontal Elliptical Mirror Surface Height Error",
-                           "mirror profile": "../../data/mhe_mir_flat.dat",
+                           "mirror profile": "data/spb/mirror_surface/mhe_mir_flat.dat",
                            "incidence angle": np.pi/2,
                            "transmission": 1,
                            "xc": 0,
@@ -156,7 +156,7 @@ def get_params():
         
     params["MVE_error"] = {"name": "MVE_error",
                        "description": "Micron Focus Horizontal Elliptical Mirror Surface Height Error",
-                       "mirror profile": "../../data/mve_mir_flat.dat",
+                       "mirror profile": "data/spb/mirror_surface/mve_mir_flat.dat",
                        "orientation": 'y',
                        "incidence angle": np.pi/2,
                        "transmission": 1,
@@ -171,7 +171,7 @@ def get_params():
     params["MVP"] = {"name": "MVP",
                      "description": "Vertical Plane Mirror of MKB",
                      "distance from source": 897.509,
-                     "mirror profile": "../../data/mvp_mir_Flat.dat",
+                     "mirror profile": "data/spb/mirror_surface/mvp_mir_flat.dat",
                      "orientation": 'y',
                      "incidence angle": 1.1e-03,
                      "transmission": 1,
@@ -209,7 +209,7 @@ def get_params():
     params["NHE_error"] = {"name": "NHE_error",
                        "orientation": 'x',
                        "description": "Nano Focus Horizontal Elliptical Mirror Surface Height Error",
-                       "mirror profile": "../../data/nhe_mir_flat.dat",
+                       "mirror profile": "data/spb/mirror_surface/nhe_mir_flat.dat",
                        "orientation": 'x',
                        "incidence angle": np.pi/2,
                        "transmission": 1,
@@ -239,7 +239,7 @@ def get_params():
     params["NVE_error"] = {"name": "NVE_error",
                        "orientation": 'x',
                        "description": "Nano Focus Horizontal Elliptical Mirror Surface Height Error",
-                       "mirror profile": "../../data/nve_mir_flat.dat",
+                       "mirror profile": "data/spb/mirror_surface/nve_mir_flat.dat",
                        "orientation": 'x',
                        "incidence angle": np.pi/2,
                        "transmission": 1,

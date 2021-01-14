@@ -25,7 +25,7 @@ from model.beamline.structure import BeamlineModel
 
     
 def testNano(wfr, outdir = None, toggle = 'on'):
-    
+     
     print("Testing SPB-SFX Instrument in Nano-KB Config")
     spb = BeamlineModel()
 
