@@ -47,12 +47,6 @@ def propParams(sx, zx, sy, zy, mode = "fresnel"):
     
     return [0,0,1,m,0,sx,zx/sx,sy,zy/sy,0,0,0]
 
-def constructPulse(nx = 512, ny = 512, nz = 5, ekev = 5.0, tau = 1e-06, d2waist = 10):
-    
-    wfr = Wavefront(build_gauss_wavefront(nx, ny, nz, ekev, -400e-06, 400e-06, -400e-06, 400e-06, tau, 5e-06, 5e-06, d2waist))
-    srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
-    #look_at_q_space(wfr)
-    return wfr
 
 def create_circular_mask(nx, ny, c = None, r = None):
     """

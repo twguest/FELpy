@@ -25,13 +25,12 @@ import wpg.srwlib as srwlib
 from wpg.wpg_uti_wf import calc_pulse_energy, getOnAxisPowerDensity, getCentroid, get_profile_1d, getAxis
 from wpg.wavefront import Wavefront
 
-from model.tools import constructPulse
-from model.src.coherent import coherentSource
+from felpy.model.src.coherent import coherentSource, construct_pulse
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
 
 from wpg.srwlib import srwl
 
-def getPulseEnergy(wfr, mode = 'integrated'):
+def get_pulse_energy(wfr, mode = 'integrated'):
     """
     calculate pulse energy (in J), number of photons and fluence in the time-domain
 
@@ -67,7 +66,7 @@ def getPulseEnergy(wfr, mode = 'integrated'):
         E[0,0] *=  dx * dy * 1e6 * dt
         E[0,1] = E[0,0] * J2eV / wfr.params.photonEnergy
         E[0,2] = E[0,1] / (ax*ay)
-        
+        E = E[0]
     elif mode == 'pulse':
         
         ii = wfr.get_intensity()
@@ -96,7 +95,7 @@ def run(wfr):
 
 if __name__ == '__main__':
     
-    wfr = constructPulse(512,512,10)
+    wfr = construct_pulse(512,512,10)
     
     E = getPulseEnergy(wfr, mode = 'pulse')
 

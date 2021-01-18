@@ -48,10 +48,16 @@ class BeamlineModel:
     """
     
     
-    def __init__(self):
-        print("Initialising Single Particle Beamline")
+    def __init__(self, VERBOSE = True):
+        
+        self.VERBOSE = VERBOSE
+        
+        if VERBOSE:
+            print("Initialising Single Particle Beamline")
+        
         self.load_params()
         self.fpath = felpy_path() ### felpy path (for dev. purposes)
+        
         add_path()
         
     def load_params(self, fromFile = False):
@@ -77,109 +83,26 @@ class BeamlineModel:
         else:
             with open(outdir + 'parameters.json', 'w') as f:
                 json.dump(self.params, f)
-    
-    def setupHOMs(self, ekev, ang = 2.2e-03):
-    
-        refl_data = load_refl()
-        refl, ang = get_refl(refl_data, ekev, ang, limits = [1.1e-03, 3.6e-03])
-        
-        self.adjustHOMs(refl, ang)           
-        
-    def setupKBs(self, ekev, ang = 3.5e-03, misorientation = 0, focus = "nano"):
-        
-        if ekev >= 7.5:
-            material = "B4C"
-        else: 
-            material = "Ru"
-            
-        refl_data = load_refl(material)
-        refl, ang = get_refl(refl_data, ekev, ang, limits = [0, 5.5e-03])
-        
-        if focus == 'nano':
-            self.adjustNHE(refl, ang)
-            
-            ang_e = ang + np.tan(self.params["NVE"]["xc"]/self.params["df"]["distance"])
-            refl_e, ang_e = get_refl(refl_data, ekev, ang_e, limits = [0, 5.5e-03])
-            
-            self.adjustNVE(refl_e, ang_e)
 
-    def adjustNHE(self, refl = None, ang = None, misorientation = 0):
         
-        if refl is not None:
-            self.params["NHE"]['reflectivity'] = refl
-        if ang is not None:
-            self.params["NHE"]["design angle"] = ang
-        if ang or misorientation is not None:
-            self.params["NHE"]["incidence angle"] = self.params["NHE"]["design angle"] + misorientation
-            
-    def adjustNVE(self, refl, ang, misorientation = 0):
         
-        if refl is not None:
-            self.params["NVE"]['reflectivity'] = refl
-        if ang is not None:
-            self.params["NVE"]["design angle"] = ang
-        if ang or misorientation is not None:
-            self.params["NVE"]["incidence angle"] = self.params["NVE"]["design angle"] + misorientation
-            
-    def adjustKBs(self, refl = None, ang = None, misalignment = 0):
-        """
-        Wrapper to adjust the components of the kbs via editing the current 
-        parameters file
-        """
-        
-        if refl is not None:
-            self.params["MHE"]['reflectivity'] = refl
-            self.params["MVE"]['reflectivity'] = refl
-            self.params["NHE"]['reflectivity'] = refl
-            
-        if ang is not None:
-            self.params["MHE"]["design angle"] = ang
-            self.params["MVE"]["design angle"] = ang
-            self.params["NHE"]["design angle"] = ang
-            
-            self.params["MHE"]["incidence angle"] = ang + misalignment
-            self.params["MVE"]["incidence angle"] = ang + misalignment
-            self.params["NHE"]["incidence angle"] = ang + misalignment
-            
-    
-    def adjustHOMs(self, refl = None, ang = None):
-        """
-        Wrapper to adjust the components of the HOMs via editing the current 
-        parameters file
-        """
-        
-        if refl is not None:
-            self.params["HOM1"]['transmission'] = refl
-            self.params["HOM2"]['transmission'] = refl
-        if ang is not None:
-            self.params["HOM1"]["incidence angle"] = ang
-            self.params["HOM2"]["incidence angle"] = ang
-    
-    def adjustMHE(self, refl = None, ang = None):
-        """
-        Wrapper to adjust the components of the MHE via editing the current 
-        parameters file
-        """
-        
-        if refl is not None:
-            self.params["MHE"]['transmission'] = refl
-            self.params["MHP"]['transmission'] = refl
-        if ang is not None:
-            self.params["MHE"]["incidence angle"] = ang
-            self.params["MHP"]["incidence angle"] = ang
+    def adjust_mirror(self, mirror_name, ekev, new_ang, mirror_refl = None):
+     
+        if mirror_refl == None: 
+            if ekev >= 7.5:
+                material = "B4C"
+            else: 
+                material = "Ru"    
 
-    def adjustMVE(self, refl = None, ang = None):
-        """
-        Wrapper to adjust the components of the MVE via editing the current 
-        parameters file
-        """
-        if refl is not None:
-            self.params["MVE"]['transmission'] = refl
-            self.params["MVP"]['transmission'] = refl
-        if ang is not None:
-            self.params["MVE"]["incidence angle"] = ang
-            self.params["MVP"]["incidence angle"] = ang
-    
+            refl = get_refl(load_refl(material), ekev, new_ang)
+        
+        else:
+            refl = mirror_refl 
+        
+        new_ang = new_ang + np.tan(self.params[mirror_name]["xc"]/self.params[self.params[mirror_name]['next_drift']]['distance'])
+        self.params[mirror_name]["incidence angle"] = new_ang
+        self.params[mirror_name]['reflectivity'] = refl
+
 
     def defineMirrorProfiles(self, overwrite = False, surface = 'flat', plot = False, aperture = True):
         """
@@ -409,7 +332,7 @@ class BeamlineModel:
             
             self.NVE_error = MirPl(np.loadtxt(self.fpath + self.params['NVE_error']['mirror profile']),
                             _dim = self.params['NVE_error']['orientation'],
-                            _ang = self.params['NVE_error']['incidence angle'], 
+                            _ang = self.params['NVE_error']['incidence angle']+self.params['NVE']['incidence angle'], 
                             _refl = self.params['NVE_error']['transmission'],
                             _x = self.params['NVE_error']['xc'], _y = self.params['NVE_error']['yc']) 
             
@@ -417,7 +340,7 @@ class BeamlineModel:
             
             self.NHE_error = MirPl(np.loadtxt(self.fpath + self.params['NHE_error']['mirror profile']),
                 _dim = self.params['NHE_error']['orientation'],
-                _ang = self.params['NHE_error']['incidence angle'], 
+                _ang = self.params['NHE_error']['incidence angle']+self.params['NHE']['incidence angle'], 
                 _refl = self.params['NHE_error']['transmission'],
                 _x = self.params['NHE_error']['xc'], _y = self.params['NHE_error']['yc']) 
 
@@ -545,7 +468,7 @@ class BeamlineModel:
             drift2screen.name = screenName
         self.bl.append(Drift(distance), propParams(1, 1, 1, 1, m = 'quadratic'))
     
-    def mirrorProfiles(self, toggle = "on", aperture = True, overwrite = False):
+    def mirror_profiles(self, toggle = "on", aperture = True, overwrite = False):
         """
         toggle for mirror surfaces
         """
@@ -554,9 +477,9 @@ class BeamlineModel:
         if toggle == "off":
             self.defineMirrorProfiles(overwrite = overwrite, aperture = aperture, surface = 'flat')
             
-    def plotMirrorProfile(self, mirror, outdir = None):
+    def plotMirrorProfile(self, mirror_name, outdir = None):
         
-        surface = np.loadtxt(self.params[mirror]['mirror profile'])
+        surface = np.loadtxt(self.params[mirror_name]['mirror profile'])
         
         x = surface[1:, 0]
         y = surface[0, 1:]
@@ -569,7 +492,7 @@ class BeamlineModel:
         ax = fig.add_subplot(111)
         
 
-        ax.set_title(mirror + " Surface")
+        ax.set_title(mirror_name + " Surface")
 
         
         img = ax.imshow(surface*1e9,
@@ -584,7 +507,7 @@ class BeamlineModel:
         cb.ax.set_ylabel("Height Error (nm)", rotation = 270)
         
         if outdir is not None:
-            fig.savefig(outdir + mirror + "_surface.png")
+            fig.savefig(outdir + mirror_name + "_surface.png")
         else:
             plt.show()
     

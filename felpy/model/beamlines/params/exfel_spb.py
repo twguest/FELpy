@@ -33,7 +33,7 @@ def get_params():
 
     params = {}
     
-    params["d1"] = {'name': "drift1",
+    params["d1"] = {'name': "d1",
                     "description": "Drift from Source to HOM1",
                     'distance': 246.5}
     
@@ -45,9 +45,12 @@ def get_params():
                       "incidence angle": 2.1e-03,
                       "xc": 0,
                       "yc": 0,
-                      "transmission": 1}
+                      "transmission": 1,
+                      'next_drift' : 'd2',
+                      'ang_min': 1.1e-03,
+                      'ang_max': 3.6e-03}
     
-    params["d2"] = {'name': "drift2",
+    params["d2"] = {'name': "d2",
                     "description": "Drift from HOM1 to HOM2",
                     'distance': 11.36}
     
@@ -59,9 +62,12 @@ def get_params():
                       "incidence angle": 2.4e-03,
                       "transmission": 1,
                       "xc": 0,
-                      "yc": 0}
+                      "yc": 0,
+                      'next_drift' : 'd3',
+                      'ang_min': 1.1e-03,
+                      'ang_max': 3.6e-03}
     
-    params["d3"] = {'name': "drift3",
+    params["d3"] = {'name': "d3",
                     "description": "Drift from HOM2 to Effective Tunnel Entrance",
                     'distance': 634.669}
 
@@ -73,9 +79,10 @@ def get_params():
                   "dx": 0.0038,
                   "dy": 0.0038,
                   "xc": 0,
-                  "yc": 0}
+                  "yc": 0,
+                  'next_drift': 'd4'}
 
-    params["d4"] = {'name': "drift4",
+    params["d4"] = {'name': "d4",
                 "description": "Drift MKB-PSLIT to MHP",
                 'distance': 1.200}
     
@@ -90,9 +97,12 @@ def get_params():
                      "dx": 0.0250,
                      "dy": 0.950,
                      "xc": 0,
-                     "yc": 0}
+                     "yc": 0,
+                     'next_drift': 'd5',
+                      'ang_min': -0.5e-03,
+                      'ang_max': 5.5e-03}
     
-    params["d5"] = {'name': "drift5",
+    params["d5"] = {'name': "d5",
                     "description": "Drift from MHP to MHE",
                     'distance': 1.050}
     
@@ -117,7 +127,10 @@ def get_params():
                      "yaw": 0,
                      "reflectivity": 1,
                      "_ext_in": 0.5,
-                     "_ext_out": 0.5}
+                     "_ext_out": 0.5,
+                     'next_drift' : 'd6',
+                     'ang_min': -0.5e-03,
+                     'ang_max': 5.5e-03}
     
     params["MHE_error"] = {"name": "MHE_error",
                            "orientation": 'x',
@@ -128,7 +141,7 @@ def get_params():
                            "xc": 0,
                            "yc": 0}
 
-    params["d7"] = {'name': "drift7",
+    params["d7"] = {'name': "d7",
                     "description": "Drift from MKB-SCR to MVE",
                     'distance': 1.680}
 
@@ -151,7 +164,10 @@ def get_params():
                      "yaw": 0,
                      "reflectivity": 1,
                      "_ext_in": 0.5,
-                     "_ext_out": 0.5}
+                     "_ext_out": 0.5,
+                     'next_drift' : 'd8',
+                     'ang_min': -5.0e-03,
+                     'ang_max': 5.0e-03}
     
         
     params["MVE_error"] = {"name": "MVE_error",
@@ -164,7 +180,7 @@ def get_params():
                        "yc": 0}
 
     
-    params["d8"] = {'name': "drift8",
+    params["d8"] = {'name': "d8",
                     "description": "Drift from MVE to MVP",
                     'distance': 1.050}
     
@@ -178,7 +194,10 @@ def get_params():
                      "dx": 0.0250,
                      "dy": 0.950,
                      "xc": 0,
-                     "yc": 0}
+                     "yc": 0,
+                     'next_drift': 'df',
+                     'ang_min': -2.0e-03,
+                     'ang_max': -2.0e-03}
 
     params["df"] = {'name': "focus",
                     "description": "Drift to Focus",
@@ -202,7 +221,10 @@ def get_params():
                      "yaw": 0,
                      "reflectivity": 1,
                      "_ext_in": 0.5,
-                     "_ext_out": 0.5}
+                     "_ext_out": 0.5,
+                     'next_drift': 'd5',
+                     'ang_min': -0.5e-03,
+                     'ang_max': 5.5e-03}
     
     
 
@@ -233,7 +255,10 @@ def get_params():
                      "yaw": 0,
                      "reflectivity": 1,
                      "_ext_in": 0.5,
-                     "_ext_out": 0.5}
+                     "_ext_out": 0.5,
+                     'next_drift': 'df',
+                     'ang_min': -5.0e-03,
+                     'ang_max': 5.0e-03}
     
     
     params["NVE_error"] = {"name": "NVE_error",
@@ -255,7 +280,8 @@ def get_params():
                            "dx": 0.0038,
                            "dy": 0.0038,
                            "xc": 0,
-                           "yc": 0}
+                           "yc": 0,
+                           'next_drift': 'd4'}
 
     return params
                  
