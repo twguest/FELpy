@@ -32,8 +32,8 @@ from wpg.wpg_uti_wf import plot_intensity_qmap as plotKspace
 
 from wpg.misc import calcDivergence, toKspace
 
-from wpg.generators import build_gauss_wavefront_xy as buildGaussian
-from wpg.generators import build_gauss_wavefront
+from wpg.generators import build_gauss_wavefront_xy as build_gaussian
+from wpg.generators import build_gauss_wavefront as build_gaussian_3D
 
 from wpg.beamline import Beamline
 
@@ -160,7 +160,7 @@ def coherentSource(nx, ny, ekev, q, xoff = 0, yoff = 0, modDivergence = True):
     
     f = tlFocus(pulseWidth(ekev),pulseDivergence(q,ekev))
         
-    gsnBm = buildGaussian(nx, ny, ekev, xMin, xMax, yMin, yMax, sigX, sigY, 1, xoff = xoff, yoff = yoff, pulseTau = tau)
+    gsnBm = build_gaussian(nx, ny, ekev, xMin, xMax, yMin, yMax, sigX, sigY, 1, xoff = xoff, yoff = yoff, pulseTau = tau)
     
     wfr = Wavefront(gsnBm)
     wfr.params.wavelength = wavelength
@@ -236,11 +236,59 @@ def tstCoherentSrcFWHM(outdir = None):
             dfig.savefig(outdir + "SourceError_pixels.png")
             
 
-def construct_pulse(nx = 512, ny = 512, nz = 5, ekev = 5.0, tau = 1e-06, d2waist = 10):
     
-    wfr = Wavefront(build_gauss_wavefront(nx, ny, nz, ekev, -400e-06, 400e-06, -400e-06, 400e-06, tau, 5e-06, 5e-06, d2waist))
+    wfr = Wavefront(build_gaussian_3D(nx, ny, nz, ekev, -400e-06, 400e-06, -400e-06, 400e-06, tau, 5e-06, 5e-06, d2waist))
     srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
     #look_at_q_space(wfr)
+    return wfr
+
+def construct_spb_pulse(nx, ny, nz, ekev, q, modDivergence = True):
+    """
+    Construct a fully-coherent Gaussian source with properties related to the
+    energy of the radiation and beam charge.
+    
+    Important points: pulseTau (coherence length) is set to tau (pulse length)
+    in the fully coherent case
+    
+    :param nx: number of horizontal pixels [int]
+    :param ny: number of vertical pixels [int]
+    :param nz: number of slices [int]
+    :param ekev: radiation energy [keV]
+    :param q: electron beam bunch charge [nC]
+    :param xoff: horizontal offset of beam maximum [m]
+    :param yoff: vertical offset of beam maximum [m]
+    :param modDivergence: Choose to set non-diffraction limited div [bool]
+    """
+    wavelength = (h*c)/(ekev*1e3)
+        
+    xMin, xMax = -400e-06, 400e-06 #based on fwhm of 1 nC, 3 keV beam
+    yMin, yMax = -400e-06, 400e-06 #based on fwhm of 1 nC, 3 keV beam
+    
+    sigX, sigY = pulseWidth(ekev)/fwhm2rms, pulseWidth(ekev)/fwhm2rms
+    pulseEn = pulseEnergy(q, ekev)
+    
+    dtheta = pulseDivergence(q, ekev)
+    tau = pulseDuration(q)
+    
+    f = tlFocus(pulseWidth(ekev),pulseDivergence(q,ekev))
+        
+    gsnBm = build_gaussian_3D(nx = nx,
+                              ny = ny,
+                              nz = nz,
+                              ekev = ekev,
+                              xMin = xMin, xMax = xMax,
+                              yMin = yMin, yMax = yMax,
+                              sigX = sigX, sigY = sigY,
+                              d2waist = 1,
+                              tau = tau,
+                              pulseRange = 1)
+    
+    wfr = Wavefront(gsnBm)
+    srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
+    
+    wfr.params.wavelength = wavelength
+    modDiv(wfr,f)
+    
     return wfr
 
 
