@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-loop to optimise the angle of the HOM1 mirror.
+loop to optimise the angle of the a mirror.
 """
-import sys
-import shutil
+import matplotlib
+matplotlib.use('qt5agg')
 
+import sys
 import numpy as np
 import multiprocessing as mp
 
@@ -15,17 +16,34 @@ from felpy.utils.os_utils import mkdir_p
 from felpy.utils.vis_utils import animate
 
 from wpg.wpg_uti_wf import plot_intensity_map as plot_wfr
+
 from functools import partial
+from tqdm import tqdm
 
 FOCUS = 'nano' ### applies for NKB beamline analysis
 PROCESSES = mp.cpu_count()//2 ### number of cpus for multiprocessing
-MIRROR = "HOM2" ### mirror angle to be optimised
 N = 50 ### number of data points
 
-sdir = "./{}/".format(MIRROR)
+from os import getcwd
 
+from felpy.utils.job_utils import JobScheduler
+from labwork.about import logs
 
-def core(ang, mirror_name):
+def launch(mode = 'pulse'):
+    """
+    This part launches the jobs that run in main 
+    """
+    
+    cwd = getcwd()
+    script = "mirror_angle_optimisation.py"
+    
+    js = JobScheduler(cwd + "/" + script, logDir = logs,
+                      jobName = "mirror_optimisation", partition = 'exfel', nodes = 1, jobType = 'array',
+                      jobArray = np.arange(3,15,0.5))
+        
+    js.run(test = False)
+
+def core(ang, ekev, mirror_name):
     """
     Core function for mirror optimisation tests. Can be generalised for all
     mirrors. In future, may add arg method= for defining which metric to 
@@ -36,21 +54,20 @@ def core(ang, mirror_name):
     :return data: set of optimisation parameters and output metrics. 
     """
     
-    mkdir_p(sdir)
     
     spb = BeamlineModel(VERBOSE = False)
     spb.mirror_profiles(toggle = "on", aperture  = True, overwrite = False)
-    spb.adjust_mirror("HOM1", 5.0, new_ang = ang)
+    spb.adjust_mirror("HOM1", ekev, new_ang = ang)
     spb.buildElements(focus = FOCUS)
     spb.buildBeamline(focus = FOCUS)
     spb.cropBeamline(spb.params['HOM1']['next_drift'])
     bl = spb.get_beamline()
     
-    wfr = construct_spb_pulse(512, 512, 2, 5.0, 0.25)
+    wfr = construct_spb_pulse(1024, 1024, 5, ekev, 0.25)
     
     bl.propagate(wfr)
-    plot_wfr(wfr, save = sdir + "{:.4f}.png".format(ang*1e3))
-    nph = get_pulse_energy(wfr)[1]
+    #plot_wfr(wfr, save = sdir + "{:.4f}.png".format(ang*1e3))
+    nph = get_pulse_energy(wfr)[0][1]
     print("Mirror Angle: {} mrad Complete".format(ang*1e3
                                                  ))
     return (ang, nph)
@@ -60,18 +77,24 @@ if __name__ == '__main__':
     
     MIRRORS = ['HOM1', 'HOM2', 'NHE', 'NVE']
     
-    for MIRROR in MIRRORS:    
+    ekev = float(sys.argv[1])
     
+    edir = "./{}keV/".format(ekev)
+    mkdir_p(edir)
+    for MIRROR in MIRRORS:    
+        sdir = edir + "/{}/".format(MIRROR)
+        mkdir_p(sdir)
+
         spb = BeamlineModel(VERBOSE = False)
         pool = mp.Pool(PROCESSES)
-        r = pool.map(partial(core, mirror_name = MIRROR),
-                 np.linspace(spb.params[MIRROR]['ang_min'],
-                             spb.params[MIRROR]['ang_max'],
-                             N))
+        r = pool.map(partial(core, mirror_name = MIRROR, ekev = ekev),
+                 tqdm(np.linspace(spb.params[MIRROR]['ang_min'],
+                                  spb.params[MIRROR]['ang_max'],
+                                  N)))
         
         
-        animate(sdir, sdir, "{}_mirror_rotation".format(MIRROR))
+        #animate(sdir, edir, "{}_mirror_rotation".format(MIRROR))
         
-        np.save(r, sdir + "{}_mirror_flux_data".format(MIRROR))
-        
-        
+        np.save(edir + "{}_mirror_flux_data".format(MIRROR), r)
+            
+            
