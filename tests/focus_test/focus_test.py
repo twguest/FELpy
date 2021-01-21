@@ -30,7 +30,7 @@ from copy import copy
 from wpg.beamline import Beamline
 from wpg.srwlib import SRWLOptD
 
-from model.src.coherent import coherentSource
+from model.src.coherent import construct_SA1_wavefront
 from model.beamline.structure import BeamlineModel, propParams
 from model.materials.load_refl import load_refl, get_refl
 
@@ -126,7 +126,7 @@ if __name__ == '__main__':
     
     ekev = 9.2
     
-    wfr = coherentSource(1024, 1024, ekev, 0.5)
+    wfr = construct_SA1_wavefront(1024, 1024, ekev, 0.5)
     
 # =============================================================================
 #     sliceFocus(wfr = wfr, ekev = ekev, focus = 'micron', nslices = 500, axisName = 'x', outdir = "focus_test/")

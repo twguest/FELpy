@@ -11,7 +11,7 @@ from wpg.beamline import Beamline
 from wpg.optical_elements import Drift, Aperture
 from wpg.srwlib import SRWLOptMirEl, SRWLOptMirTor
 
-from felpy.model.tools import constructPulse, propParams
+from felpy.model.src.coherent import construct_SA1_wavefront, propParams
 
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
 

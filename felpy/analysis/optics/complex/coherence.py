@@ -21,7 +21,7 @@ import numpy as np
 from time import time
 from wpg import srwlib
 from felpy.model.tools import radial_profile, binArray
-from felpy.model.tools import constructPulse ## for testings
+from felpy.model.src.coherent import construct_SA1_pulse ## for testings
 from wpg.wpg_uti_wf import getAxis
 from wpg.wavefront import Wavefront 
 from tqdm import tqdm
@@ -89,7 +89,7 @@ def get_coherence_len(wfr, dx, dy, VERBOSE = True):
     """
     
     
-    profile, r = complexRadialProfile(wfr)
+    profile, r = get_complex_radial_profile(wfr)
 
     
     nt = wfr.shape[-1]
@@ -146,7 +146,7 @@ def get_complex_radial_profile(wfr):
     
     :returns prof: radial profile
     """
-        
+    print(wfr.shape) 
     r = radial_profile(wfr[:,:,0].real, [wfr.shape[0]//2,wfr.shape[1]//2])[1]
     
     r = np.diag(r).copy()
@@ -158,8 +158,8 @@ def get_complex_radial_profile(wfr):
                                     [wfr.shape[0]//2,wfr.shape[1]//2])[0]*1j
                    for i in range(wfr.shape[-1])])
     
-    prof = np.moveaxis(rp, 0, -1), r
-    return prof
+    prof = np.moveaxis(rp, 0, -1)
+    return prof, r
   
     
 def speedTest(nx = 1024, ny = 1024, nz = 5, N = 2000):
@@ -273,7 +273,7 @@ def launch():
     js.run(test = False)
 
 if __name__ == "__main__":
+    wfr = construct_SA1_pulse(512,512,5,5.0,0.25)
     
-    binTest(sys.argv[1])
-    #testUsage()
-    #speedTest(nz = 15)
+    
+

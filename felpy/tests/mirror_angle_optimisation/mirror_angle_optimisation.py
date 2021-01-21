@@ -2,6 +2,9 @@
 """
 loop to optimise the angle of the a mirror.
 """
+
+import sys
+sys.path.append("/opt/")
 import matplotlib
 matplotlib.use('qt5agg')
 
@@ -71,14 +74,16 @@ def core(ang, ekev, mirror_name):
     print("Mirror Angle: {} mrad Complete".format(ang*1e3
                                                  ))
     return (ang, nph)
-    
-    
+
 if __name__ == '__main__':
     
     MIRRORS = ['HOM1', 'HOM2', 'NHE', 'NVE']
     
-    ekev = float(sys.argv[1])
-    
+    if len(sys.argv) > 1:    
+        ekev = float(sys.argv[1])
+    else:
+        ekev = 5.0
+        
     edir = "./{}keV/".format(ekev)
     mkdir_p(edir)
     for MIRROR in MIRRORS:    

@@ -30,7 +30,7 @@ from wpg.wavefront import Wavefront
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
 from sklearn.preprocessing import minmax_scale as norm
 from matplotlib import pyplot as plt
-from model.src.coherent import coherentSource
+from model.src.coherent import construct_SA1_wavefront
 from wpg import srwlib
 from wpg.wpg_uti_wf import getAxis
 from scipy.constants import h,c,e
@@ -53,7 +53,7 @@ if __name__ == "__main__":
 
     
     
-    wfr = coherentSource(nx,ny,4.96,0.25)
+    wfr = construct_SA1_wavefront(nx,ny,4.96,0.25)
     wfr.store_hdf5("coherentSrc.h5")
 
     wav = (h*c)/(wfr.params.photonEnergy*e)

@@ -20,7 +20,7 @@ sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
 
 import time
 
-from model.src.coherent import coherentSource
+from model.src.coherent import construct_SA1_wavefront
 from model.beamline.structure import BeamlineModel
 
     
@@ -62,6 +62,6 @@ def plotMirrorProfiles(outdir):
     
 if __name__ == '__main__': 
     
-    wfr = coherentSource(1024, 1024, 4.96, 0.250)
+    wfr = construct_SA1_wavefront(1024, 1024, 4.96, 0.250)
     
     testNano(wfr, outdir = "/opt/spb_model/data/beamlineTests/prop/")

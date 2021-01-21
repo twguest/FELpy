@@ -16,7 +16,7 @@ sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
 ###############################################################################
 import os
 
-from model.src.coherent import coherentSource
+from model.src.coherent import construct_SA1_wavefront
 from model.beamline.structure import BeamlineModel
 from model.beamline.samplingCalc import samresPlot
 
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     
     for element in list_of_elements:
             
-        wfr = coherentSource(1024, 1024, ekev, q)
+        wfr = construct_SA1_wavefront(1024, 1024, ekev, q)
         
         spb = BeamlineModel()
         spb.setupHOMs(ekev, 2.2e-03)

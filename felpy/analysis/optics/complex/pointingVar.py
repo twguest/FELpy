@@ -8,7 +8,7 @@ Created on Wed Sep 16 15:18:05 2020
 import os
 import sys
 sys.path.append("../../")
-from felpy.model.tools import constructPulse, generateTestPulses
+from felpy.model.src.coherent import construct_SA1_wavefront, generateTestPulses
 from felpy.model.tools import mkdir_p
 from wpg.wavefront import Wavefront
 import numpy as np

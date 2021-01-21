@@ -20,7 +20,7 @@ from wpg import srwlib
 from wpg.wavefront import Wavefront
 from wpg.wpg_uti_wf import integral_intensity, calculate_fwhm, look_at_q_space
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
-from model.src.coherent import coherentSource
+from model.src.coherent import construct_SA1_wavefront
 from model.beamline.structure import BeamlineModel, propParams
 from wpg.srwlib import SRWLOptD as Drift
 from wpg.srwlib import SRWLOptA as Aperture

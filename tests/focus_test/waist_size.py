@@ -30,7 +30,7 @@ from copy import copy
 from wpg.beamline import Beamline
 from wpg.srwlib import SRWLOptD
 
-from model.src.coherent import coherentSource
+from model.src.coherent import construct_SA1_wavefront
 from model.beamline.structure import BeamlineModel, propParams
 from model.materials.load_refl import load_refl, get_refl
 
@@ -42,7 +42,7 @@ from matplotlib import pyplot as plt
 
 def getFocusSize(ekev, q, focus = 'micron'):
     
-    wfr = coherentSource(1024, 1024, ekev, q)
+    wfr = construct_SA1_wavefront(1024, 1024, ekev, q)
     
     spb = BeamlineModel(overwrite_mirrors =  True)
     

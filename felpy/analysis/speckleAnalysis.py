@@ -238,9 +238,9 @@ def getFeatureSize(ii, nWindows = 16, px = None, bPlot = False):
 
 def test():
     
-    from model.src.coherent import coherentSource
+    from model.src.coherent import construct_SA1_wavefront
     
-    wfr = coherentSource(1024, 1024, 1, 0.001, xoff = 0, yoff = -50e-06)
+    wfr = construct_SA1_wavefront(1024, 1024, 1, 0.001, xoff = 0, yoff = -50e-06)
     
     arr = wfr.get_intensity()[:,:,0]
     

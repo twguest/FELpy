@@ -45,9 +45,9 @@ from wpg.srwlib import SRWLOptD
 fwhm2rms = np.sqrt(8*np.log(2)) ### FWHM = sqrt(8ln(2))*sigma
 h = scipy.constants.physical_constants['Planck constant in eV s'][0]
 
-def pulseEnergy(q, ekev):
+def analytical_pulse_energy(q, ekev):
     """
-    Estimate of pulseEnergy from electron bunch charge and radiation energy    
+    Estimate of analytical_pulse_energy from electron bunch charge and radiation energy    
     
     :param q: electron bunch charge [nC]
     :param ekev: radiation energy [keV] 
@@ -58,9 +58,9 @@ def pulseEnergy(q, ekev):
     P = 19*q/ekev
     return P/1e3
 
-def pulseDuration(q):
+def analytical_pulse_duration(q):
     """
-    Estimate pulseDuration from electron bunch charge 
+    Estimate analytical_pulse_duration from electron bunch charge 
     
     :param q: electron bunch charge [nC]
         
@@ -71,9 +71,9 @@ def pulseDuration(q):
     return t*1e-15
 
 
-def pulseWidth(ekev):
+def analytical_pulse_width(ekev):
     """
-    Estimate pulseWidth (FWHM) from radiation energy (assumes symmetrical beam)
+    Estimate analytical_pulse_width (FWHM) from radiation energy (assumes symmetrical beam)
     
     :param ekev: radiation energy [keV]
         
@@ -83,9 +83,9 @@ def pulseWidth(ekev):
     sig = 6*np.log((7.4e03/ekev))
     return sig/1e6
 
-def pulseDivergence(q, ekev):
+def analytical_pulse_divergence(q, ekev):
     """
-    Estimate of pulseDivergence (half-angle) from electron bunch charge and radiation energy    
+    Estimate of analytical_pulse_divergence (half-angle) from electron bunch charge and radiation energy    
     
     :param q: electron bunch charge [nC]
     :param ekev: radiation energy [keV] 
@@ -96,41 +96,28 @@ def pulseDivergence(q, ekev):
     dtheta = (17.2*6.4*np.sqrt(q))/ekev**(0.85)
     return dtheta/1e6
 
-def tlFocus(sig, dtheta):
-    """
-    Thin lens focus required to correct divergence
-    
-    :params sig: beam fwhm [m]
-    :params dtheta: pulse divergence [rad]
-    
-    :return f: thin lens focus [m]
-    """
-    f = sig/(np.tan(dtheta))
-    return f
 
-
-def modDiv(wfr, f):
+def modify_beam_divergence(wfr, sig, dtheta):
     """
     Construct a thin-lens with a focal length defined by a desired divergence,
-    see: tlFocus, and then propagate to 2f
+    see: thin_lens_mod, and then propagate to 2f
     
     :param wfr: WPG wfr structure
-    :param f: focal length of thin-lens (x = y) [m]
+    :params sig: beam fwhm [m]
+    :params dtheta: pulse divergence [rad]
     """    
-    fwhm_i = calculate_fwhm(wfr)
+    f = sig/(np.tan(dtheta))
     
     tl = thinLens(f,f)
     bl = Beamline()
     bl.append(tl, [0,0,1,0,0,1,1,1,1,0,0,0])
     bl.append(Drift(2*f), [0,0,1,0,0,1,1,1,1,0,0,0])
     bl.propagate(wfr)
-    
-    fwhm_f = calculate_fwhm(wfr)
-    
+        
     wfr.params.Mesh.zCoord = 0
     
 
-def coherentSource(nx, ny, ekev, q, xoff = 0, yoff = 0, modDivergence = True):
+def construct_SA1_wavefront(nx, ny, ekev, q, xoff = 0, yoff = 0, modify_beam_divergenceergence = True):
     """
     Construct a fully-coherent Gaussian source with properties related to the
     energy of the radiation and beam charge.
@@ -145,104 +132,31 @@ def coherentSource(nx, ny, ekev, q, xoff = 0, yoff = 0, modDivergence = True):
     :param q: electron beam bunch charge [nC]
     :param xoff: horizontal offset of beam maximum [m]
     :param yoff: vertical offset of beam maximum [m]
-    :param modDivergence: Choose to set non-diffraction limited div [bool]
+    :param modify_beam_divergenceergence: Choose to set non-diffraction limited div [bool]
     """
     wavelength = (h*c)/(ekev*1e3)
         
     xMin, xMax = -400e-06, 400e-06 #based on fwhm of 1 nC, 3 keV beam
     yMin, yMax = -400e-06, 400e-06 #based on fwhm of 1 nC, 3 keV beam
     
-    sigX, sigY = pulseWidth(ekev)/fwhm2rms, pulseWidth(ekev)/fwhm2rms
-    pulseEn = pulseEnergy(q, ekev)
+    sigX, sigY = analytical_pulse_width(ekev)/fwhm2rms, analytical_pulse_width(ekev)/fwhm2rms
+    pulseEn = analytical_pulse_energy(q, ekev)
     
-    dtheta = pulseDivergence(q, ekev)
-    tau = pulseDuration(q)
+    dtheta = analytical_pulse_divergence(q, ekev)
+    tau = analytical_pulse_duration(q)
     
-    f = tlFocus(pulseWidth(ekev),pulseDivergence(q,ekev))
-        
+    
     gsnBm = build_gaussian(nx, ny, ekev, xMin, xMax, yMin, yMax, sigX, sigY, 1, xoff = xoff, yoff = yoff, pulseTau = tau)
     
     wfr = Wavefront(gsnBm)
     wfr.params.wavelength = wavelength
-    modDiv(wfr,f)
+    modify_beam_divergence(wfr,analytical_pulse_width(ekev),analytical_pulse_divergence(q,ekev))
     
 
     return wfr
 
 
-def tstCoherentSrcFWHM(outdir = None):
-    """
-    Test that the FWHM of the source matches the analytical prediction
-    
-    :param outdir: output directory [str]
-    """
-    print("Testing Source Size vs. Energy and Resolution")
-    
-    fig = plt.figure(figsize = [12,8])
-    ax = fig.add_subplot(111)
-    ax.set_title("Source Size Radiation Dependence")
-    ax.set_ylabel("FWHM [$\mu$m]")
-    ax.set_xlabel("Radiation Energy [keV]")
-    ax.set_xlim([2.5,17.5])
-    ax.set_ylim([30,55])
-    
-    dfig = plt.figure()
-    dax = dfig.add_subplot(111)
-    dax.set_title("Average Error of Modelled and Analytical Source Size")
-    dax.set_ylabel("% Error$_{FWHM}$ ($\Delta FWHM/FWHM$)")
-    dax.set_xlabel("Pixels")
-    dax.set_xlim([0, 5000])
-    dax.set_ylim([0, 10])
-    
-    esteps = 10
-    rsteps = 5
-    
-    energyrange = np.linspace(3,16,esteps)
-    resolutionrange = [128, 256, 512, 1024, 2048, 4096]#np.linspace(128, 4096, rsteps)
-    analytical_data = np.array([pulseWidth(a)*1e6 for a in energyrange])
-    
-    mean_delta = []
-
-    for val in resolutionrange:
-        val = int(val)
-        nx, ny = val, val
-        print("Calculating FWHM for {}x{} Array".format(nx, ny))
-        fwhms = []
-        for energy in energyrange:
-            wfr = coherentSource(nx, ny, energy, 0.1)
-            fwhms.append(calculate_fwhm(wfr)['fwhm_x']*1e6)
-        
-        mean_delta.append(np.mean(abs((analytical_data-np.array(fwhms))/analytical_data))*100)
-        
-        ax.plot(energyrange, fwhms)
-    print(len(mean_delta))
-    dax.scatter(resolutionrange, mean_delta)
-     
-    
-    leg1 = ax.legend(["{}x{} pixels".format(int(val), int(val)) for val in resolutionrange])
-    ax.add_artist(leg1)
-    analytical, = ax.plot(energyrange, analytical_data, '--b',)
-
-    leg2 = ax.legend([analytical], ["Analytical Model"], loc = 'lower left')
-    ax.add_artist(leg2)
-    plt.show(ax)
-    
-    if outdir is not None:
-        if type(outdir) != str:
-            print("outdir should be a string, saving failed")
-            pass
-        else:
-            fig.savefig(outdir + "SourceSize_EnergyDep.png")
-            dfig.savefig(outdir + "SourceError_pixels.png")
-            
-
-    
-    wfr = Wavefront(build_gaussian_3D(nx, ny, nz, ekev, -400e-06, 400e-06, -400e-06, 400e-06, tau, 5e-06, 5e-06, d2waist))
-    srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
-    #look_at_q_space(wfr)
-    return wfr
-
-def construct_spb_pulse(nx, ny, nz, ekev, q, modDivergence = True):
+def construct_SA1_pulse(nx, ny, nz, ekev, q, modify_beam_divergenceergence = True):
     """
     Construct a fully-coherent Gaussian source with properties related to the
     energy of the radiation and beam charge.
@@ -257,21 +171,19 @@ def construct_spb_pulse(nx, ny, nz, ekev, q, modDivergence = True):
     :param q: electron beam bunch charge [nC]
     :param xoff: horizontal offset of beam maximum [m]
     :param yoff: vertical offset of beam maximum [m]
-    :param modDivergence: Choose to set non-diffraction limited div [bool]
+    :param modify_beam_divergenceergence: Choose to set non-diffraction limited div [bool]
     """
     wavelength = (h*c)/(ekev*1e3)
         
     xMin, xMax = -400e-06, 400e-06 #based on fwhm of 1 nC, 3 keV beam
     yMin, yMax = -400e-06, 400e-06 #based on fwhm of 1 nC, 3 keV beam
     
-    sigX, sigY = pulseWidth(ekev)/fwhm2rms, pulseWidth(ekev)/fwhm2rms
-    pulseEn = pulseEnergy(q, ekev)
+    sigX, sigY = analytical_pulse_width(ekev)/fwhm2rms, analytical_pulse_width(ekev)/fwhm2rms
+    pulseEn = analytical_pulse_energy(q, ekev)
     
-    dtheta = pulseDivergence(q, ekev)
-    tau = pulseDuration(q)
-    
-    f = tlFocus(pulseWidth(ekev),pulseDivergence(q,ekev))
-        
+    dtheta = analytical_pulse_divergence(q, ekev)
+    tau = analytical_pulse_duration(q)
+
     gsnBm = build_gaussian_3D(nx = nx,
                               ny = ny,
                               nz = nz,
@@ -287,12 +199,12 @@ def construct_spb_pulse(nx, ny, nz, ekev, q, modDivergence = True):
     srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
     
     wfr.params.wavelength = wavelength
-    modDiv(wfr,f)
+    modify_beam_divergence(wfr,analytical_pulse_width(ekev),analytical_pulse_divergence(q,ekev))
     
     return wfr
 
 
-def tstCoherentSrcDiv(outdir = None):
+def test_coherent_pulse_divergence(outdir = None):
     """
     Test that the FWHM of the source matches the analytical prediction
     
@@ -318,11 +230,11 @@ def tstCoherentSrcDiv(outdir = None):
         
         divergences = []
         for energy in energyrange:
-            wfr = coherentSource(nx, ny, energy, q)
+            wfr = construct_SA1_wavefront(nx, ny, energy, q)
             divergences.append(calcDivergence(wfr)[0])
         ax.scatter(energyrange, np.array(divergences)*1e6, marker = 'x')
         
-        analytical_data = [pulseDivergence(q, energy) for energy in energyrange]
+        analytical_data = [analytical_pulse_divergence(q, energy) for energy in energyrange]
         ax.plot(energyrange, np.array(analytical_data)*1e6, '--')
         
     ax.legend(["0.01 nC", "0.1 nC", "0.3 nC", "0.5 nC", "0.8 nC", "1.0 nC"])
@@ -332,15 +244,21 @@ def tstCoherentSrcDiv(outdir = None):
     else:
         fig.savefig(outdir + "SourceDivergence_Energy.png")
 
+
 if __name__ == '__main__':
     
+    from felpy.utils.os_utils import mkdir_p
+    
+    sdir = '../../tests/coherent_source/'
+    mkdir_p(sdir)
     ## TEST FOR USAGE
     print("Testing Coherent Gaussian Source Module")
     
     ### SET PARAMS
-    print("Testing Parameters @ q = 0.1 nC and ekev = 9.2 keV\n")    
-    q = 0.1 # nC
-    ekev = 9.2 # keV
+      
+    q = 0.25 # nC
+    ekev = 5.0 # keV
+    print("Testing Parameters @ q = {} nC and ekev = {} keV\n".format(q, ekev))  
     
     ### Print Parameters as Sanity Check
     print("Electron Beam Charge: {} nC".format(q))    
@@ -350,29 +268,29 @@ if __name__ == '__main__':
     
     print("\n")
     ### Estimate Energy per Pulse
-    print("Pulse Energy: {} Joules".format(pulseEnergy(q, ekev)))
+    print("Pulse Energy: {} Joules".format(analytical_pulse_energy(q, ekev)))
 
     ### Estimate Duration of pulse
-    print("Pulse Duration: {} seconds".format(pulseDuration(q)))
+    print("Pulse Duration: {} seconds".format(analytical_pulse_duration(q)))
         
     ### Estimate FWHM of pulse (assumes symmetry)
-    print("Pulse Width: {} m".format(pulseWidth(ekev)))
+    print("Pulse Width: {} m".format(analytical_pulse_width(ekev)))
     
     ### Estimate FWHM of pulse (assumes symmetry)
-    print("Pulse Divergence: {} rad".format(pulseDivergence(q,ekev)))
+    print("Pulse Divergence: {} rad".format(analytical_pulse_divergence(q,ekev)))
     
     ### Estimate thin lens focus for divergence correction
     print("\n")
-    print("Thin-Lens Focus: {} m".format(tlFocus(pulseWidth(ekev),pulseDivergence(q,ekev))))
+    print("Thin-Lens Focus: {} m".format(thin_lens_mod(analytical_pulse_width(ekev),analytical_pulse_divergence(q,ekev))))
     
     ### Generate Coherent Source
-    wfr = coherentSource(1024, 1024, 9.2, 0.1)
+    wfr = construct_SA1_pulse(nx = 1024, ny = 1024, nz = 5, ekev = ekev, q = q)
     
     ### Test Source FWHM
-    #tstCoherentSrcFWHM("/opt/spb_model/tests/")
+    test_coherent_pulse_fwhm(sdir)
     
     ### Test Source Divergence
-    tstCoherentSrcDiv("/opt/spb_model/tests/")     
+    test_coherent_pulse_divergence(sdir)     
     
     ### Plot Source 
     #plotIntensity(wfr, "/opt/spb_model/tests/9200eV_100pC_intensity.png")

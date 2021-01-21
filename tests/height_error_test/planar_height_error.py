@@ -22,9 +22,9 @@ import time
 from copy import copy
 import numpy as np
 from matplotlib import pyplot as plt
-from model.src.coherent import coherentSource
-from model.beamline.structure import BeamlineModel
-from model.materials.load_refl import load_refl, get_refl
+from felpy.model.src.coherent import construct_SA1_wavefront
+from felpy.model.beamlines.structure import BeamlineModel
+from felpy.model.materials.load_refl import load_refl, get_refl
 
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity 
 from scipy.ndimage import gaussian_filter
@@ -33,11 +33,9 @@ def setupBL(ekev, toggle = "on"):
     
     spb = BeamlineModel()
     
-    spb.setupHOMs(ekev, 2.2e-03)
-    spb.mirrorProfiles(toggle = toggle, overwrite = True)
     
-    spb.buildElements(focus = "micron")
-    spb.buildBeamline(focus = "micron")
+    spb.buildElements(focus = "nano")
+    spb.buildBeamline(focus = "nano")
     
     spb.cropBeamline(element1 = "HOM2")
     
@@ -45,8 +43,8 @@ def setupBL(ekev, toggle = "on"):
 
 def getOPD(bl):
     mir = bl.propagation_options[0]['optical_elements'][1]
-    opd = mir.get_data(3)
-    opd.reshape([np.sqrt(opd), np.sqrt(opd)])
+    opd = np.array(mir.get_data(3))
+    opd.reshape(1580*1581)
     
     return opd
 
@@ -54,7 +52,7 @@ if __name__ == '__main__':
     
     ekev = 9.2
     
-    wfr = coherentSource(1024, 1024, ekev, .25)
+    wfr = construct_SA1_wavefront(1024, 1024, ekev, .25)
     
     bl = setupBL(ekev, toggle = 'on')
     bl.propagate(wfr)
@@ -63,7 +61,7 @@ if __name__ == '__main__':
     
     on = getOPD(bl)
     wi = wfr.data.arrEhor
-    wfr = coherentSource(1024, 1024, ekev, .25)
+    wfr = construct_SA1_wavefront(1024, 1024, ekev, .25)
     
     bl = setupBL(ekev, toggle = 'off')
     bl.propagate(wfr)
