@@ -39,7 +39,7 @@ from model.beamline.structure import config
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity 
 from wpg.misc import fresnel_sampling
 from wpg.srwlib import SRWLOptD
-from model.beamline.structure import propParams
+from model.beamline.structure import propagation_parameters
 def quadratic_prop(outdir):
     
     wfr = construct_SA1_wavefront(1024,1024,6,1.0)

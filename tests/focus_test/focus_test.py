@@ -31,7 +31,7 @@ from wpg.beamline import Beamline
 from wpg.srwlib import SRWLOptD
 
 from model.src.coherent import construct_SA1_wavefront
-from model.beamline.structure import BeamlineModel, propParams
+from model.beamline.structure import BeamlineModel, propagation_parameters
 from model.materials.load_refl import load_refl, get_refl
 
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity 
@@ -50,7 +50,7 @@ def sliceFocus(wfr, ekev, focus = 'micron', nslices = 500, axisName = 'x', outdi
     
     slice_interval = copy(spb.bl.propagation_options[0]['optical_elements'][el_n].L/1000) 
     spb.bl.propagation_options[0]['optical_elements'][el_n].L *= 0.75
-    spb.bl.propagation_options[0]['propagation_parameters'][el_n] = propParams(1/5,5,1/5,5, mode = 'quadratic')
+    spb.bl.propagation_options[0]['propagation_parameters'][el_n] = propagation_parameters(1/5,5,1/5,5, mode = 'quadratic')
     bl = spb.get_beamline()
     bl.propagate(wfr)
     
@@ -68,7 +68,7 @@ def sliceFocus(wfr, ekev, focus = 'micron', nslices = 500, axisName = 'x', outdi
         print("Slice {}/{}".format(n+1, nslices))
         
         bl = Beamline()
-        bl.append(SRWLOptD(slice_interval), propParams(1,1,1,1, mode = 'normal'))
+        bl.append(SRWLOptD(slice_interval), propagation_parameters(1,1,1,1, mode = 'normal'))
         bl.propagate(wfr)
         
         data_focslice[-n-1, :] = wfr.get_profile_1d()[0]

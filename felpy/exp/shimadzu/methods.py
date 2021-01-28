@@ -2,14 +2,14 @@ import numpy as np
 from matplotlib import pyplot as plt
 from felpy.analysis.statistics.correlation import norm_difference
 from multiprocessing import Pool, cpu_count
-from felpy.model.tools import memoryMap
+from felpy.utils.np_utils import memory_map
 from felpy.exp.shimadzu.preprocess import shimadzu_test_data
 from felpy.utils.os_utils import mkdir_p
 import shutil
 from functools import partial
 #### correlation methods
 
-def intra_train_correlation(train, arr):
+def intra_train_correlation(train, arr, method = norm_difference):
 
     tmp = np.zeros([arr.shape[0],
                     arr.shape[1],

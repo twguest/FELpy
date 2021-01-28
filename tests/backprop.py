@@ -14,7 +14,7 @@ sys.path.append("../")
 sys.path.append("/opt/WPG/")
 
 from model.tools import constructPulse
-from model.beamline.structure import propParams
+from model.beamline.structure import propagation_parameters
 from wpg.beamline import Beamline
 from wpg.optical_elements import Drift
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
@@ -27,7 +27,7 @@ if __name__ == "__main__":
     plotIntensity(wfr)
     
     bl = Beamline()
-    bl.append(Drift(-10), propParams(1,1,1,1))
+    bl.append(Drift(-10), propagation_parameters(1,1,1,1))
     
     bl.propagate(wfr)
     

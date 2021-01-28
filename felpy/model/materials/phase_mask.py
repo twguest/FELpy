@@ -20,7 +20,7 @@ import numpy as np
 
 from wpg.srwlib import SRWLOptD as Drift
 from felpy.model.src.coherent import construct_SA1_wavefront
-from felpy.model.beamline.structure import propParams
+from felpy.model.beamline.structure import propagation_parameters
 from wpg.beamline import Beamline
 from wpg.srwlib import srwl_opt_setup_surf_height_2d as OPD
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
@@ -68,8 +68,8 @@ if __name__ == "__main__":
     opd = phaseMask(phaseshift, [5e-03, 5e-03], wfr.params.wavelength*100)
     bl = Beamline()
     
-    bl.append(opd,propParams(1,1,1,1))
-    bl.append(Drift(2), propParams(1,1,1,1))
+    bl.append(opd,propagation_parameters(1,1,1,1))
+    bl.append(Drift(2), propagation_parameters(1,1,1,1))
     bl.propagate(wfr)
     pltPhase(wfr)
     plotIntensity(wfr)

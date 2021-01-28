@@ -11,7 +11,7 @@ from wpg.beamline import Beamline
 from wpg.optical_elements import Drift, Aperture
 from wpg.srwlib import SRWLOptMirEl, SRWLOptMirTor
 
-from felpy.model.src.coherent import construct_SA1_wavefront, propParams
+from felpy.model.src.coherent import construct_SA1_wavefront, propagation_parameters
 
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
 
@@ -60,21 +60,21 @@ HKB =  SRWLOptMirEl(_p = 16.5,
 
 
 bl = Beamline()
-bl.append(drift_1, propParams(1,1,1,1, mode = 'quadratic'))
-bl.append(ap_1, propParams(1,1,1,1, mode = 'fresnel'))
-bl.append(drift_2, propParams(1,1,1,1, mode = 'quadratic'))
-bl.append(drift_3, propParams(1,1,1,1, mode = 'quadratic'))
+bl.append(drift_1, propagation_parameters(1,1,1,1, mode = 'quadratic'))
+bl.append(ap_1, propagation_parameters(1,1,1,1, mode = 'fresnel'))
+bl.append(drift_2, propagation_parameters(1,1,1,1, mode = 'quadratic'))
+bl.append(drift_3, propagation_parameters(1,1,1,1, mode = 'quadratic'))
 
 
-bl.append(VFM, propParams(1,1,1,1, mode = 'fresnel'))
+bl.append(VFM, propagation_parameters(1,1,1,1, mode = 'fresnel'))
 
 
-bl.append(drift_4, propParams(1,1,1,1, mode = 'quadratic'))
-bl.append(HFM, propParams(1,1,1,1, mode = 'fresnel'))
+bl.append(drift_4, propagation_parameters(1,1,1,1, mode = 'quadratic'))
+bl.append(HFM, propagation_parameters(1,1,1,1, mode = 'fresnel'))
 
-bl.append(drift_5, propParams(1,1,1,1, mode = 'converge'))
+bl.append(drift_5, propagation_parameters(1,1,1,1, mode = 'converge'))
 
-bl.append(drift_6, propParams(1,1,1,1, mode = 'quadratic'))
+bl.append(drift_6, propagation_parameters(1,1,1,1, mode = 'quadratic'))
 
 bl.propagate(wfr)
 

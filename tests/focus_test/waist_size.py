@@ -31,7 +31,7 @@ from wpg.beamline import Beamline
 from wpg.srwlib import SRWLOptD
 
 from model.src.coherent import construct_SA1_wavefront
-from model.beamline.structure import BeamlineModel, propParams
+from model.beamline.structure import BeamlineModel, propagation_parameters
 from model.materials.load_refl import load_refl, get_refl
 
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity 

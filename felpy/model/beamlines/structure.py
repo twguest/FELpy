@@ -35,7 +35,7 @@ from felpy.model.materials.load_refl import get_refl, load_refl
 from felpy.model.src.coherent import construct_SA1_wavefront
 from wpg.optical_elements import calculateOPD
 from felpy.model.beamlines.params.exfel_spb import get_params
-from felpy.model.tools import propParams
+from felpy.model.tools import propagation_parameters
 from wpg.srwlib import srwl_opt_setup_surf_height_2d as MirPl
 
 
@@ -376,48 +376,48 @@ class BeamlineModel:
         if focus == "micron":
             
             
-            self.bl.append(self.d1, propParams(1,1,1,1, mode = "fraunhofer"))
+            self.bl.append(self.d1, propagation_parameters(1,1,1,1, mode = "fraunhofer"))
     
-            self.bl.append(self.HOM1, propParams(1, 1, 1, 1, mode = 'fresnel'))
-            self.bl.append(self.d2, propParams(1, 1, 1, 1, mode = 'quadratic'))
-            self.bl.append(self.HOM2,  propParams(1, 1, 1, 1, mode = 'fresnel'))
-            self.bl.append(self.d3, propParams(1,1,1,1, mode = 'fraunhofer'))
+            self.bl.append(self.HOM1, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
+            self.bl.append(self.d2, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
+            self.bl.append(self.HOM2,  propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
+            self.bl.append(self.d3, propagation_parameters(1,1,1,1, mode = 'fraunhofer'))
             
-            self.bl.append(self.MKB_pslit, propParams(1/5, 1, 1/5, 1, mode = 'fresnel'))
-            self.bl.append(self.d4, propParams(1, 1, 1, 1, mode = 'quadratic'))
-            self.bl.append(self.MHP, propParams(1, 1, 1, 1, mode = 'fresnel'))
-            self.bl.append(self.d5, propParams(1, 1, 1, 1, mode = 'quadratic'))
-            self.bl.append(self.MHE, propParams(1, 1, 1, 1, mode = 'fresnel'))
-            self.bl.append(self.MHE_error, propParams(1, 1, 1, 1, mode = 'fresnel'))
-            self.bl.append(self.d6, propParams(1, 1, 1, 1, mode = 'quadratic'))
-            self.bl.append(self.MVE, propParams(1, 1, 1, 1, mode = 'fresnel'))
-            self.bl.append(self.MVE_error, propParams(1, 1, 1, 1, mode = 'fresnel'))
-            self.bl.append(self.d8, propParams(1, 1, 1, 1, mode = 'quadratic'))
+            self.bl.append(self.MKB_pslit, propagation_parameters(1/5, 1, 1/5, 1, mode = 'fresnel'))
+            self.bl.append(self.d4, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
+            self.bl.append(self.MHP, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
+            self.bl.append(self.d5, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
+            self.bl.append(self.MHE, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
+            self.bl.append(self.MHE_error, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
+            self.bl.append(self.d6, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
+            self.bl.append(self.MVE, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
+            self.bl.append(self.MVE_error, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
+            self.bl.append(self.d8, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
         
-            self.bl.append(self.MVP, propParams(1, 1, 1, 1, mode = 'fresnel'))
-            self.bl.append(self.df, propParams(5,1,5,1, mode = 'converge'))
+            self.bl.append(self.MVP, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
+            self.bl.append(self.df, propagation_parameters(5,1,5,1, mode = 'converge'))
        
         elif focus == "nano":
             
-            self.bl.append(self.d1, propParams(1,1,1,1, mode = "fraunhofer"))
+            self.bl.append(self.d1, propagation_parameters(1,1,1,1, mode = "fraunhofer"))
     
-            self.bl.append(self.HOM1, propParams(1, 1, 1, 1, mode = 'fresnel'))
-            self.bl.append(self.d2, propParams(1, 1, 1, 1, mode = 'quadratic'))
-            self.bl.append(self.HOM2,  propParams(1, 1, 1, 1, mode = 'fresnel'))
-            self.bl.append(self.d3, propParams(1,1,1,1, mode = 'fraunhofer'))
+            self.bl.append(self.HOM1, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
+            self.bl.append(self.d2, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
+            self.bl.append(self.HOM2,  propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
+            self.bl.append(self.d3, propagation_parameters(1,1,1,1, mode = 'fraunhofer'))
             
-            self.bl.append(self.NKB_pslit, propParams(1/10, 1, 1/10,  1, mode = 'fresnel'))
-            self.bl.append(self.d4, propParams(1, 1, 1, 1, mode = 'quadratic'))
-            self.bl.append(self.NHE_error, propParams(1, 1, 1, 1, mode = 'fresnel'))
-            self.bl.append(self.NHE, propParams(1, 1, 1, 1, mode = 'fresnel'))
-            
-            
-            self.bl.append(self.d5, propParams(1, 1, 1, 1, mode = 'quadratic'))
-            self.bl.append(self.NVE_error, propParams(1, 1, 1, 1, mode = 'fresnel'))
-            self.bl.append(self.NVE, propParams(1, 1, 1, 1, mode = 'fresnel'))
+            self.bl.append(self.NKB_pslit, propagation_parameters(1/10, 1, 1/10,  1, mode = 'fresnel'))
+            self.bl.append(self.d4, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
+            self.bl.append(self.NHE_error, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
+            self.bl.append(self.NHE, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
             
             
-            self.bl.append(self.df, propParams(5,1,5,1, mode = 'converge'))
+            self.bl.append(self.d5, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
+            self.bl.append(self.NVE_error, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
+            self.bl.append(self.NVE, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
+            
+            
+            self.bl.append(self.df, propagation_parameters(5,1,5,1, mode = 'converge'))
 
             
         self.bl.params = self.params
@@ -467,7 +467,7 @@ class BeamlineModel:
             drift2screen.name = "screen"
         else:
             drift2screen.name = screenName
-        self.bl.append(Drift(distance), propParams(1, 1, 1, 1, m = 'quadratic'))
+        self.bl.append(Drift(distance), propagation_parameters(1, 1, 1, 1, m = 'quadratic'))
     
     def mirror_profiles(self, toggle = "on", aperture = True, overwrite = False):
         """
@@ -532,7 +532,7 @@ class BeamlineModel:
         
         
         scbl = Beamline()
-        scbl.append(Aperture('r','a', 800e-06, 800e-06), propParams(dx/ifov, iscx/nx, dy/ifov, iscy/ny))
+        scbl.append(Aperture('r','a', 800e-06, 800e-06), propagation_parameters(dx/ifov, iscx/nx, dy/ifov, iscy/ny))
         scbl.propagate(wfr)
         
         return wfr

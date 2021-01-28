@@ -21,7 +21,7 @@ from wpg.generators import build_gauss_wavefront
 from wpg.beamline import Beamline
 from felpy.utils.np_utils import gaussian_2d
 
-def propParams(sx, zx, sy, zy, mode = "fresnel"):
+def propagation_parameters(sx, zx, sy, zy, mode = "fresnel"):
     """
     wrapper for propagation parameters
     
@@ -78,7 +78,6 @@ def mkdir_p(dir):
         
 
 def radial_profile(data, center):
-    print(data.shape)
     y, x = np.indices((data.shape))
     r = np.sqrt((x - center[0])**2 + (y - center[1])**2)
     r = r.astype(np.int)
@@ -144,26 +143,6 @@ def argmax2d(X):
     i, j = k // m, k % m
     return i, j
 
-def memoryMap(sdir, fname, shape, dtype = 'float64'):
-    """
-    construct a memory map
-    """
-
-    if os.path.exists(sdir + fname):
-        memmap = readMap(sdir + fname, shape, dtype)
-    else:
-        memmap = np.memmap(sdir + fname, mode = "w+",
-                           shape = shape, dtype = dtype)
-    return memmap
-
-def readMap(mapdir,shape,dtype = 'float64'):
-    """
-    read a map from mapDir
-    """
-    
-    mp = np.memmap(mapdir, dtype = dtype, mode = 'r+', shape = shape)
-    
-    return mp
 
 
 def generateTestPulses(savedir, nx = 1024, ny = 1024, N = 5):
@@ -179,7 +158,7 @@ def generateTestPulses(savedir, nx = 1024, ny = 1024, N = 5):
     
     for n in range(N):
         
-        wfr = constructPulse(nx, ny, nz = 6, tau = 1e-12)
+        wfr = construct_SA1_pulse(nx, ny, nz = 6, tau = 1e-12)
         
         wfr.data.arrEhor*= np.random.uniform(0.75, 1, size = wfr.data.arrEhor.shape)
         
@@ -188,51 +167,8 @@ def generateTestPulses(savedir, nx = 1024, ny = 1024, N = 5):
         
 
 
-def construct_pulse(nx, ny, nz, ekev, q, modDivergence = True):
-    """
-    Construct a fully-coherent Gaussian source with properties related to the
-    energy of the radiation and beam charge.
+def concatenate_pulses(wfrs):
     
-    Important points: pulseTau (coherence length) is set to tau (pulse length)
-    in the fully coherent case
+    ensemble = np.concatenate([wfr.toComplex() for wfr in wfrs], axis = -1)
     
-    :param nx: number of horizontal pixels [int]
-    :param ny: number of vertical pixels [int]
-    :param nz: number of slices [int]
-    :param ekev: radiation energy [keV]
-    :param q: electron beam bunch charge [nC]
-    :param xoff: horizontal offset of beam maximum [m]
-    :param yoff: vertical offset of beam maximum [m]
-    :param modDivergence: Choose to set non-diffraction limited div [bool]
-    """
-    wavelength = (h*c)/(ekev*1e3)
-        
-    xMin, xMax = -400e-06, 400e-06 #based on fwhm of 1 nC, 3 keV beam
-    yMin, yMax = -400e-06, 400e-06 #based on fwhm of 1 nC, 3 keV beam
-    
-    sigX, sigY = pulseWidth(ekev)/fwhm2rms, pulseWidth(ekev)/fwhm2rms
-    pulseEn = pulseEnergy(q, ekev)
-    
-    dtheta = pulseDivergence(q, ekev)
-    tau = pulseDuration(q)
-    
-    f = tlFocus(pulseWidth(ekev),pulseDivergence(q,ekev))
-        
-    gsnBm = build_gaussian_3D(nx = nx,
-                              ny = ny,
-                              nz = nz,
-                              ekev = ekev,
-                              xMin = xMin, xMax = xMax,
-                              yMin = yMin, yMax = yMax,
-                              sigX = sigX, sigY = sigY,
-                              d2waist = 1,
-                              tau = tau,
-                              pulseRange = 1)
-    
-    wfr = Wavefront(gsnBm)
-    srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
-    
-    wfr.params.wavelength = wavelength
-    modDiv(wfr,f)
-    
-    return wfr
+    return ensemble

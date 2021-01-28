@@ -20,7 +20,7 @@ sys.path.append("/opt/spb_model")
 import numpy as np
 
 from model.materials.phaseMask import phaseMask
-from model.beamline.structure import propParams
+from model.beamline.structure import propagation_parameters
 from model.tools import constructPulse
 from utils.banded_utils import diagonal_form, solve_banded
 from wpg.optical_elements import Drift
@@ -80,12 +80,12 @@ if __name__ == "__main__":
                                                 getAxis(wfr, axis = 'y').min()], wav) ##speckle
             
         bl = Beamline()
-        bl.append(sp, propParams(1,1,1,1))
+        bl.append(sp, propagation_parameters(1,1,1,1))
         bl.propagate(wfr)
         
         
         bl = Beamline()
-        bl.append(ps, propParams(1,1,1,1))
+        bl.append(ps, propagation_parameters(1,1,1,1))
         bl.propagate(wfr)
         
         
@@ -95,7 +95,7 @@ if __name__ == "__main__":
 
         
         bl = Beamline()
-        bl.append(Drift(0.10), propParams(1,1,1,1, mode = 'normal'))
+        bl.append(Drift(0.10), propagation_parameters(1,1,1,1, mode = 'normal'))
         bl.propagate(wfr)
         II[:,:,i] =  wfr.get_intensity()[:,:,0]
         
