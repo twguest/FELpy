@@ -20,7 +20,7 @@ sys.path.append("/opt/spb_model")
 import numpy as np
 
 from model.materials.phaseMask import phaseMask
-from model.beamline.structure import propParams
+from model.beamline.structure import propagation_parameters
 from model.tools import constructPulse
 from utils.banded_utils import diagonal_form, solve_banded
 from wpg.optical_elements import Drift
@@ -30,7 +30,7 @@ from OpticalFlow import processOneProjection
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
 from sklearn.preprocessing import minmax_scale as norm
 from matplotlib import pyplot as plt
-from model.src.coherent import coherentSource
+from model.src.coherent import construct_SA1_wavefront
 from wpg import srwlib
 from wpg.wpg_uti_wf import getAxis
 from scipy.constants import h,c,e
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     
     val = nx//4
     
-    wfr = coherentSource(nx,ny,4.96,0.25)
+    wfr = construct_SA1_wavefront(nx,ny,4.96,0.25)
     wav = (h*c)/(wfr.params.photonEnergy*e)
     sp = phaseMask(np.random.rand(50,50), [ getAxis(wfr, axis = 'x').max()-
                                             getAxis(wfr, axis = 'x').min(),
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     
     for i in range(N):
    
-        wfr = coherentSource(nx,ny,4.96,0.25)
+        wfr = construct_SA1_wavefront(nx,ny,4.96,0.25)
         pm = np.random.rand(nx,ny)*1e-2
         print(pm[val,val])
         srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')    
@@ -80,12 +80,12 @@ if __name__ == "__main__":
                                                 getAxis(wfr, axis = 'y').min()], wav) ##speckle
             
         bl = Beamline()
-        bl.append(sp, propParams(1,1,1,1))
+        bl.append(sp, propagation_parameters(1,1,1,1))
         bl.propagate(wfr)
         
         
         bl = Beamline()
-        bl.append(ps, propParams(1,1,1,1))
+        bl.append(ps, propagation_parameters(1,1,1,1))
         bl.propagate(wfr)
         
         
@@ -95,7 +95,7 @@ if __name__ == "__main__":
 
         
         bl = Beamline()
-        bl.append(Drift(0.10), propParams(1,1,1,1, mode = 'normal'))
+        bl.append(Drift(0.10), propagation_parameters(1,1,1,1, mode = 'normal'))
         bl.propagate(wfr)
         II[:,:,i] =  wfr.get_intensity()[:,:,0]
         

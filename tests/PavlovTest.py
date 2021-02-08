@@ -20,7 +20,7 @@ sys.path.append("/opt/spb_model")
 import numpy as np
 
 from model.materials.phaseMask import phaseMask
-from model.beamline.structure import propParams
+from model.beamline.structure import propagation_parameters
 from model.tools import constructPulse
 from utils.banded_utils import diagonal_form, solve_banded
 from wpg.optical_elements import Drift
@@ -30,7 +30,7 @@ from wpg.wavefront import Wavefront
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
 from sklearn.preprocessing import minmax_scale as norm
 from matplotlib import pyplot as plt
-from model.src.coherent import coherentSource
+from model.src.coherent import construct_SA1_wavefront
 from wpg import srwlib
 from wpg.wpg_uti_wf import getAxis
 from scipy.constants import h,c,e
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     
 
     
-    wfr = coherentSource(nx,ny,4.96,0.25)
+    wfr = construct_SA1_wavefront(nx,ny,4.96,0.25)
     wfr.store_hdf5("coherentSrc.h5")
 
 
@@ -73,8 +73,8 @@ if __name__ == "__main__":
     
 
     bl = Beamline()
-    #bl.append(sp, propParams(1,1,1,1))
-    bl.append(Drift(1), propParams(1,1,1,1, mode = 'normal'))
+    #bl.append(sp, propagation_parameters(1,1,1,1))
+    bl.append(Drift(1), propagation_parameters(1,1,1,1, mode = 'normal'))
     bl.propagate(wfr)
     
     Ps = wfr.get_phase(slice_number = 0) #
@@ -97,7 +97,7 @@ if __name__ == "__main__":
     
     wfr.load_hdf5("coherentSrc.h5")
     bl = Beamline()    
-    bl.append(Drift(2), propParams(1,1,1,1, mode = 'normal'))
+    bl.append(Drift(2), propagation_parameters(1,1,1,1, mode = 'normal'))
     bl.propagate(wfr)
 
 

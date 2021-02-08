@@ -14,14 +14,14 @@ from wpg import srwlib
 from wpg.wavefront import Wavefront
 from wpg.wpg_uti_wf import integral_intensity, calculate_fwhm, look_at_q_space
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
-from felpy.model.src.coherent import coherentSource
+from felpy.model.src.coherent import construct_SA1_pulse
 from wpg.srwlib import SRWLOptD as Drift
 from wpg.srwlib import SRWLOptA as Aperture
 from wpg.generators import build_gauss_wavefront
 from wpg.beamline import Beamline
 from felpy.utils.np_utils import gaussian_2d
 
-def propParams(sx, zx, sy, zy, mode = "fresnel"):
+def propagation_parameters(sx, zx, sy, zy, mode = "fresnel"):
     """
     wrapper for propagation parameters
     
@@ -47,12 +47,6 @@ def propParams(sx, zx, sy, zy, mode = "fresnel"):
     
     return [0,0,1,m,0,sx,zx/sx,sy,zy/sy,0,0,0]
 
-def constructPulse(nx = 512, ny = 512, nz = 5, tau = 1e-06, d2waist = 10):
-    
-    wfr = Wavefront(build_gauss_wavefront(nx, ny, nz, 5.0, -400e-06, 400e-06, -400e-06, 400e-06, tau, 5e-06, 5e-06, d2waist))
-    srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
-    #look_at_q_space(wfr)
-    return wfr
 
 def create_circular_mask(nx, ny, c = None, r = None):
     """
@@ -149,26 +143,6 @@ def argmax2d(X):
     i, j = k // m, k % m
     return i, j
 
-def memoryMap(sdir, fname, shape, dtype = 'float64'):
-    """
-    construct a memory map
-    """
-
-    if os.path.exists(sdir + fname):
-        memmap = readMap(sdir + fname, shape, dtype)
-    else:
-        memmap = np.memmap(sdir + fname, mode = "w+",
-                           shape = shape, dtype = dtype)
-    return memmap
-
-def readMap(mapdir,shape,dtype = 'float64'):
-    """
-    read a map from mapDir
-    """
-    
-    mp = np.memmap(mapdir, dtype = dtype, mode = 'r+', shape = shape)
-    
-    return mp
 
 
 def generateTestPulses(savedir, nx = 1024, ny = 1024, N = 5):
@@ -184,7 +158,7 @@ def generateTestPulses(savedir, nx = 1024, ny = 1024, N = 5):
     
     for n in range(N):
         
-        wfr = constructPulse(nx, ny, nz = 6, tau = 1e-12)
+        wfr = construct_SA1_pulse(nx, ny, nz = 6, tau = 1e-12)
         
         wfr.data.arrEhor*= np.random.uniform(0.75, 1, size = wfr.data.arrEhor.shape)
         
@@ -193,3 +167,8 @@ def generateTestPulses(savedir, nx = 1024, ny = 1024, N = 5):
         
 
 
+def concatenate_pulses(wfrs):
+    
+    ensemble = np.concatenate([wfr.toComplex() for wfr in wfrs], axis = -1)
+    
+    return ensemble

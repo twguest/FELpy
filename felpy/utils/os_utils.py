@@ -36,7 +36,7 @@ def add_path():
     
     fpath = os.path.dirname(os.path.realpath(__file__))
     fpath = fpath.split("felpy/")[0]
-    print("Adding {} to Python path".format(os.path.join(fpath)))
+    #print("Adding {} to Python path".format(os.path.join(fpath)))
     sys.path.append(fpath)
      
 def felpy_path():

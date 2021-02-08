@@ -7,75 +7,130 @@ Created on Mon Jun 15 14:24:28 2020
 """
 
 
-#################################################################
-import sys
-sys.path.append("/opt/WPG/") # LOCAL PATH
-sys.path.append("/gpfs/exfel/data/user/guestt/WPG") # DESY MAXWELL PATH
 
-sys.path.append("/opt/spb_model") # LOCAL PATH
-sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
-###############################################################################
-####################################################
 import os
 import numpy as np
 from time import time
 from wpg import srwlib
-from model.tools import radial_profile, binArray
-from model.tools import constructPulse ## for testings
+from felpy.model.tools import radial_profile, binArray
+from felpy.model.src.coherent import construct_SA1_pulse ## for testings
 from wpg.wpg_uti_wf import getAxis
 from wpg.wavefront import Wavefront 
 from tqdm import tqdm
-from utils.job_utils import JobScheduler
+from felpy.utils.job_utils import JobScheduler
+#import wpg.srwlib as srwl
+from wpg import srwlpy as srwl
+from felpy.utils.np_utils import memory_map, readMap
+import multiprocessing as mp
+from functools import partial
 
 
 
-def coherenceTime(wfr, tStep, bins = 1, VERBOSE = True):
+
+def get_longitudinal_coherence(slice_no, cfr, map_loc = None, bins = 1, VERBOSE = True):
+    """
+    Calculate the longitudinal correlation of each slice of a complex wavefront
+    of shape [nx, ny, nz] against a single slice of shape [nx,ny] at longitudinal
+    interval defined by the slice_no
+    
+    :param cfr: complex wavefield
+    :param slice_no: longitudinal index [int]
+    
+    :returns g: complex degree of coherence
+    """
+    
+    A = np.roll(cfr, -slice_no, axis = 2)
+    B = np.repeat(cfr[:,:,slice_no][:, :, np.newaxis], cfr.shape[-1], axis=-1)
+
+    ## DEGUB print(A[:,:,0] == wfr[:,:,i])
+    ## DEBUG print([B[:,:,k] == wfr[:,:,i] for k in range(wfr.shape[-1])])
+    
+  
+    if map_loc is not None:
+        
+        mmap = memory_map(map_loc,
+                  shape = cfr.shape,
+                  dtype = 'complex64')
+            
+        mmap[:,:,slice_no] = ((A*B.conjugate()).mean(axis = -1))/np.sqrt(
+        (abs(A)**2).mean(axis=-1)*(abs(B)**2).mean(axis = -1))
+
+        
+    else:
+        return ((A*B.conjugate()).mean(axis = -1))/np.sqrt(
+        (abs(A)**2).mean(axis=-1)*(abs(B)**2).mean(axis = -1))
+
+
+
+def get_coherence_time(cfr, tStep, mpi = False, map_loc = "/tmp/coherence_map",
+                       bins = 1, VERBOSE = True):
     """
     Calculate the coherence time of complex wavefield of shape
     [nx, ny, nt].
     
+    Relevant for statistically stationary sources. 
+    
     ref: Coherence properties of the radiation from X-ray free electron laser
     
-    :param wfr: complex wavefield
+    :param cfr: complex wavefield
     :param tstep: temporal step between slices
     
     :returns tau: coherence time [s]
     """
     
-    nz0 = wfr.shape[-1]
+
+
+    
+    mmap = memory_map(map_loc = map_loc,
+                      shape = cfr.shape,
+                      dtype = 'complex64')
+    
+    nz0 = cfr.shape[-1]
     
     if bins == 1:
-        pass
+        nz1 = nz0
     else:
-        wfr = binArray(wfr, axis = -1, binstep = nz0//bins, binsize = 1 )
+        cfr = binArray(cfr, axis = -1, binstep = nz0//bins, binsize = 1 )
         
-    nz1 = wfr.shape[-1]
-    tStep *= (nz0/nz1)
+        nz1 = cfr.shape[-1]
+        tStep *= (nz0/nz1)
     
-    b = np.zeros([*wfr.shape])
+    g = np.zeros([*cfr.shape], dtype = 'complex64')
+    
+    if VERBOSE: 
+        print("Calculating Coherence Time")
 
-    for i in tqdm(range(wfr.shape[-1])):
-        
-        A = np.roll(wfr, -i, axis = 2)
-        B = np.repeat(wfr[:,:,i][:, :, np.newaxis], wfr.shape[-1], axis=-1)
-    
-        ## DEGUB print(A[:,:,0] == wfr[:,:,i])
-        ## DEBUG print([B[:,:,k] == wfr[:,:,i] for k in range(wfr.shape[-1])])
-        
-        b[:,:,i] = ((A*B.conjugate()).mean(axis = -1))/np.sqrt(
-            (abs(A)**2).mean(axis=-1)*(abs(B)**2).mean(axis = -1))
-
-    
-    tau = (abs(b)**2).sum(axis = -1)[0,0]
+    if mpi:
+        processes = mp.cpu_count()//2
+        pool = mp.Pool(processes)
+        pool.map(partial(get_longitudinal_coherence, cfr = cfr, map_loc = map_loc),
+                 range(cfr.shape[-1]))
+        g = readMap(map_loc, cfr.shape, dtype = 'complex64')        
+    else:        
+        for i in tqdm(range(cfr.shape[-1])):            
+            g[:,:,i] = get_longitudinal_coherence(slice_no = i, cfr = cfr)
+            
+    tau = (abs(g)**2).sum(axis = -1)[0,0]
     
     if VERBOSE:
-        print("Time Step: {}".format(tStep))
+        print("\n")
+        print(tau)
+        print("Time Step: {} fs".format(tStep*1e15))
         print("Coherence Time: {:.2e} fs".format(tau*1e15*tStep))
-        
+    
+    del mmap
+    os.remove(map_loc)
+
     return tau*tStep
 
+def get_coherence_time_wpg(wfr, mpi = False, VERBOSE = True):
+    
+    srwl.SetRepresElecField(wfr._srwl_wf, 't')
+    time_step = (wfr.params.Mesh.sliceMax - wfr.params.Mesh.sliceMin)/wfr.params.Mesh.nSlices
+    return get_coherence_time(wfr.toComplex(), time_step, mpi = mpi)
 
-def coherenceLen(wfr, dx, dy, VERBOSE = True):
+
+def get_coherence_len(wfr, dx, dy, VERBOSE = True):
     """
     Calculate coherence length of a complex wavefield of shape
     [nx, ny. nz]
@@ -89,7 +144,7 @@ def coherenceLen(wfr, dx, dy, VERBOSE = True):
     """
     
     
-    profile, r = complexRadialProfile(wfr)
+    profile, r = get_complex_radial_profile(wfr)
 
     
     nt = wfr.shape[-1]
@@ -111,20 +166,25 @@ def coherenceLen(wfr, dx, dy, VERBOSE = True):
         lm = lm[0] - Jd.shape[0]//2 
     except(IndexError):
         lm = np.inf
-    
+     
     clen = lm*rstep
     
     if VERBOSE: 
-        print("Coherence Length: {:.2f} um".format(clen*1e6))
+        print("Radial Coherence Length: {:.2f} um".format(clen*1e6))
     return clen
 
-def transverseDOC(wfr, VERBOSE = True):
+
+def get_coherence_len_wpg(wfr, VERBOSE = True):
+    srwl.SetRepresElecField(wfr._srwl_wf, 't')
+    return get_coherence_len(wfr.toComplex(), wfr.pixelsize()[0], wfr.pixelsize()[1])
+
+def get_transverse_doc(wfr, VERBOSE = True):
     """
     get transverse degree of coherence of the wavefront across each of the
     transverse dimensions slices
     """
     
-    p, r =  complexRadialProfile(wfr)
+    p, r =  get_complex_radial_profile(wfr)
     nt = wfr.shape[-1]
     J = np.dot(p, p.T.conjugate())/nt
     
@@ -136,7 +196,7 @@ def transverseDOC(wfr, VERBOSE = True):
     
     return tdoc
 
-def complexRadialProfile(wfr):
+def get_complex_radial_profile(wfr):
     """
     Calculate the radial profile of a complex array by azimuthal averaging:
     
@@ -146,7 +206,6 @@ def complexRadialProfile(wfr):
     
     :returns prof: radial profile
     """
-        
     r = radial_profile(wfr[:,:,0].real, [wfr.shape[0]//2,wfr.shape[1]//2])[1]
     
     r = np.diag(r).copy()
@@ -158,81 +217,13 @@ def complexRadialProfile(wfr):
                                     [wfr.shape[0]//2,wfr.shape[1]//2])[0]*1j
                    for i in range(wfr.shape[-1])])
     
-    prof = np.moveaxis(rp, 0, -1), r
-    return prof
+    prof = np.moveaxis(rp, 0, -1)
+    return prof, r
   
     
-def speedTest(nx = 1024, ny = 1024, nz = 5, N = 2000):
-    """
-    Estimate the approximate completion time for measuremetn of the 
-    coherence time of a wavefront of size [nx, ny, nz]
-    
-    :param nx: wfr shape [0]
-    :param ny: wfr shape [1]
-    :param ny: wfr shape [2]
-    :paran N: desired number of slices in full-scale test
-    """
-    
-    
-    print("Performing Coherence Time Speed Test\n")
  
-    
-    for t in range(2, nz+1):
-        
-        wfr = constructPulse(nx = nx, ny = ny, nz = t, tau = 0.5e-25)
-        srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 't')
-        wfr = wfr.toComplex()[0,:,:,:] 
 
-        start = time()
-        coherenceTime(wfr, tStep = 1, VERBOSE = False)
-        fin = time()
-        
-        print("Time Per-Slice in minutes for {} Slices: {}".format(t, (fin-start)/60))
-
-
-def MSS(arr1, arr2):
-    """ 
-    calculate the mean-squared similarity (1-error) of two arrays
-    
-    :param arr1: expected array
-    :param arr2: measured array
-    
-    :returns sim: similarity metric [0-1]
-    """
-    # the 'Mean Squared Similarity' between the two images is the
-    # sum of the squared difference between the two images;
-    # NOTE: the two images must have the same dimension
-    err = np.sum((arr1.astype("float") - arr2.astype("float")) ** 2)
-    err /= float(arr2.shape[0] * arr1.shape[1])
-    sim = 1-err
-    # return the MSE, the lower the error, the more "similar"
-    # the two images are
-    return sim
-
-
-def testUsage():
-    
-    wfr = constructPulse(nx = 500, ny = 500, nz = 15, tau = 0.5e-05)
-    srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 't')
-
-    tstep = getAxis(wfr, axis = 't')
-    tstep = tstep[1]-tstep[0]
-    
-    xstep, ystep = wfr.pixelsize()
-    
-    wfr = wfr.toComplex()[0,:,:,:]
-    wfr += np.random.rand(*wfr.shape)*1j*100
-    
-    for b in range(1, 10):
-        print("bins {}".format(b))
-        tau = coherenceTime(wfr, tstep, bins = b)
-        
-    clen = coherenceLen(wfr, xstep, ystep)
-    tdoc = transverseDOC(wfr)
-
-    del tau, clen, tdoc
-    
-    
+ 
 def run(wfr):
     
     tstep = getAxis(wfr, axis = 't')
@@ -243,37 +234,19 @@ def run(wfr):
     wfr = wfr.toComplex()[0,:,:,:]
     
     
-    tau = coherenceTime(wfr, tstep, VERBOSE=True)
-    clen = coherenceLen(wfr, xstep, ystep, VERBOSE=True)
-    tdoc = transverseDOC(wfr, VERBOSE=True)
+    tau = get_coherence_time(wfr, tstep, VERBOSE=True)
+    clen = get_coherence_len(wfr, xstep, ystep, VERBOSE=True)
+    tdoc = get_transverse_doc(wfr, VERBOSE=True)
     
     return tau, clen, tdoc
 
-def binTest(bins):
-    
-    wfr = Wavefront()
-    wfr.load_hdf5("//gpfs/exfel/data/group/spb-sfx/user/guestt/h5/NanoKB-Pulse/out/NanoKB-Pulse_1.h5")
-    
-    tstep = getAxis(wfr, axis = 't')
-    tstep = tstep[1]-tstep[0]
-    
-    wfr.toComplex()[0,:,:,:]
-    tau = coherenceTime(wfr, tstep, VERBOSE = True)
-    print("{} bins: {}".format(bins, tau))
-    
 
-def launch():
-    
-    js = JobScheduler(os.getcwd() + "/coherence.py", 
-                      "CoherenceBinTest",
-                      "../../logs/",
-                      jobType = 'array',
-                      jobArray = range(10,1,-1))
 
-    js.run(test = False)
 
 if __name__ == "__main__":
+    wfr = construct_SA1_pulse(512,512,10,5.0,0.25)
     
-    binTest(sys.argv[1])
-    #testUsage()
-    #speedTest(nz = 15)
+    a = get_coherence_time_wpg(wfr)    
+    b = get_coherence_time_wpg(wfr, mpi = True)    
+    #get_coherence_len_wpg(wfr)
+

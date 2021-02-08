@@ -19,9 +19,9 @@ sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
 
 import multiprocessing
 
-from model.beamline.structure import propParams
+from model.beamline.structure import propagation_parameters
 from model.beamline.structure import BeamlineModel
-from model.src.coherent import coherentSource
+from model.src.coherent import construct_SA1_wavefront
 from wpg import srwlib
 
 from wpg.srwlib import SRWLOptD as Drift
@@ -40,6 +40,6 @@ from tqdm import tqdm
 
 if __name__ == '__main__':
     
-    wfr = coherentSource(1124, 1423, 4.96, 0.25)
+    wfr = construct_SA1_wavefront(1124, 1423, 4.96, 0.25)
 
     centroid = getCentroid(wfr)

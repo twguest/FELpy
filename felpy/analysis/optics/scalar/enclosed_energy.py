@@ -105,7 +105,7 @@ def plotEnclosed(ii, r, c, label = None, outdir = None):
     fig = plt.figure()
     ax1 = fig.add_subplot()
     
-    ax1.imshow(ii, cmap = 'hot')
+    ax1.imshow(ii, cmap = 'jet')
     circle = plt.Circle(c, r, color='w', fill=False)
     ax1.add_artist(circle)
     plt.axis("off")
@@ -135,10 +135,11 @@ def get_enclosed_energy(ii, dx, dy, efraction = 0.5, sdir = None, plot = False, 
 if __name__ == '__main__':
     from scipy.ndimage import gaussian_filter
     ii = np.zeros([50,50])
-    ii[10,10] = 100
-    ii = gaussian_filter(ii, 5)
-    ii[40,40] = 0.0001
-    ii = gaussian_filter(ii, 5)
+    ii[20,20] = 100
+    ii[30,30] = 100
+    #ii = gaussian_filter(ii, 5)
+    #ii[40,40] = 0.0001
+    ii = gaussian_filter(ii, 6)
     dx = 1e-06
     dy = 1e-06
     

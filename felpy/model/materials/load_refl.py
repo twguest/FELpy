@@ -59,30 +59,18 @@ def load_refl(material = 'B4C', indir = None):
         refl = np.load(indir + "/{}_refl.npy".format(material))
     return refl
 
-def get_refl(refl, ekev, ang = 'max', limits = [0,2*np.pi]):
+def get_refl(refl, ekev, ang):
     
     e_idx = (np.abs(refl[0,1:] -ekev*1e3)).argmin() + 1
     refl_idx = refl[:, e_idx][1: ]
     
     angs = refl[1:,0]
-    
-    if ang == 'max':
-        
-        llim = np.min(np.where(angs >= limits[0]))
-        ulim = np.max(np.where(angs <= limits[1]))
-        
-        refl_max = np.max(refl_idx[llim+1:ulim+1])
-        a_idx = np.where(refl_idx == refl_max)[0][0]
-        
-        ang = angs[a_idx]
-         
-    
-    else:
-        a_idx = (np.abs(refl[1:,0] - ang)).argmin() + 1
+
+    a_idx = (np.abs(refl[1:,0] - ang)).argmin() + 1
  
-        refl_max = refl[a_idx, e_idx]
+    refl_max = refl[a_idx, e_idx]
     
-    return refl_max, ang
+    return refl_max
  
     
 if __name__ == '__main__':

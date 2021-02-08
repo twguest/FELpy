@@ -20,7 +20,7 @@ sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
 from wpg.wavefront import Wavefront
 from wpg.wpg_uti_wf import integral_intensity, calculate_fwhm
 
-from model.src.coherent import coherentSource
+from model.src.coherent import construct_SA1_wavefront
 from model.beamline.structure import BeamlineModel
 
 def loadPulse(wdir):
@@ -58,7 +58,7 @@ def propagatePulse(wfr, outdir, mode = 'direct'):
 
 def constructCoherentEquiv(wfr, outdir, mode = 'direct'):
     
-    cwfr = coherentSource(1024, 1024, wfr.params.photoEnergy/1000, 0.25)
+    cwfr = construct_SA1_wavefront(1024, 1024, wfr.params.photoEnergy/1000, 0.25)
     
     cwfr.initial_intensity = integral_intensity(cwfr)
     

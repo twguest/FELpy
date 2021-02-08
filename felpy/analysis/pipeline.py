@@ -70,7 +70,7 @@ import numpy as np
 
 from multiprocessing.pool import ThreadPool as Pool
 
-from model.tools import mkdir_p, memoryMap, readMap
+from model.tools import mkdir_p, memory_map, readMap
 
 from model.tools import constructPulse ## for testing
 
@@ -163,62 +163,62 @@ def setup(VERBOSE = False):
     
     
     ### construct memmaps
-    train = memoryMap(params['global'], params['train'],
+    train = memory_map(params['global'], params['train'],
           shape = (nx,ny,nSlice,2))  
 
-    tsi = memoryMap(params['global'], params['tsi'],
+    tsi = memory_map(params['global'], params['tsi'],
               shape = 2)
     
-    tss = memoryMap(params['global'], params['tss'], 
+    tss = memory_map(params['global'], params['tss'], 
           shape=(nSlice, 4, 1))
     
     
-    tcoh = memoryMap(params['global'], params['tcoh'], 
+    tcoh = memory_map(params['global'], params['tcoh'], 
           shape=(1, 3))
 
 
-    tesi = memoryMap(params['global'], params['tesi'],
+    tesi = memory_map(params['global'], params['tesi'],
               shape = (1,3,1)) 
     
  
-    tesp = memoryMap(params['global'], params['tesp'], 
+    tesp = memory_map(params['global'], params['tesp'], 
               shape=(nSlice,3,1))
     
-    tcni = memoryMap(params['global'], params['tcni'], 
+    tcni = memory_map(params['global'], params['tcni'], 
               shape=(1,2,1))
     
     
-    tcnp = memoryMap(params['global'], params['tcnp'],
+    tcnp = memory_map(params['global'], params['tcnp'],
           shape = (nSlice,4,1)) 
 
     
-    esi = memoryMap(params['global'], params['esi'],
+    esi = memory_map(params['global'], params['esi'],
               shape = (1,3,len(os.listdir(params['indir'])))) 
     
  
-    esp = memoryMap(params['global'], params['esp'], 
+    esp = memory_map(params['global'], params['esp'], 
               shape=(nSlice,3,len(os.listdir(params['indir']))))
     
-    cni = memoryMap(params['global'], params['cni'], 
+    cni = memory_map(params['global'], params['cni'], 
               shape=(1,2,len(os.listdir(params['indir']))))
     
     
-    cnp = memoryMap(params['global'], params['cnp'],
+    cnp = memory_map(params['global'], params['cnp'],
           shape = (nSlice,4,len(os.listdir(params['indir']))))  
 
 
-    bsi = memoryMap(params['global'], params['bsi'],
+    bsi = memory_map(params['global'], params['bsi'],
               shape = (len(os.listdir(params['indir'])),2)) 
     
  
-    bss = memoryMap(params['global'], params['bss'], 
+    bss = memory_map(params['global'], params['bss'], 
               shape=(nSlice, 4, len(os.listdir(params['indir']))))
     
-    coh = memoryMap(params['global'], params['coh'], 
+    coh = memory_map(params['global'], params['coh'], 
               shape=(len(os.listdir(params['indir'])), 3))
     
     
-    ### define memorymap shapes
+    ### define memory_map shapes
     params["train_shape"] = train.shape
     
     params["tsi_shape"] = tsi.shape

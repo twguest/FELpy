@@ -1,15 +1,34 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from felpy.analysis.statistics.correlation import norm_difference
-from multiprocessing import Pool, cpu_count
-from felpy.model.tools import memoryMap
-from felpy.exp.shimadzu.preprocess import shimadzu_test_data
+import multiprocessing as mp
+from felpy.utils.np_utils import memory_map, readMap
+#from felpy.exp.shimadzu.preprocess import shimadzu_test_data
 from felpy.utils.os_utils import mkdir_p
 import shutil
 from functools import partial
 #### correlation methods
+from felpy.analysis.statistics.correlation import norm
 
-def intra_train_correlation(train, arr):
+# =============================================================================
+# def get_intensity_autocorrelation1(arr):
+#     """
+#     get the correlation between two intensity arrays
+#     
+#     :param arr: intensity array one (numpy array) [float]
+#         this array should be of the form [nx, ny, npulses, ntrains]
+#     :returns cor: intensity correlation (numpy array) [float]
+#     """
+#     return np.mean(arr1*arr2, axis = -1)/(np.mean(arr1, axis = -1)*np.mean(arr2, axis = -1))
+# 
+# =============================================================================
+
+
+
+    
+    
+
+def intra_train_correlation(train, arr, method = norm_difference):
 
     tmp = np.zeros([arr.shape[0],
                     arr.shape[1],
@@ -93,20 +112,22 @@ def quick_plot(arr):
             plt.show()
 
 if __name__ == '__main__':
-    
-    from time import time
-    ii = shimadzu_test_data(250,250,20,10)
-     
-    start = time()
-    C = correlation_analysis(ii, mpi = True)
-    corr_a = C.inter_train_correlation( )
-    fin = time()
-    print("MPI: {:.4f} s".format(fin-start))
-    #quick_plot(corr_a)
-
-    start = time()
-    C = correlation_analysis(ii, mpi = True)
-    corr_b = C.sequential_pulse_correlation()
-    fin = time()
-    print("MPI: {:.4f} s".format(fin-start))
-    quick_plot(abs(corr_b-corr_a))
+    pass
+# =============================================================================
+#     from time import time
+#     ii = shimadzu_test_data(250,250,20,10)
+#      
+#     start = time()
+#     C = correlation_analysis(ii, mpi = True)
+#     corr_a = C.inter_train_correlation( )
+#     fin = time()
+#     print("MPI: {:.4f} s".format(fin-start))
+#     #quick_plot(corr_a)
+# 
+#     start = time()
+#     C = correlation_analysis(ii, mpi = True)
+#     corr_b = C.sequential_pulse_correlation()
+#     fin = time()
+#     print("MPI: {:.4f} s".format(fin-start))
+#     quick_plot(abs(corr_b-corr_a))
+# =============================================================================

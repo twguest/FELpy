@@ -17,13 +17,13 @@ sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
 ###############################################################################
 from matplotlib import pyplot as plt
 from poppy import zernike
-from model.src.coherent import coherentSource
+from model.src.coherent import construct_SA1_wavefront
 import numpy as np
 from wpg.wpg_uti_wf import calculate_fwhm
 
  
 
-wfr = coherentSource(1000, 1000, 12, 0.1)
+wfr = construct_SA1_wavefront(1000, 1000, 12, 0.1)
 ii = wfr.get_intensity()[:,:,0]
 ph = wfr.get_phase()[:,:,0]
 

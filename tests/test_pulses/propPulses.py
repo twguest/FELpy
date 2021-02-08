@@ -18,7 +18,7 @@ sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
 
 import multiprocessing
 
-from model.beamline.structure import propParams
+from model.beamline.structure import propagation_parameters
 #from model.beamline.structure import BeamlineModel
 
 from wpg import srwlib
@@ -65,7 +65,7 @@ def getSimpleBl():
     
     bl = Beamline()    
     
-    bl.append(Drift(10), propParams(1, 1, 1, 1, mode = 'quadratic'))
+    bl.append(Drift(10), propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
     
     return bl
     

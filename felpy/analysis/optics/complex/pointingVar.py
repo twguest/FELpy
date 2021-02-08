@@ -8,15 +8,15 @@ Created on Wed Sep 16 15:18:05 2020
 import os
 import sys
 sys.path.append("../../")
-from model.tools import constructPulse, generateTestPulses
-from model.tools import mkdir_p
+from felpy.model.src.coherent import construct_SA1_wavefront
+from felpy.model.tools import mkdir_p
 from wpg.wavefront import Wavefront
 import numpy as np
 from matplotlib import pyplot as plt
 
 import shutil
 
-def pointingVector(wfr, mode = 'pulse', sdir = None, ID = 0):
+def get_pointing_vector(wfr, mode = 'slice', sdir = None, ID = 0):
     """
     Calculates the variance in pointing vector of a wavefield
     
@@ -30,7 +30,7 @@ def pointingVector(wfr, mode = 'pulse', sdir = None, ID = 0):
     :returns: pvz z-component of pointing vector from slice-to-slice
     """
 
-    if mode == 'pulse':   
+    if mode == 'slice':   
         wfr = wfr.toComplex()[0,:,:,:]
     elif mode == 'integrated':
         wfr = wfr.toComplex()[0,:,:,:].sum(axis = -1)
@@ -39,7 +39,7 @@ def pointingVector(wfr, mode = 'pulse', sdir = None, ID = 0):
     pvy = np.zeros(wfr.shape)
     pvz = np.zeros(wfr.shape)
     
-    if mode == 'pulse':
+    if mode == 'slice':
         
         for t in range(wfr.shape[-1]):
             #### TO DEBUG
@@ -74,39 +74,24 @@ def pointingVector(wfr, mode = 'pulse', sdir = None, ID = 0):
         pvx[np.where(pvx == np.nan)] = 0
         pvy[np.where(pvy == np.nan)] = 0
         pvz[np.where(pvz == np.nan)] = 0
-
-                
-    if sdir != None:
         
-        mkdir_p(sdir + "/xax/")
-        mkdir_p(sdir + "/yax/")
-        mkdir_p(sdir + "/zax/")
-        mkdir_p(sdir + "/cwfr/")
-
-        
-        np.save(sdir + "/xax/" + "pointingVector_{}".format(ID), pvx)
-        np.save(sdir + "/yax/" + "pointingVector_{}".format(ID), pvy)
-        np.save(sdir + "/zax/" + "pointingVector_{}".format(ID), pvz)
-        np.save(sdir + "/cwfr/" + "complexWfr_{}".format(ID), wfr)
-            
-
     return pvx, pvx, pvz
 
 
-def testpointingVar(mode = 'intra'):
+def test_pointing_vector(mode = 'intra'):
     
     if mode == 'intra':
-        wfr = constructPulse(512, 512, 5)
+        wfr = constructslice(512, 512, 5)
         vdx, vdy, vdz = pointingVarInter(wfr)
         
     elif mode == 'inter':
-        sdir = "../../data/testPulses/"
-        generateTestPulses(sdir, N = 5)
+        sdir = "../../data/testslices/"
+        generateTestslices(sdir, N = 5)
         vdx, vdy, vdz = pointingVarIntra(sdir)    
     
     return vdx, vdy
 
-def plotPointingAngle(vdx, vdy, vdz):
+def plot_pointing_angle(vdx, vdy, vdz):
     
     fig, axs = plt.subplots(1,3, figsize = (18, 6), dpi = 1020)
     
@@ -129,14 +114,14 @@ def plotPointingAngle(vdx, vdy, vdz):
     
 if __name__ == '__main__':
     
-    sdir = "../../data/testPulses/"
-    generateTestPulses(sdir, nx = 512, ny = 512, N = 5)
+    sdir = "../../data/testslices/"
+    generateTestslices(sdir, nx = 512, ny = 512, N = 5)
     ddir = "../../data/pointing/"
     mkdir_p(ddir)
     for n in range(len(os.listdir(sdir))):
         
         wfr = Wavefront()
         wfr.load_hdf5(sdir + os.listdir(sdir)[n])
-        px, py, pz = pointingVector(wfr, mode = 'pulse', sdir = ddir, ID = n)
+        px, py, pz = get_pointing_vector(wfr, mode = 'slice', sdir = ddir, ID = n)
         
     shutil.rmtree(sdir)

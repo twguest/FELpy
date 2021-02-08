@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import numpy as np
 
 def get_mesh(ii, dx, dy):
@@ -65,6 +66,30 @@ def gaussian_2d(nx, ny):
     sigma, mu = 1.0, 0.0
     g = np.exp(-( (d-mu)**2 / ( 2.0 * sigma**2 ) ) )
     return g
+
+def readMap(mapdir,shape,dtype = 'float64'):
+    """
+    read a map from mapDir
+    """
+    
+    mp = np.memmap(mapdir, dtype = dtype, mode = 'r+', shape = shape)
+    
+    return mp
+
+
+
+def memory_map(map_loc, shape, dtype = 'float64'):
+    """
+    construct a memory map
+    """
+
+    if os.path.exists(map_loc):
+        memmap = readMap(map_loc, shape, dtype)
+    else:
+        memmap = np.memmap(map_loc, mode = "w+",
+                           shape = shape, dtype = dtype)
+    return memmap
+
 
 if __name__ == '__main__':
     from matplotlib import pyplot as plt

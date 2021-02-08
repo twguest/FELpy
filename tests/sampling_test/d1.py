@@ -33,16 +33,16 @@ import time
 
 import numpy as np
 
-from model.src.coherent import coherentSource
+from model.src.coherent import construct_SA1_wavefront
 from model.beamline.structure import config
 
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity 
 from wpg.misc import fresnel_sampling
 from wpg.srwlib import SRWLOptD
-from model.beamline.structure import propParams
+from model.beamline.structure import propagation_parameters
 def quadratic_prop(outdir):
     
-    wfr = coherentSource(1024,1024,6,1.0)
+    wfr = construct_SA1_wavefront(1024,1024,6,1.0)
     D1 = wfr.params.Mesh.xMax - wfr.params.Mesh.xMin
     
     bl = config(focus = "micron")
@@ -58,7 +58,7 @@ def quadratic_prop(outdir):
     return wfr.pixelsize()[0], D1, D2
 
 def fresnel_prop(outdir, pp):
-    wfr = coherentSource(1024,1024,6,1.0)
+    wfr = construct_SA1_wavefront(1024,1024,6,1.0)
     
     bl = config(focus = "micron")
     Drift = SRWLOptD(50)
@@ -72,7 +72,7 @@ def fresnel_prop(outdir, pp):
 if __name__ == '__main__':
 
     outdir = "../../output/sampling_test/d1/"
-    wfr = coherentSource(1024,1024,6,1.0)
+    wfr = construct_SA1_wavefront(1024,1024,6,1.0)
 
     print("Comparing Propagation Algorithms")
     dx1, D1, D2 = quadratic_prop(outdir)

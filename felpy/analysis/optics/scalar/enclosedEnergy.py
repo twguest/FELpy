@@ -22,7 +22,7 @@ import shutil
 import numpy as np
 from matplotlib.colors import LogNorm
 import wpg.srwlib as srwlib
-from model.src.coherent import coherentSource
+from model.src.coherent import construct_SA1_wavefront
 from wpg.wpg_uti_wf import calc_pulse_energy, getOnAxisPowerDensity, getCentroid
 from wpg.wavefront import Wavefront
 from matplotlib import pyplot as plt

@@ -6,17 +6,7 @@ Created on Mon Aug 31 16:25:18 2020
 @author: twguest
 """
 
-
-###############################################################################
-import sys
-sys.path.append("/opt/WPG/") # LOCAL PATH
-sys.path.append("/gpfs/exfel/data/user/guestt/WPG") # DESY MAXWELL PATH
-
-sys.path.append("../") # LOCAL PATH
-
-###############################################################################
-###############################################################################
-
+ 
 
 from PIL import Image
 
