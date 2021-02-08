@@ -16,7 +16,17 @@ from labwork.about import logs, dCache
 import sys
 from felpy.utils.os_utils import mkdir_p
 
+"""
+to run on MAXWELL
 
+in terminal
+
+source activate optics
+cd /gpfs/exfel/data/user/guestt/FELpy/felpy/analysis/optics/scalar/
+python -c "from intensity_analysis import get_intensity_autocorrelation_ensemble as run;run()"
+...
+wait
+"""
 def get_intensity_autocorrelation_ensemble(array_dir = "/gpfs/exfel/data/user/guestt/labwork/dCache/whitefield_data/cropped_intensity_r0046.npy"):
 
     """
