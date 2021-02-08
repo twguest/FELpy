@@ -5,7 +5,7 @@ some methods for calling beamlines and parameters etc.
 
 from felpy.model.beamlines.structure import BeamlineModel
 
-def get_beamline_object(params = "", options = None, ekev = 5.0,
+def get_beamline_object(params = "", options = 'nano', ekev = 5.0,
                         theta_hom = 2.2e-03, theta_kb = 3.5e-03):
     
     """ 

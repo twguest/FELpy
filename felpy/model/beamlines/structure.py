@@ -364,7 +364,7 @@ class BeamlineModel:
             self.df =  Drift(self.params["df"]['distance'])
             self.df.name = self.params["df"]['name']
             
-    def buildBeamline(self, focus = "nano", screens = "false"):
+    def build_beamline(self, focus = "nano", screens = "false"):
         """
         Construct the beamline object
         
@@ -516,6 +516,7 @@ class BeamlineModel:
     
     def scale(self, wfr, iscx = 1024, iscy = 1024, ifov = 800e-06):
         """
+        DEPR.
         narrow functionality for scaling a wavefront (ie the number of pixels)
         in the source plane
         

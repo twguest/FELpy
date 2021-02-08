@@ -257,10 +257,16 @@ class JobScheduler:
             if type(self.jobArray) == list:
                 
                 for arrItem in self.jobArray:
-                    print(arrItem)
-                    jName = self.jobName + arrItem.__name__
-                    self.jobScript(jName, arrItem.__name__)
-            
+                    
+                    if type(arrItem) == str:
+                        print(arrItem)
+                        jName = self.jobName + arrItem
+                        self.jobScript(jName, arrItem)
+                    else:
+                        print(arrItem)
+                        jName = self.jobName + arrItem.__name__
+                        self.jobScript(jName, arrItem.__name__)
+                
             else:
                 
                 for arrItem in self.jobArray:
