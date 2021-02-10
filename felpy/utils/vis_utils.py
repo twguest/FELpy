@@ -7,7 +7,7 @@ Created on Sun Aug 16 20:06:28 2020
 """
 import shutil 
 import numpy as np
-
+import seaborn as sns
 from matplotlib import pyplot as plt
 import matplotlib as mpl
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -239,6 +239,7 @@ def scatter_3D(x, y, z,
             fig3.savefig(sdir + "2D_yz.png")
     
     plt.show()
+    
 def generate_3D_animation(x, y, z,
                           sdir,
                           title = "",
@@ -265,4 +266,28 @@ def generate_3D_animation(x, y, z,
     
     animate(tdir, sdir, title + "_3D_animation",
             rmdir = True)
+
+
+def plot_fill_between(data, title = "",
+                      xlabel = "",
+                      ylabel = "",
+                      alpha = 0.5,
+                      context = 'notebook'):
     
+    #sns.set()
+    sns.set_style("dark")
+    sns.set_context(context)
+    
+    fig, ax1 = plt.subplots()
+    
+    ax1.plot(data.mean(-1))
+    ax1.fill_between(np.arange(data.shape[0]),
+                     data.mean(-1) - np.std(data),
+                     data.mean(-1) + np.std(data),
+                     alpha = alpha)
+        
+    ax1.set_title(title)
+    ax1.set_xlabel(xlabel)
+    ax1.set_ylabel(ylabel)
+    
+    plt.show()

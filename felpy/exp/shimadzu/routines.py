@@ -57,7 +57,7 @@ def beam_size_analysis(ii, mesh, sdir, run):
     for train in range(ntrains):
         for pulse in range(npulses):
             print("Analysis of: Pulse {} // Train {}".format(pulse, train))
-            rx, ry = get_enclosed_energy(ii[:,:,0,0], px, py)
+            rx, ry = get_enclosed_energy(ii[:,:,pulse,train], px, py)
             area[pulse,train] = np.pi*rx*ry
 
     
