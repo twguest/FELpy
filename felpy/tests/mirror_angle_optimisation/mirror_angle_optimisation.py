@@ -9,6 +9,8 @@ import matplotlib
 matplotlib.use('qt5agg')
 
 import sys
+import shutil
+
 import numpy as np
 import multiprocessing as mp
 
@@ -25,6 +27,10 @@ from tqdm import tqdm
 
 FOCUS = 'nano' ### applies for NKB beamline analysis
 PROCESSES = mp.cpu_count()//2 ### number of cpus for multiprocessing
+<<<<<<< Updated upstream
+=======
+MIRROR = "HOM2" ### mirror angle to be optimised
+>>>>>>> Stashed changes
 N = 50 ### number of data points
 
 from os import getcwd
@@ -60,12 +66,17 @@ def core(ang, ekev, mirror_name):
     
     spb = BeamlineModel(VERBOSE = False)
     spb.mirror_profiles(toggle = "on", aperture  = True, overwrite = False)
+<<<<<<< Updated upstream
     spb.adjust_mirror("HOM1", ekev, new_ang = ang)
+=======
+    spb.adjust_mirror("HOM1", 5.0, new_ang = ang)
+>>>>>>> Stashed changes
     spb.buildElements(focus = FOCUS)
     spb.buildBeamline(focus = FOCUS)
     spb.cropBeamline(spb.params['HOM1']['next_drift'])
     bl = spb.get_beamline()
     
+<<<<<<< Updated upstream
     wfr = construct_spb_pulse(1024, 1024, 5, ekev, 0.25)
     
     bl.propagate(wfr)
@@ -76,9 +87,20 @@ def core(ang, ekev, mirror_name):
     return (ang, nph)
 
 if __name__ == '__main__':
+=======
+    wfr = construct_spb_pulse(512, 512, 2, 5.0, 0.25)
+    
+    bl.propagate(wfr)
+    plot_wfr(wfr, save = sdir + "{:.4f}.png".format(ang*1e3))
+    nph = get_pulse_energy(wfr)[1]
+    print("Mirror Angle: {} mrad Complete".format(ang*1e3
+                                                 ))
+    return (ang, nph)
+>>>>>>> Stashed changes
     
     MIRRORS = ['HOM1', 'HOM2', 'NHE', 'NVE']
     
+<<<<<<< Updated upstream
     if len(sys.argv) > 1:    
         ekev = float(sys.argv[1])
     else:
@@ -103,3 +125,24 @@ if __name__ == '__main__':
         np.save(edir + "{}_mirror_flux_data".format(MIRROR), r)
             
             
+=======
+if __name__ == '__main__':
+    
+    MIRRORS = ['HOM1', 'HOM2', 'NHE', 'NVE']
+    
+    for MIRROR in MIRRORS:    
+    
+        spb = BeamlineModel(VERBOSE = False)
+        pool = mp.Pool(PROCESSES)
+        r = pool.map(partial(core, mirror_name = MIRROR),
+                 np.linspace(spb.params[MIRROR]['ang_min'],
+                             spb.params[MIRROR]['ang_max'],
+                             N))
+        
+        
+        animate(sdir, sdir, "{}_mirror_rotation".format(MIRROR))
+        
+        np.save(r, sdir + "{}_mirror_flux_data".format(MIRROR))
+        
+        
+>>>>>>> Stashed changes

@@ -145,7 +145,12 @@ def construct_SA1_wavefront(nx, ny, ekev, q, xoff = 0, yoff = 0, modify_beam_div
     dtheta = analytical_pulse_divergence(q, ekev)
     tau = analytical_pulse_duration(q)
     
+<<<<<<< Updated upstream
     
+=======
+    f = tlFocus(pulseWidth(ekev),pulseDivergence(q,ekev))
+        
+>>>>>>> Stashed changes
     gsnBm = build_gaussian(nx, ny, ekev, xMin, xMax, yMin, yMax, sigX, sigY, 1, xoff = xoff, yoff = yoff, pulseTau = tau)
     
     wfr = Wavefront(gsnBm)
@@ -175,6 +180,7 @@ def construct_SA1_pulse(nx, ny, nz, ekev, q, modify_beam_divergenceergence = Tru
     """
     wavelength = (h*c)/(ekev*1e3)
         
+<<<<<<< Updated upstream
     xMin, xMax = -400e-06, 400e-06 #based on fwhm of 1 nC, 3 keV beam
     yMin, yMax = -400e-06, 400e-06 #based on fwhm of 1 nC, 3 keV beam
     
@@ -196,10 +202,86 @@ def construct_SA1_pulse(nx, ny, nz, ekev, q, modify_beam_divergenceergence = Tru
                               pulseRange = 1)
     
     wfr = Wavefront(gsnBm)
+=======
+        ax.plot(energyrange, fwhms)
+    print(len(mean_delta))
+    dax.scatter(resolutionrange, mean_delta)
+     
+    
+    leg1 = ax.legend(["{}x{} pixels".format(int(val), int(val)) for val in resolutionrange])
+    ax.add_artist(leg1)
+    analytical, = ax.plot(energyrange, analytical_data, '--b',)
+
+    leg2 = ax.legend([analytical], ["Analytical Model"], loc = 'lower left')
+    ax.add_artist(leg2)
+    plt.show(ax)
+    
+    if outdir is not None:
+        if type(outdir) != str:
+            print("outdir should be a string, saving failed")
+            pass
+        else:
+            fig.savefig(outdir + "SourceSize_EnergyDep.png")
+            dfig.savefig(outdir + "SourceError_pixels.png")
+            
+
+def construct_pulse(nx = 512, ny = 512, nz = 5, ekev = 5.0, tau = 1e-06, d2waist = 10):
+    
+    wfr = Wavefront(build_gaussian_3D(nx, ny, nz, ekev, -400e-06, 400e-06, -400e-06, 400e-06, tau, 5e-06, 5e-06, d2waist))
+>>>>>>> Stashed changes
     srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
     
     wfr.params.wavelength = wavelength
     modify_beam_divergence(wfr,analytical_pulse_width(ekev),analytical_pulse_divergence(q,ekev))
+    
+    return wfr
+
+def construct_spb_pulse(nx, ny, nz, ekev, q, modDivergence = True):
+    """
+    Construct a fully-coherent Gaussian source with properties related to the
+    energy of the radiation and beam charge.
+    
+    Important points: pulseTau (coherence length) is set to tau (pulse length)
+    in the fully coherent case
+    
+    :param nx: number of horizontal pixels [int]
+    :param ny: number of vertical pixels [int]
+    :param nz: number of slices [int]
+    :param ekev: radiation energy [keV]
+    :param q: electron beam bunch charge [nC]
+    :param xoff: horizontal offset of beam maximum [m]
+    :param yoff: vertical offset of beam maximum [m]
+    :param modDivergence: Choose to set non-diffraction limited div [bool]
+    """
+    wavelength = (h*c)/(ekev*1e3)
+        
+    xMin, xMax = -400e-06, 400e-06 #based on fwhm of 1 nC, 3 keV beam
+    yMin, yMax = -400e-06, 400e-06 #based on fwhm of 1 nC, 3 keV beam
+    
+    sigX, sigY = pulseWidth(ekev)/fwhm2rms, pulseWidth(ekev)/fwhm2rms
+    pulseEn = pulseEnergy(q, ekev)
+    
+    dtheta = pulseDivergence(q, ekev)
+    tau = pulseDuration(q)
+    
+    f = tlFocus(pulseWidth(ekev),pulseDivergence(q,ekev))
+        
+    gsnBm = build_gaussian_3D(nx = nx,
+                              ny = ny,
+                              nz = nz,
+                              ekev = ekev,
+                              xMin = xMin, xMax = xMax,
+                              yMin = yMin, yMax = yMax,
+                              sigX = sigX, sigY = sigY,
+                              d2waist = 1,
+                              tau = tau,
+                              pulseRange = 1)
+    
+    wfr = Wavefront(gsnBm)
+    srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
+    
+    wfr.params.wavelength = wavelength
+    modDiv(wfr,f)
     
     return wfr
 
