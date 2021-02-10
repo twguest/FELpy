@@ -27,7 +27,27 @@ python -c "from intensity_analysis import get_intensity_autocorrelation_ensemble
 ...
 wait
 """
-def get_intensity_autocorrelation_ensemble(array_dir = "/gpfs/exfel/data/user/guestt/labwork/dCache/whitefield_data/cropped_intensity_r0046.npy"):
+
+def get_normalised_difference(arr1, arr2):
+    """
+    |arr1-arr2|
+    """
+    return 1 - np.abs(softmax_normalisation(arr1)-softmax_normalisation(arr2))
+    
+
+def get_second_order_doc(arr1, arr2):
+    """
+    does not include ensemble averaging 
+     
+    [I(r_1, t_1)-I^{bar}(r_1)][I(r_1, t_2)-I^{bar}(r_1)]
+    """
+    mean = np.repeat(arr2.mean(axis = -1)[:, :, np.newaxis], arr2.shape[-1],
+                     axis=-1)
+    
+    return (arr1 - mean)*(arr2 - mean)
+
+def get_intensity_autocorrelation_ensemble(array_dir = "/gpfs/exfel/data/user/guestt/labwork/dCache/whitefield_data/cropped_intensity_r0046.npy",
+                                           method = get_normalised_difference):
 
     """
     This part launches the jobs that run in main 
@@ -40,16 +60,16 @@ def get_intensity_autocorrelation_ensemble(array_dir = "/gpfs/exfel/data/user/gu
     
     js = JobScheduler(cwd + "/" + script, logDir = logs,
                       jobName = "autocorrelation_analysis_", partition = 'exfel', nodes = 1, jobType = 'array',
-                      jobArray = range(arr.shape[-1]))
+                      jobArray = range(arr.shape[-1]), options = [method])
         
     js.run(test = False)
     
     
     
 
-def get_intensity_autocorrelation_train(train_no, array, map_loc, sdir = None, mpi = True):
+def get_intensity_autocorrelation_train(train_no, array, map_loc, method = get_normalised_difference, sdir = None, mpi = True):
     
-    array = array[:,:,:,train_no]
+    array = array[:,:,3:103,train_no]
  
     map_loc = map_loc + "autocorrelation_map_{}".format(train_no)
     mmap = memory_map(map_loc, shape = (*array.shape, array.shape[-1]))
@@ -57,7 +77,7 @@ def get_intensity_autocorrelation_train(train_no, array, map_loc, sdir = None, m
     pool = mp.Pool(mp.cpu_count()//2)
     
     func = partial(get_intensity_autocorrelation_pulse, array = array,
-                   map_loc = map_loc)
+                   map_loc = map_loc, method = method)
     
     pool.map(func, range(array.shape[-1]))
     
@@ -74,7 +94,8 @@ def get_intensity_autocorrelation_train(train_no, array, map_loc, sdir = None, m
     print("Completed Autocorrelation Calculations for Train: {}".format(train_no))
     
     
-def get_intensity_autocorrelation_pulse(pulse_no, array, map_loc):
+
+def get_intensity_autocorrelation_pulse(pulse_no, array, map_loc, method = get_normalised_difference):
     """
     computes the time-lagged intensity-intensity autocorrelation for a single
     slice in time (as denoted by slice_no)
@@ -86,18 +107,51 @@ def get_intensity_autocorrelation_pulse(pulse_no, array, map_loc):
     mmap = memory_map(map_loc, shape = (*array.shape, array.shape[-1]))
     
     pulse = np.repeat(array[:,:,pulse_no][:, :, np.newaxis], array.shape[-1], axis=-1)
+    
+    
+    mmap[:,:, pulse_no, :] = method(pulse, array)
 
-    mmap[:,:, pulse_no, :] = pulse*array 
+
+def softmax_normalisation(arr):
+    """
+    softmax normalisation, ie., let sum of each 2D slice in an array = 1
+    """
+    
+    if arr.ndim == 3:
+        
+        for itr in range(arr.shape[-1]):
+            
+            arr[:,:,itr] /= arr[:,:,itr].sum()
+    
+    return arr
 
 if __name__ == '__main__':
     array_dir = "/gpfs/exfel/data/user/guestt/labwork/dCache/whitefield_data/cropped_intensity_r0046.npy"
+    
+
     train_no = sys.argv[1]
-    array = np.load(array_dir)
-    map_loc = dCache + "/tmp/"
-    sdir = dCache + "/whitefield_data/r0046/"
     
-    mkdir_p(map_loc)
-    mkdir_p(sdir)
+    try:
+        method = sys.argv[2]
+        print("Method: {}".format(method.__name__))
+    except(IndexError):
+        method = [get_normalised_difference, get_second_order_doc] 
     
-    get_intensity_autocorrelation_train(train_no, array, map_loc, sdir)
     
+    if type(method) == list:
+        
+        for m in method:
+        
+            array = np.load(array_dir)
+            map_loc = dCache + "/tmp/"
+            sdir = dCache + "/whitefield_data/r0046/"
+            mkdir_p(sdir)
+            
+            sdir + "{}/".format(m.__name__)
+            
+            mkdir_p(map_loc)
+            mkdir_p(sdir)
+            
+            get_intensity_autocorrelation_train(train_no, array, map_loc, sdir,
+                                                method = m)
+            
