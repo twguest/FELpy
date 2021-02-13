@@ -247,53 +247,5 @@ def test_coherent_pulse_divergence(outdir = None):
 
 if __name__ == '__main__':
     
-    from felpy.utils.os_utils import mkdir_p
-    
-    sdir = '../../tests/coherent_source/'
-    mkdir_p(sdir)
-    ## TEST FOR USAGE
-    print("Testing Coherent Gaussian Source Module")
-    
-    ### SET PARAMS
-      
-    q = 0.25 # nC
-    ekev = 5.0 # keV
-    print("Testing Parameters @ q = {} nC and ekev = {} keV\n".format(q, ekev))  
-    
-    ### Print Parameters as Sanity Check
-    print("Electron Beam Charge: {} nC".format(q))    
-    print("Electron Beam Charge: {} pC".format(q*1e3))   
-    
-    print("Radiation Energy: {} keV".format(ekev))   
-    
-    print("\n")
-    ### Estimate Energy per Pulse
-    print("Pulse Energy: {} Joules".format(analytical_pulse_energy(q, ekev)))
-
-    ### Estimate Duration of pulse
-    print("Pulse Duration: {} seconds".format(analytical_pulse_duration(q)))
-        
-    ### Estimate FWHM of pulse (assumes symmetry)
-    print("Pulse Width: {} m".format(analytical_pulse_width(ekev)))
-    
-    ### Estimate FWHM of pulse (assumes symmetry)
-    print("Pulse Divergence: {} rad".format(analytical_pulse_divergence(q,ekev)))
-    
-    ### Estimate thin lens focus for divergence correction
-    print("\n")
-    print("Thin-Lens Focus: {} m".format(thin_lens_mod(analytical_pulse_width(ekev),analytical_pulse_divergence(q,ekev))))
-    
-    ### Generate Coherent Source
-    wfr = construct_SA1_pulse(nx = 1024, ny = 1024, nz = 5, ekev = ekev, q = q)
-    
-    ### Test Source FWHM
-    test_coherent_pulse_fwhm(sdir)
-    
-    ### Test Source Divergence
-    test_coherent_pulse_divergence(sdir)     
-    
-    ### Plot Source 
-    #plotIntensity(wfr, "/opt/spb_model/tests/9200eV_100pC_intensity.png")
-    #plotKspace(wfr, "/opt/spb_model/tests/9200eV_100pC_kspace.png")
- 
+    pass
  

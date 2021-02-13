@@ -271,23 +271,41 @@ def generate_3D_animation(x, y, z,
 def plot_fill_between(data, title = "",
                       xlabel = "",
                       ylabel = "",
-                      alpha = 0.5,
-                      context = 'notebook'):
-    
+                      alpha = 0.25,
+                      context = 'notebook',
+                      plot_max = True,
+                      xlim = None,
+                      ylim = None,
+                      color = 'blue'):
+    """
+    plot the mean of a 2D data set with the 95% confidence interval filled
+    """
     #sns.set()
     sns.set_style("dark")
     sns.set_context(context)
     
     fig, ax1 = plt.subplots()
     
-    ax1.plot(data.mean(-1))
+    ax1.plot(data.mean(-1), color = color)
     ax1.fill_between(np.arange(data.shape[0]),
                      data.mean(-1) - np.std(data),
                      data.mean(-1) + np.std(data),
-                     alpha = alpha)
-        
+                     alpha = alpha, color = color,
+                     edgecolor= None, facecolor = None,
+                     linewidth=0.0)
+    
+    if xlim is not None:
+        ax1.set_xlim(xlim)
+    if ylim is not None:
+        ax1.set_ylim(ylim)
+
     ax1.set_title(title)
     ax1.set_xlabel(xlabel)
     ax1.set_ylabel(ylabel)
     
+
+    if plot_max:
+        ax1.plot(np.max(data, -1), c = 'blue', linestyle = 'dashdot')
+        ax1.plot(np.min(data, -1), c = 'blue', linestyle = 'dotted')
+        
     plt.show()
