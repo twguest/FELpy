@@ -16,7 +16,7 @@ from matplotlib import pyplot as plt
 
 import shutil
 
-def get_pointing_vector(wfr, mode = 'slice', sdir = None, ID = 0):
+def get_pointing_vector(wfr, sdir = None):
     """
     Calculates the variance in pointing vector of a wavefield
     
@@ -30,50 +30,26 @@ def get_pointing_vector(wfr, mode = 'slice', sdir = None, ID = 0):
     :returns: pvz z-component of pointing vector from slice-to-slice
     """
 
-    if mode == 'slice':   
-        wfr = wfr.toComplex()[0,:,:,:]
-    elif mode == 'integrated':
-        wfr = wfr.toComplex()[0,:,:,:].sum(axis = -1)
-        
+
     pvx = np.zeros(wfr.shape)
     pvy = np.zeros(wfr.shape)
     pvz = np.zeros(wfr.shape)
-    
-    if mode == 'slice':
-        
-        for t in range(wfr.shape[-1]):
-            #### TO DEBUG
-            jx, jy = (np.matmul(wfr[:,:,t],np.gradient(wfr[:,:,t].conjugate()))
-                      -np.matmul(np.gradient(wfr[:,:,t]),wfr[:,:,t].conjugate()))
-            
-            jx *= 1j
-            jy *= 1j
-            
-            
-            pvx[:,:,t] = np.arctan(jx.imag/jx.real)
-            pvy[:,:,t] = np.arctan(jy.imag/jy.real)
-            pvz[:,:,t] = np.sqrt(pvx[:,:,t]**2 + pvy[:,:,t]**2)
-            
-        pvx[np.where(pvx == np.nan)] = 0
-        pvy[np.where(pvy == np.nan)] = 0
-        pvz[np.where(pvz == np.nan)] = 0
-    
-    if mode == 'integrated':
+
                 
-        jx, jy = (np.matmul(wfr,np.gradient(wfr.conjugate()))
-                  -np.matmul(np.gradient(wfr),wfr.conjugate()))
-            
-        jx *= 1j
-        jy *= 1j
-    
-                
-        pvx[:,:] = np.arctan(jx.imag/jx.real)
-        pvx[:,:] = np.arctan(jy.imag/jy.real)
-        pvz[:,:] = np.sqrt(pvx**2 + pvy**2)
+    jx, jy = (np.matmul(wfr,np.gradient(wfr.conjugate()))
+              -np.matmul(np.gradient(wfr),wfr.conjugate()))
         
-        pvx[np.where(pvx == np.nan)] = 0
-        pvy[np.where(pvy == np.nan)] = 0
-        pvz[np.where(pvz == np.nan)] = 0
+    jx *= 1j
+    jy *= 1j
+
+            
+    pvx[:,:] = np.arctan(jx.imag/jx.real)
+    pvx[:,:] = np.arctan(jy.imag/jy.real)
+    pvz[:,:] = np.sqrt(pvx**2 + pvy**2)
+    
+    pvx[np.where(pvx == np.nan)] = 0
+    pvy[np.where(pvy == np.nan)] = 0
+    pvz[np.where(pvz == np.nan)] = 0
         
     return pvx, pvx, pvz
 
