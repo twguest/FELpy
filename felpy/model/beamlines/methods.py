@@ -18,10 +18,10 @@ def get_beamline_object(params = "", options = 'nano', ekev = 5.0,
     """
     bl = BeamlineModel()
     
-    bl.setupHOMs(ekev, theta_hom)
-    bl.setupKBs(ekev, theta_kb)
+    #bl.setupHOMs(ekev, theta_hom)
+    #bl.setupKBs(ekev, theta_kb)
     
-    bl.mirrorProfiles(toggle = "on", aperture = True, overwrite = False)
+    bl.mirror_profiles(toggle = "on", aperture = True, overwrite = False)
     bl.buildElements(focus = options)
     bl.buildBeamline(focus = options)
     return bl.get_beamline()

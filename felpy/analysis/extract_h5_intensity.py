@@ -5,19 +5,18 @@ Created on Fri Aug 14 19:11:57 2020
 
 @author: twguest
 """
-
 import sys
 import os
 import numpy as np
 
-from utils.os_utils import mkdir_p
-from utils.job_utils import JobScheduler
+from felpy.utils.os_utils import mkdir_p
+from felpy.utils.job_utils import JobScheduler
  
 from wpg.wavefront import Wavefront
-
-indir = "/opt/FELpy/felpy/data/test_pulses/"
-outdir = "/opt/FELpy/felpy/data/"
-
+from labwork.about import logs
+indir = "/gpfs/exfel/data/user/guestt/labwork/dCache/NanoKB-Pulse/EHC/"
+outdir = "/gpfs/exfel/data/user/guestt/labwork/dCache/NanoKB-Pulse/EHC_data/"
+mkdir_p(outdir)
 tmp_dir = outdir + "/tmp/"
 mkdir_p(tmp_dir)
 
@@ -38,11 +37,11 @@ def launch():
     script = os.path.basename(__file__)
     
     
-    js = JobScheduler(cwd + "/" + script, logDir = "../../logs/",
-                      jobName = "extractIntensity", partition = 'exfel', nodes = 4, jobType = 'array',
-                      jobArray = indir)
+    js = JobScheduler(cwd + "/" + script, logDir = logs,
+                      jobName = "extract_intensity_", partition = 'exfel', nodes = 4, jobType = 'array',
+                      jobArray = os.listdir(indir))
     
-    js.run(test = True)
+    js.run(test = False)
     
     
 
@@ -66,13 +65,14 @@ def compile_intensity_data():
     
 
 if __name__ == '__main__':
+    from tqdm import tqdm
     
     mkdir_p(outdir)
 
     try:
         extract_intensity(sys.argv[1])
     except:
-        for fname in os.listdir("/opt/FELpy/felpy/data/test_pulses/"):
+        for fname in tqdm(os.listdir(indir)):
             print(fname)
             extract_intensity(fname)
 
