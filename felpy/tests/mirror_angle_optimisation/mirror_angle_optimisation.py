@@ -71,8 +71,8 @@ def core(ang, ekev, mirror_name):
 =======
     spb.adjust_mirror("HOM1", 5.0, new_ang = ang)
 >>>>>>> Stashed changes
-    spb.buildElements(focus = FOCUS)
-    spb.buildBeamline(focus = FOCUS)
+    spb.build_elements(focus = FOCUS)
+    spb.build_beamline(focus = FOCUS)
     spb.cropBeamline(spb.params['HOM1']['next_drift'])
     bl = spb.get_beamline()
     

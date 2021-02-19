@@ -40,8 +40,8 @@ def propagatePulse(wfr, outdir, mode = 'direct'):
     
     spb.mirrorProfiles(toggle = "on", aperture = True, overwrite = True)
     
-    spb.buildElements(focus = "micron")
-    spb.buildBeamline(focus = "micron")
+    spb.build_elements(focus = "micron")
+    spb.build_beamline(focus = "micron")
     
     #spb.scale(wfr, isc = 501) 
     
@@ -50,7 +50,7 @@ def propagatePulse(wfr, outdir, mode = 'direct'):
     if mode == 'direct':
         bl.propagate(wfr)
     elif mode == 'sequential':
-        bl.propagateSeq(wfr, outdir)
+        bl.propagate_sequential(wfr, outdir)
     
     wfr.final_intensity = integral_intensity(wfr, bPlot = False)
     
@@ -69,8 +69,8 @@ def constructCoherentEquiv(wfr, outdir, mode = 'direct'):
     
     spb.mirrorProfiles(toggle = "on", aperture = True, overwrite = True)
     
-    spb.buildElements(focus = "micron")
-    spb.buildBeamline(focus = "micron")
+    spb.build_elements(focus = "micron")
+    spb.build_beamline(focus = "micron")
     
     #spb.scale(cwfr, isc = 150) 
     
@@ -79,7 +79,7 @@ def constructCoherentEquiv(wfr, outdir, mode = 'direct'):
     if mode == 'direct':
         bl.propagate(cwfr)
     elif mode == 'sequential':
-        bl.propagateSeq(cwfr, outdir)
+        bl.propagate_sequential(cwfr, outdir)
     
     return cwfr
 

@@ -36,9 +36,9 @@ def define_wfr(ekev):
     """
     
     spb = BeamlineModel()
-    spb.buildElements(focus = 'nano')
+    spb.build_elements(focus = 'nano')
     
-    spb.buildBeamline(focus = 'nano')
+    spb.build_beamline(focus = 'nano')
     
     spb.cropBeamline(element1 = "d1")
     
@@ -63,8 +63,8 @@ def getTransmission(ekev, ang):
     
     spb = BeamlineModel()
     spb.adjust_mirror("HOM1", ekev = ekev, new_ang = ang)
-    spb.buildElements(focus = 'nano')
-    spb.buildBeamline(focus = 'nano')
+    spb.build_elements(focus = 'nano')
+    spb.build_beamline(focus = 'nano')
     spb.cropBeamline(element1 = "HOM1", element2 = "HOM1")
     
     bl = spb.get_beamline()

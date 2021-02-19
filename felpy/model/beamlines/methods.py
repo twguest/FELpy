@@ -5,8 +5,7 @@ some methods for calling beamlines and parameters etc.
 
 from felpy.model.beamlines.structure import BeamlineModel
 
-def get_beamline_object(params = "", options = 'nano', ekev = 5.0,
-                        theta_hom = 2.2e-03, theta_kb = 3.5e-03):
+def get_beamline_object(params = "", options = 'nano', ekev = 5.0):
     
     """ 
     return desired beamline
@@ -16,15 +15,32 @@ def get_beamline_object(params = "", options = 'nano', ekev = 5.0,
     
     this may or may not be worth the time, for now it is almost certainly not.
     """
-    bl = BeamlineModel()
+ 
+
+    spb = BeamlineModel()
+    params = spb.params
     
-    #bl.setupHOMs(ekev, theta_hom)
-    #bl.setupKBs(ekev, theta_kb)
     
-    bl.mirror_profiles(toggle = "on", aperture = True, overwrite = False)
-    bl.buildElements(focus = options)
-    bl.buildBeamline(focus = options)
-    return bl.get_beamline()
+    spb.mirror_profiles(toggle = "on", aperture = True, overwrite = False)
+    
+    mirrors = ['HOM1', 'HOM2', 'NHE', 'NVE']
+    
+    for mirror in mirrors:
+    
+        if mirror in ['HOM1', 'HOM2']:    
+            spb.adjust_mirror(mirror,
+                              ekev,
+                              params[mirror]['ang_max'])
+        else:    
+            spb.adjust_mirror(mirror,
+                              ekev,
+                              3.1e-03)
+        
+    spb.build_elements(focus = 'nano')
+    spb.build_beamline(focus = 'nano')
+
+
+    return spb.get_beamline()
     
 
 def unit_test():

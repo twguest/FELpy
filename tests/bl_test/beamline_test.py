@@ -35,14 +35,14 @@ def testNano(wfr, outdir = None, toggle = 'on'):
     spb.mirrorProfiles(toggle = toggle, overwrite = False)
     
     print("Building Beamline")
-    spb.buildElements(focus = "nano")
-    spb.buildBeamline(focus = "nano")
+    spb.build_elements(focus = "nano")
+    spb.build_beamline(focus = "nano")
   
     bl = spb.get_beamline()
     
     print("Propagating Beamline")
     s = time.time()
-    bl.propagateSeq(wfr, outdir)
+    bl.propagate_sequential(wfr, outdir)
     f = time.time()
     print("Propagation Finished")
     print("Propagating Time: {} s".format(f-s))

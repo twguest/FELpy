@@ -183,7 +183,7 @@ class BeamlineModel:
         
         
  
-    def buildElements(self, focus = "nano"):
+    def build_elements(self, focus = "nano"):
         
 
         self.d1 =  Drift(self.params["HOM1"]['distance from source'])
@@ -417,7 +417,7 @@ class BeamlineModel:
             self.bl.append(self.NVE, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
             
             
-            self.bl.append(self.df, propagation_parameters(5,1,5,1, mode = 'converge'))
+            self.bl.append(self.df, propagation_parameters(10,1,10,1, mode = 'converge'))
 
             
         self.bl.params = self.params

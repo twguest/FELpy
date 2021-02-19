@@ -47,8 +47,8 @@ def beamline_setup(mode, ekev, ang = 3.3e-03):
     spb = BeamlineModel(VERBOSE = False)
  
     spb.adjust_mirror("HOM1", ekev, ang)
-    spb.buildElements(focus = "nano")
-    spb.buildBeamline(focus = "nano")
+    spb.build_elements(focus = "nano")
+    spb.build_beamline(focus = "nano")
     
     if mode == 'pre': ### OPTION FOR PROPAGATING TO THE MIRROR SURFACE
         spb.cropBeamline(element1 = "d1") ### ie we propagate to the plane prior

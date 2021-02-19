@@ -223,7 +223,7 @@ def get_params():
                      "_ext_in": 0.5,
                      "_ext_out": 0.5,
                      'next_drift': 'd5',
-                     'ang_min': -0.5e-03,
+                     'ang_min': 0.5e-03,
                      'ang_max': 5.5e-03}
     
     
@@ -258,7 +258,7 @@ def get_params():
                      "_ext_in": 0.5,
                      "_ext_out": 0.5,
                      'next_drift': 'df',
-                     'ang_min': -5.0e-03,
+                     'ang_min': 0.5e-03,
                      'ang_max': 5.0e-03}
     
     
