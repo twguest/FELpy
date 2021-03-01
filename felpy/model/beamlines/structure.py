@@ -417,7 +417,7 @@ class BeamlineModel:
             self.bl.append(self.NVE, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
             
             
-            self.bl.append(self.df, propagation_parameters(10,1,10,1, mode = 'converge'))
+            self.bl.append(self.df, propagation_parameters(1,1,1,1, mode = 'converge'))
 
             
         self.bl.params = self.params
@@ -454,7 +454,7 @@ class BeamlineModel:
 
     def addScreen(self,position, distance, screenName = None):
         """
-        add a screening plane at drift beyond some element position
+        add a screening plane at drift beyond some element posiFalsetion
         
         :param position: last optical element before screen
         :param distance: position from last optical element to screen

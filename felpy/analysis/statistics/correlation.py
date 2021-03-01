@@ -10,6 +10,7 @@ import numpy as np
 from sklearn.preprocessing import minmax_scale
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+
 def norm(arr, lim = (0,1)):
     """
     Normalise each slice of a 3D array
