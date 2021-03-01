@@ -15,7 +15,7 @@ from felpy.utils.job_utils import JobScheduler
 from labwork.about import logs, dCache
 import sys
 from felpy.utils.os_utils import mkdir_p
-
+from felpy.analysis.statistics.correlation import norm
 """
 to run on MAXWELL
 
@@ -23,16 +23,23 @@ in terminal
 
 source activate optics
 cd /gpfs/exfel/data/user/guestt/FELpy/felpy/analysis/optics/scalar/
-python -c "from intensity_analysis import get_intensity_autocorrelation_ensemble as run;run()"
+python -c "from intensity_correlations import get_intensity_autocorrelation_ensemble as run;run()"
 ...
 wait
+...
+once run
+
+python -c "from intensity_correlations import compile_data; compile_data()"
+...
+wait
+...
 """
 
 def get_normalised_difference(arr1, arr2):
     """
     |arr1-arr2|
     """
-    return 1 - np.abs(softmax_normalisation(arr1)-softmax_normalisation(arr2))
+    return 1 - np.abs(norm(arr1)-norm(arr2))
     
 
 def get_second_order_doc(arr1, arr2):
@@ -46,7 +53,28 @@ def get_second_order_doc(arr1, arr2):
     
     return (arr1 - mean)*(arr2 - mean)
 
-def get_intensity_autocorrelation_ensemble(array_dir = "/gpfs/exfel/data/user/guestt/labwork/dCache/whitefield_data/cropped_intensity_r0046.npy",
+def compile_data(indir = dCache + "whitefield_data/r0047/",
+                 array_dir = dCache + "whitefield_data/cropped_intensity_r0047.npy",
+                methods = [get_normalised_difference, get_second_order_doc]):
+    
+    nTrains = np.load(array_dir).shape[-1]
+    
+    for m in methods:
+        
+        for itr in range(nTrains):
+            if itr == 0:
+                corr = np.load(indir + "{}/autocorrelation_{}.npy".format(m.__name__, itr))
+            else:
+                corr += np.load(indir + "{}/autocorrelation_{}.npy".format(m.__name__, itr))
+        
+        corr /= float(nTrains)
+        
+        np.save(indir + m.__name__, corr)
+        
+    
+    
+
+def get_intensity_autocorrelation_ensemble(array_dir = dCache + "whitefield_data/cropped_intensity_r0047.npy",
                                            method = get_normalised_difference):
 
     """
@@ -60,7 +88,7 @@ def get_intensity_autocorrelation_ensemble(array_dir = "/gpfs/exfel/data/user/gu
     
     js = JobScheduler(cwd + "/" + script, logDir = logs,
                       jobName = "autocorrelation_analysis_", partition = 'exfel', nodes = 1, jobType = 'array',
-                      jobArray = range(arr.shape[-1]), options = [method])
+                      jobArray = range(arr.shape[-1]))
         
     js.run(test = False)
     
@@ -126,10 +154,11 @@ def softmax_normalisation(arr):
     return arr
 
 if __name__ == '__main__':
-    array_dir = "/gpfs/exfel/data/user/guestt/labwork/dCache/whitefield_data/cropped_intensity_r0046.npy"
+    
+    array_dir = dCache + "/whitefield_data/cropped_intensity_r0047.npy"
     
 
-    train_no = sys.argv[1]
+    train_no = int(sys.argv[1])
     
    
     method = [get_normalised_difference, get_second_order_doc] 
@@ -139,15 +168,17 @@ if __name__ == '__main__':
         
         for m in method:
         
-            array = np.load(array_dir)
+            array = np.load(array_dir).astype('float64')[:,:,3:103:2,:]
+            array = np.delete(array, 24, axis = -2)
             map_loc = dCache + "/tmp/"
-            sdir = dCache + "/whitefield_data/r0046/"
+            sdir = dCache + "/whitefield_data/r0047/"
             mkdir_p(sdir)
             
-            sdir + "{}/".format(m.__name__)
+            
+            sdir += "{}/".format(m.__name__)
             
             mkdir_p(map_loc)
             mkdir_p(sdir)
-            
-            get_intensity_autocorrelation_train(train_no, array, map_loc, sdir,
+ 
+            get_intensity_autocorrelation_train(train_no, array, map_loc = map_loc, sdir = sdir,
                                                 method = m)

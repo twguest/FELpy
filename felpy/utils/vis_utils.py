@@ -309,3 +309,34 @@ def plot_fill_between(data, title = "",
         ax1.plot(np.min(data, -1), c = 'blue', linestyle = 'dotted')
         
     plt.show()
+    
+
+
+def simple_line_plot(data, title = "",
+                      xlabel = "",
+                      ylabel = "",
+                      context = 'notebook',
+                      xlim = None,
+                      ylim = None,
+                      color = 'blue'):
+    """
+    plot the mean of a 2D data set with the 95% confidence interval filled
+    """
+    #sns.set()
+    sns.set_style("dark")
+    sns.set_context(context)
+    
+    fig, ax1 = plt.subplots()
+    
+    ax1.plot(data, color = color)
+
+    if xlim is not None:
+        ax1.set_xlim(xlim)
+    if ylim is not None:
+        ax1.set_ylim(ylim)
+
+    ax1.set_title(title)
+    ax1.set_xlabel(xlabel)
+    ax1.set_ylabel(ylabel)
+    
+    plt.show()

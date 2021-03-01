@@ -13,7 +13,7 @@ import shutil
 import numpy as np
 from matplotlib.colors import LogNorm
 import wpg.srwlib as srwlib
-from wpg.wpg_uti_wf import calc_pulse_energy, getOnAxisPowerDensity, get_centroid
+from wpg.wpg_uti_wf import calc_pulse_energy, getOnAxisPowerDensity, getCentroid
 from wpg.wavefront import Wavefront
 from matplotlib import pyplot as plt
 from matplotlib import ticker, cm

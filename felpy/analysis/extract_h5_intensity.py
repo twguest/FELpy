@@ -13,9 +13,12 @@ from felpy.utils.os_utils import mkdir_p
 from felpy.utils.job_utils import JobScheduler
  
 from wpg.wavefront import Wavefront
-from labwork.about import logs
-indir = "/gpfs/exfel/data/user/guestt/labwork/dCache/NanoKB-Pulse/EHC/"
-outdir = "/gpfs/exfel/data/user/guestt/labwork/dCache/NanoKB-Pulse/EHC_data/"
+from labwork.about import logs, dCache 
+
+
+indir = dCache + "NanoKB-Pulse/source/"
+outdir = dCache + "NanoKB-Pulse/source_data/"
+
 mkdir_p(outdir)
 tmp_dir = outdir + "/tmp/"
 mkdir_p(tmp_dir)
@@ -76,4 +79,4 @@ if __name__ == '__main__':
             print(fname)
             extract_intensity(fname)
 
-    compile_intensity_data()
+    #compile_intensity_data()
