@@ -353,7 +353,8 @@ def colorbar_plot(arr,
                   sdir = None,
                   cmap = 'bone',
                   normalise = False,
-                  vmin = 0, vmax = 1):
+                  vmin = 0, vmax = 1,
+                  scale = 1e6):
     
     """ 
     plot a 2D array with a colorbar (x,y)
@@ -375,8 +376,8 @@ def colorbar_plot(arr,
     fig, ax1 = plt.subplots()
     
     img = ax1.imshow(arr, cmap = cmap,
-                     extent = [np.min(mesh[1])*1e6, np.max(mesh[1])*1e6,
-                               np.min(mesh[0])*1e6, np.max(mesh[0])*1e6],
+                     extent = [np.min(mesh[1])*scale, np.max(mesh[1])*scale,
+                               np.min(mesh[0])*scale, np.max(mesh[0])*scale],
                      vmin = vmin, vmax = vmax)
     
     ax1.set_title(title)
