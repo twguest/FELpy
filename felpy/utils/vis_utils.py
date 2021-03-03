@@ -340,3 +340,63 @@ def simple_line_plot(data, title = "",
     ax1.set_ylabel(ylabel)
     
     plt.show()
+    
+    
+def colorbar_plot(arr,
+                  mesh = None,
+                  label = None,
+                  title = None,
+                  xlabel = None,
+                  ylabel = None,
+                  clabel = "",
+                  context = 'notebook',
+                  sdir = None,
+                  cmap = 'bone',
+                  normalise = False,
+                  vmin = 0, vmax = 1):
+    
+    """ 
+    plot a 2D array with a colorbar (x,y)
+    
+    :param corr: 2D correlation array (via get_correlation)
+    :param mesh: coordinate mesh [np array]
+    :param sdir: save directory for output .png
+    :param label: figure label
+    :param title: figure title
+    :param cmap: figure color map
+    """
+    
+    if normalise:
+        arr = norm(arr)
+        
+    sns.set_context(context)
+    sns.set_style('dark')
+    
+    fig, ax1 = plt.subplots()
+    
+    img = ax1.imshow(arr, cmap = cmap,
+                     extent = [np.min(mesh[1])*1e6, np.max(mesh[1])*1e6,
+                               np.min(mesh[0])*1e6, np.max(mesh[0])*1e6],
+                     vmin = vmin, vmax = vmax)
+    
+    ax1.set_title(title)
+
+    divider = make_axes_locatable(ax1)
+    cax = divider.append_axes('right', size='7.5%', pad=0.05)
+
+    cbar = fig.colorbar(img, cax)
+    cbar.set_label(clabel)
+    
+    ax1.set_xlabel(xlabel)
+    ax1.set_ylabel(ylabel)
+    
+    ax1.annotate(label, horizontalalignment = 'left',   
+                    verticalalignment = 'bottom',
+                    xy = (0,1),
+                    c = 'white')
+    
+    if sdir is None:
+        fig.show()
+    else:
+        fig.savefig(sdir + ".png")
+        plt.show()
