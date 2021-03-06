@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Wed Feb  3 00:35:41 2021
 
-@author: guestt
-
-generalised script for propagating ensembles of pulses
 """
+FELPY
+
+__author__ = "Trey Guest"
+__credits__ = ["Trey Guest"]
+__license__ = "Apache"
+__version__ = "1.0.0"
+__maintainer__ = "Trey Guest"
+__email__ = "twguest@students.latrobe.edu.au"
+__status__ = "Developement"
+"""
+
 from os import listdir
 from felpy.utils.os_utils import mkdir_p
 

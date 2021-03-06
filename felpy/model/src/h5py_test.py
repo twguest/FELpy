@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
 """
-Created on Wed Apr  8 14:43:15 2020
+FELPY
 
-@author: twguest
+__author__ = "Trey Guest"
+__credits__ = ["Trey Guest"]
+__license__ = "Apache"
+__version__ = "1.0.0"
+__maintainer__ = "Trey Guest"
+__email__ = "twguest@students.latrobe.edu.au"
+__status__ = "Developement"
 """
 
-###############################################################################
-import sys
-sys.path.append("/opt/WPG/") # LOCAL PATH
-sys.path.append("/gpfs/exfel/data/user/guestt/WPG") # DESY MAXWELL PATH
-
-sys.path.append("/opt/spb_model") # LOCAL PATH
-sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
-###############################################################################
-###############################################################################
+ 
 import os, shutil
 from os.path import exists
 import json

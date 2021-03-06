@@ -1,9 +1,24 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+"""
+FELPY
+
+__author__ = "Trey Guest"
+__credits__ = ["Trey Guest"]
+__license__ = "Apache"
+__version__ = "1.0.0"
+__maintainer__ = "Trey Guest"
+__email__ = "twguest@students.latrobe.edu.au"
+__status__ = "Developement"
+"""
+
 import os
 import numpy as np
 
 def get_mesh(ii, dx, dy):
     """
+    
     returns a coordinate mesh ie, conversion of pixels to r-space
     
     :param ii: intensity array
@@ -12,6 +27,7 @@ def get_mesh(ii, dx, dy):
     
     :returns grid: pixel coordinate grid (2, nx, ny) [numpy array],
     where first dimension gives x- and y- position vector
+    
     """
     
     xc = np.arange(ii.shape[0])*dx
