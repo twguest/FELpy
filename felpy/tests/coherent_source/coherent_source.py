@@ -91,7 +91,7 @@ def test_coherent_pulse_divergence(E, Q, sdir):
         
         for energy in E:
             wfr = construct_SA1_wavefront(nx, ny, energy, q)
-            divergences.append(calcDivergence(wfr)[0])
+            divergences.append(wfr.get_divergence()[0])
             
         ax.scatter(E, np.array(divergences)*1e6, marker = 'o')
         

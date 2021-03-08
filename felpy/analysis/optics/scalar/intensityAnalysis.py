@@ -53,7 +53,7 @@ def getIntensity(fname):
     
    
     np.save(outdir1 + fname, wfr.get_intensity())
-    np.save(outdir2 + fname, wfr.toComplex()[0,:,:,:])
+    np.save(outdir2 + fname, wfr.as_complex()[0,:,:,:])
     
 if __name__ == '__main__':
     

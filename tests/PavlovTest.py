@@ -32,7 +32,7 @@ from sklearn.preprocessing import minmax_scale as norm
 from matplotlib import pyplot as plt
 from model.src.coherent import construct_SA1_wavefront
 from wpg import srwlib
-from wpg.wpg_uti_wf import getAxis
+from wpg.wpg_uti_wf import get_axis
 from scipy.constants import h,c,e
 from scipy.ndimage.filters import gaussian_filter
 from matplotlib import colors
@@ -61,10 +61,10 @@ if __name__ == "__main__":
     plt.imshow(pm)
     
     sp = phaseMask(pm,
-                    [ getAxis(wfr, axis = 'x').max()-
-                                            getAxis(wfr, axis = 'x').min(),
-                                            getAxis(wfr, axis = 'y').max()-
-                                            getAxis(wfr, axis = 'y').min()], wav) ##speckle
+                    [ get_axis(wfr, axis = 'x').max()-
+                                            get_axis(wfr, axis = 'x').min(),
+                                            get_axis(wfr, axis = 'y').max()-
+                                            get_axis(wfr, axis = 'y').min()], wav) ##speckle
 
     
 
@@ -84,7 +84,7 @@ if __name__ == "__main__":
     ekev = wfr.params.photonEnergy
     z1 = 1
     z2  = 1
-    pix_size = wfr.pixelsize()[0]
+    pix_size = wfr.get_spatial_resolution()[0]
     delta = 1
     beta = 1
     bg_val = 1

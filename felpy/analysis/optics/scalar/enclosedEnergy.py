@@ -23,7 +23,7 @@ import numpy as np
 from matplotlib.colors import LogNorm
 import wpg.srwlib as srwlib
 from model.src.coherent import construct_SA1_wavefront
-from wpg.wpg_uti_wf import calc_pulse_energy, getOnAxisPowerDensity, getCentroid
+from wpg.wpg_uti_wf import calc_pulse_energy, get_axial_power_density, get_centroid
 from wpg.wavefront import Wavefront
 from matplotlib import pyplot as plt
 from matplotlib import ticker, cm
@@ -32,7 +32,7 @@ from wpg import srwlib
 from tqdm import tqdm
 from model.tools import create_circular_mask
 
-from wpg.wpg_uti_wf import getAxis
+from wpg.wpg_uti_wf import get_axis
 
 def mkdir_p(dir):
     '''make a directory (dir) if it doesn't exist'''
@@ -139,7 +139,7 @@ def plotEnclosed(ii, r, c, mode = 'integrated', label = None, outdir = None, fna
 
 def getEnclosedEnergy(wfr, mode = 'integrated', outdir = None, fname = None, nSlc = 20, VERBOSE = True, bPlot = False, **kwargs):
     
-    dx, dy = wfr.pixelsize()
+    dx, dy = wfr.get_spatial_resolution()
     
     if mode == 'integrated':
         
@@ -160,7 +160,7 @@ def getEnclosedEnergy(wfr, mode = 'integrated', outdir = None, fname = None, nSl
 
     elif mode == 'pulse':
         
-        timeAx = getAxis(wfr, 't')
+        timeAx = get_axis(wfr, 't')
 
 
         ii = wfr.get_intensity()

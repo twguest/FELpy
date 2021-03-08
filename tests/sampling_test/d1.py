@@ -55,7 +55,7 @@ def quadratic_prop(outdir):
     D2 = wfr.params.Mesh.xMax - wfr.params.Mesh.xMin
     print(D1, D2)
     
-    return wfr.pixelsize()[0], D1, D2
+    return wfr.get_spatial_resolution()[0], D1, D2
 
 def fresnel_prop(outdir, pp):
     wfr = construct_SA1_wavefront(1024,1024,6,1.0)

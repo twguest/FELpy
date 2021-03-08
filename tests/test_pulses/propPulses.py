@@ -28,15 +28,15 @@ from wpg.srwlib import SRWLOptD as Drift
 from wpg.wavefront import Wavefront
 from wpg.beamline import Beamline
 
-from wpg.wpg_uti_wf import calc_pulse_energy, calculate_fwhm, getOnAxisPowerDensity
+from wpg.wpg_uti_wf import calc_pulse_energy, calculate_fwhm, get_axial_power_density
 
 from wpg.misc import calcDivergence
 
 
 def storeWavefrontInfo(wfr):
     
-    sz0 = getOnAxisPowerDensity(wfr, spectrum = False)
-    sz1 = getOnAxisPowerDensity(wfr, spectrum = True)
+    sz0 = get_axial_power_density(wfr, spectrum = False)
+    sz1 = get_axial_power_density(wfr, spectrum = True)
     
     fwhm = calculate_fwhm(wfr)
     
@@ -44,7 +44,7 @@ def storeWavefrontInfo(wfr):
     pulseEn, photons_per_pulse = calc_pulse_energy(wfr)
     srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
     
-    divergence = calcDivergence(wfr)
+    divergence = wfr.get_divergence()
     
     
     wfr.custom_fields['/source/t_spectrum'] = sz0

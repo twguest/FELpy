@@ -169,6 +169,6 @@ def generateTestPulses(savedir, nx = 1024, ny = 1024, N = 5):
 
 def concatenate_pulses(wfrs):
     
-    ensemble = np.concatenate([wfr.toComplex() for wfr in wfrs], axis = -1)
+    ensemble = np.concatenate([wfr.as_complex() for wfr in wfrs], axis = -1)
     
     return ensemble

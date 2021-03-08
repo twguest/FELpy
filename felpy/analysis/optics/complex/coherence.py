@@ -14,7 +14,7 @@ from time import time
 from wpg import srwlib
 from felpy.model.tools import radial_profile, binArray
 from felpy.model.src.coherent import construct_SA1_pulse ## for testings
-from wpg.wpg_uti_wf import getAxis
+from wpg.wpg_uti_wf import get_axis
 from wpg.wavefront import Wavefront 
 from tqdm import tqdm
 from felpy.utils.job_utils import JobScheduler
@@ -127,7 +127,7 @@ def get_coherence_time_wpg(wfr, mpi = False, VERBOSE = True):
     
     srwl.SetRepresElecField(wfr._srwl_wf, 't')
     time_step = (wfr.params.Mesh.sliceMax - wfr.params.Mesh.sliceMin)/wfr.params.Mesh.nSlices
-    return get_coherence_time(wfr.toComplex(), time_step, mpi = mpi)
+    return get_coherence_time(wfr.as_complex(), time_step, mpi = mpi)
 
 
 def get_coherence_len(wfr, dx, dy, VERBOSE = True):
@@ -176,7 +176,7 @@ def get_coherence_len(wfr, dx, dy, VERBOSE = True):
 
 def get_coherence_len_wpg(wfr, VERBOSE = True):
     srwl.SetRepresElecField(wfr._srwl_wf, 't')
-    return get_coherence_len(wfr.toComplex(), wfr.pixelsize()[0], wfr.pixelsize()[1])
+    return get_coherence_len(wfr.as_complex(), wfr.get_spatial_resolution()[0], wfr.get_spatial_resolution()[1])
 
 def get_transverse_doc(wfr, VERBOSE = True):
     """
@@ -226,12 +226,12 @@ def get_complex_radial_profile(wfr):
  
 def run(wfr):
     
-    tstep = getAxis(wfr, axis = 't')
+    tstep = get_axis(wfr, axis = 't')
     tstep = tstep[1]-tstep[0]
     
-    xstep, ystep = wfr.pixelsize()
+    xstep, ystep = wfr.get_spatial_resolution()
     
-    wfr = wfr.toComplex()[0,:,:,:]
+    wfr = wfr.as_complex()[0,:,:,:]
     
     
     tau = get_coherence_time(wfr, tstep, VERBOSE=True)

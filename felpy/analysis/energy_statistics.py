@@ -22,7 +22,7 @@ import numpy as np
 
 import wpg.srwlib as srwlib
 
-from wpg.wpg_uti_wf import calc_pulse_energy, getOnAxisPowerDensity, getCentroid, get_profile_1d, getAxis
+from wpg.wpg_uti_wf import calc_pulse_energy, get_axial_power_density, get_centroid, get_profile_1d, get_axis
 from wpg.wavefront import Wavefront
 
 from felpy.model.src.coherent import construct_spb_pulse
@@ -47,9 +47,9 @@ def get_pulse_energy(wfr, mode = 'integrated'):
     else:
         srwl.SetRepresElecField(wfr._srwl_wf, 't')
     
-    x = getAxis(wfr, 'x')
-    y = getAxis(wfr, 'y')
-    t = getAxis(wfr, 't')
+    x = get_axis(wfr, 'x')
+    y = get_axis(wfr, 'y')
+    t = get_axis(wfr, 't')
     
     dx = x[1]-x[0]
     dy = y[1]-y[0]
@@ -86,8 +86,8 @@ def get_pulse_energy(wfr, mode = 'integrated'):
 
 
 def run(wfr):
-    ci = getCentroid(wfr, mode = 'integrated')
-    cs = getCentroid(wfr, mode = 'pulse')
+    ci = get_centroid(wfr, mode = 'integrated')
+    cs = get_centroid(wfr, mode = 'pulse')
     Ei = getPulseEnergy(wfr, mode = 'integrated')
     Ep = getPulseEnergy(wfr, mode = 'pulse')
     

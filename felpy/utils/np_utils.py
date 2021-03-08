@@ -6,7 +6,7 @@ FELPY
 
 __author__ = "Trey Guest"
 __credits__ = ["Trey Guest"]
-__license__ = "Apache"
+__license__ = "EuXFEL"
 __version__ = "1.0.0"
 __maintainer__ = "Trey Guest"
 __email__ = "twguest@students.latrobe.edu.au"
@@ -39,7 +39,7 @@ def get_mesh(ii, dx, dy):
 
 def get_wpg_mesh(wfr):
     
-    dx, dy = wfr.pixelsize()
+    dx, dy = wfr.get_spatial_resolution()
     
     nx, ny = wfr.params.Mesh.nx, wfr.params.Mesh.ny
     

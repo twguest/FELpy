@@ -80,7 +80,7 @@ from model.energyStatistics import getPulseEnergy
 
 from wpg.wavefront import Wavefront
 
-from wpg.wpg_uti_wf import getCentroid
+from wpg.wpg_uti_wf import get_centroid
 
 from utils.job_utils import JobScheduler
 
@@ -365,7 +365,7 @@ def pulseEnergy(wfr, memMap, ID, mode = "integrated"):
     
 def centroid(wfr, memMap, ID, mode = "integrated"):
 
-    memMap[:,:,ID] = getCentroid(wfr, mode = mode, idx = False)
+    memMap[:,:,ID] = get_centroid(wfr, mode = mode, idx = False)
 
 def flush(params):
     """

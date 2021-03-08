@@ -29,7 +29,7 @@ from wpg.srwlib import SRWLOptD as Drift
 from wpg.wavefront import Wavefront
 from wpg.beamline import Beamline
 
-from wpg.wpg_uti_wf import calc_pulse_energy, calculate_fwhm, getOnAxisPowerDensity, getCentroid
+from wpg.wpg_uti_wf import calc_pulse_energy, calculate_fwhm, get_axial_power_density, get_centroid
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
 
 from wpg.misc import calcDivergence
@@ -42,4 +42,4 @@ if __name__ == '__main__':
     
     wfr = construct_SA1_wavefront(1124, 1423, 4.96, 0.25)
 
-    centroid = getCentroid(wfr)
+    centroid = get_centroid(wfr)

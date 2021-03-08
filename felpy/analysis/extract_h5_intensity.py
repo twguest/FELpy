@@ -53,7 +53,7 @@ def extract_intensity(fname):
     
    
     np.save(intensity_dir + fname, wfr.get_intensity().sum(-1))
-    np.save(complex_dir + fname, wfr.toComplex().sum(-1))
+    np.save(complex_dir + fname, wfr.as_complex().sum(-1))
     
 def compile_intensity_data():
     """

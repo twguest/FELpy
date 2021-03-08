@@ -30,7 +30,7 @@ from felpy.model.materials.load_refl import load_refl, get_refl
 from tqdm import tqdm
 from wpg.wpg_uti_wf import get_profile_1d
 from felpy.utils.os_utils import mkdir_p
-from wpg.wpg_uti_wf import getAxis
+from wpg.wpg_uti_wf import get_axis
 
 def beamline_setup(mode, ekev, ang = 3.3e-03):
     """
@@ -103,7 +103,7 @@ def get_unobstructed_profile(ekev, q):
     bl.propagate(wfr)    
     ix, iy = get_profile_1d(wfr)
 
-    return ix, iy, getAxis(wfr, axis = 'x'), getAxis(wfr, axis = 'y')
+    return ix, iy, get_axis(wfr, axis = 'x'), get_axis(wfr, axis = 'y')
 
 
 def get_obstructed_profile(wfr, bl):
