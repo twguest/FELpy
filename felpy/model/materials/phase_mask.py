@@ -1,27 +1,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
 """
-Created on Wed Apr  8 14:43:15 2020
+FELPY
 
-A wrapper for WPG setup_opt_surf_height_2D, which takes direct phase shift values
-@author: twguest
+__author__ = "Trey Guest"
+__credits__ = ["Trey Guest"]
+__license__ = "EuXFEL"
+__version__ = "1.0.1"
+__maintainer__ = "Trey Guest"
+__email__ = "twguest@students.latrobe.edu.au"
+__status__ = "Developement"
 """
 
-###############################################################################
-import sys
-sys.path.append("/opt/WPG/") # LOCAL PATH
-sys.path.append("/gpfs/exfel/data/user/guestt/WPG") # DESY MAXWELL PATH
-
-sys.path.append("/opt/spb_model") # LOCAL PATH
-sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
-###############################################################################
-###############################################################################
 import numpy as np
 
 from wpg.srwlib import SRWLOptD as Drift
 from felpy.model.src.coherent import construct_SA1_wavefront
 from felpy.model.beamline.structure import propagation_parameters
-from wpg.beamline import Beamline
+from felpy.model.core.beamline import Beamline
 from wpg.srwlib import srwl_opt_setup_surf_height_2d as OPD
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
 from matplotlib import pyplot as plt

@@ -1,4 +1,17 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+FELPY
+
+__author__ = "Trey Guest"
+__credits__ = ["Trey Guest"]
+__license__ = "EuXFEL"
+__version__ = "1.0.1"
+__maintainer__ = "Trey Guest"
+__email__ = "twguest@students.latrobe.edu.au"
+__status__ = "Developement"
+"""
 
 import requests
 import time
@@ -94,11 +107,11 @@ def get_FASTXPD_pulses(input_folder = 'XFEL_S1_04.96keV_12.0GeV_0020pC_SASE_U_BL
     
           # extract files
           z = zipfile.ZipFile(download_path, allowZip64=True)
-          print(z.namelist())
           z.extractall(my_path)
           
 if __name__ == '__main__':
     #get_FASTXPD_pulses()
+    
     options = load_options()
 
     for idx in range(options.shape[0]):
@@ -109,6 +122,9 @@ if __name__ == '__main__':
         
         name_str = input_folder.split("XFEL_")[1].split("_SASE")[0] + "_{}m".format(z_output_point)
         
+        print(input_folder)
+        print(z_output_point)
+        
         get_FASTXPD_pulses(input_folder = input_folder,
                            number_xy = 50,
                            skip_slices = 10,
@@ -116,8 +132,8 @@ if __name__ == '__main__':
                            time_begin = 0,
                            time_end = time_end, 
                            from_run_number = 1,
-                           to_run_number = to_run_number, 
+                           to_run_number = 1, ###to_run_number, ###hardcoded for test
                            user_prefix = name_str,
-                           my_path = '/gpfs/exfel/group/spb-sfx/users/guestt/dCache/FASTXPD_Pulses',
+                           my_path = "/gpfs/exfel/data/user/guestt/dCache/",
                            my_email_address = 'twguest@students.latrobe.edu.au')
         

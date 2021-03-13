@@ -1,7 +1,18 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
 """
-some routines that run successively for shimadzu whitefield data analysis
+FELPY
+
+__author__ = "Trey Guest"
+__credits__ = ["Trey Guest"]
+__license__ = "EuXFEL"
+__version__ = "1.0.1"
+__maintainer__ = "Trey Guest"
+__email__ = "twguest@students.latrobe.edu.au"
+__status__ = "Developement"
 """
+
 import os 
 import numpy as np
 from matplotlib import pyplot as plt

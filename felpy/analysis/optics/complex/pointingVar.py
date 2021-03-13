@@ -10,7 +10,7 @@ import sys
 sys.path.append("../../")
 from felpy.model.src.coherent import construct_SA1_wavefront
 from felpy.model.tools import mkdir_p
-from wpg.wavefront import Wavefront
+from felpy.model.core.wavefront import Wavefront
 import numpy as np
 from matplotlib import pyplot as plt
 

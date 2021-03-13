@@ -13,8 +13,8 @@ import shutil
 import numpy as np
 from matplotlib.colors import LogNorm
 import wpg.srwlib as srwlib
-from wpg.wpg_uti_wf import calc_pulse_energy, getOnAxisPowerDensity, getCentroid
-from wpg.wavefront import Wavefront
+from wpg.wpg_uti_wf import calc_pulse_energy, get_axial_power_density, get_centroid
+from felpy.model.core.wavefront import Wavefront
 from matplotlib import pyplot as plt
 from matplotlib import ticker, cm
 from felpy.model.tools import argmax2d
@@ -22,7 +22,7 @@ from wpg import srwlib
 from tqdm import tqdm
 from felpy.model.tools import create_circular_mask
 from felpy.analysis.optics.scalar.centroid import get_com
-from wpg.wpg_uti_wf import getAxis
+from wpg.wpg_uti_wf import get_axis
 
 
 

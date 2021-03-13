@@ -19,16 +19,16 @@ sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
 import multiprocessing
 
 from model.beamline.structure import propagation_parameters
-from model.beamline.structure import BeamlineModel
+from model.beamline.structure import Instrument
 
 from wpg import srwlib
 
 from wpg.srwlib import SRWLOptD as Drift
 
-from wpg.wavefront import Wavefront
-from wpg.beamline import Beamline
+from felpy.model.core.wavefront import Wavefront
+from felpy.model.core.beamline import Beamline
 
-from wpg.wpg_uti_wf import calc_pulse_energy, calculate_fwhm, getOnAxisPowerDensity
+from wpg.wpg_uti_wf import calc_pulse_energy, calculate_fwhm, get_axial_power_density
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
 
 from wpg.misc import calcDivergence
@@ -44,8 +44,8 @@ outdir = "../../data/tests/pulseTests/gaussianOut/para/"
 
 def storeWavefrontInfo(wfr):
     
-    sz0 = getOnAxisPowerDensity(wfr, spectrum = False)
-    sz1 = getOnAxisPowerDensity(wfr, spectrum = True)
+    sz0 = get_axial_power_density(wfr, spectrum = False)
+    sz1 = get_axial_power_density(wfr, spectrum = True)
     
     fwhm = calculate_fwhm(wfr)
     
@@ -53,7 +53,7 @@ def storeWavefrontInfo(wfr):
     pulseEn, photons_per_pulse = calc_pulse_energy(wfr)
     srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
     
-    divergence = calcDivergence(wfr)
+    divergence = wfr.get_divergence()
     
     
     wfr.custom_fields['/source/t_spectrum'] = sz0
@@ -80,7 +80,7 @@ def getSimpleBl():
 
 def getSPB(wfr):
     
-    spb = BeamlineModel()
+    spb = Instrument()
     
     spb.setupHOMs(wfr.params.photonEnergy/1000, 2.2e-03)
     spb.setupKBs(wfr.params.photonEnergy/1000, 3.5e-03)
@@ -88,7 +88,11 @@ def getSPB(wfr):
     spb.mirrorProfiles(toggle = "off", aperture = True, overwrite = True)
     
     spb.build_elements(focus)
+<<<<<<< HEAD
     spb.build_beamline(focus)
+=======
+    spb.buildBeamline(focus)
+>>>>>>> 108cfb9b6fc97d3841ee1db54862523eee5b184e
     spb.scale(wfr, isc = 512) 
     
     

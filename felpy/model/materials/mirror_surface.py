@@ -1,20 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
 """
-Created on Thu May 14 12:09:30 2020
+FELPY
 
-@author: twguest
+__author__ = "Trey Guest"
+__credits__ = ["Trey Guest"]
+__license__ = "EuXFEL"
+__version__ = "1.0.1"
+__maintainer__ = "Trey Guest"
+__email__ = "twguest@students.latrobe.edu.au"
+__status__ = "Developement"
 """
-
-###############################################################################
-import sys
-sys.path.append("/opt/WPG/") # LOCAL PATH
-sys.path.append("/gpfs/exfel/data/user/guestt/WPG") # DESY MAXWELL PATH
-
-sys.path.append("/opt/spb_model") # LOCAL PATH
-sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
-###############################################################################
-###############################################################################
 
 import numpy as np
 from scipy.ndimage import gaussian_filter

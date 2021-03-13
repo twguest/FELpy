@@ -17,11 +17,11 @@ sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
 ###############################################################################
 ###############################################################################
 
-from wpg.wavefront import Wavefront
+from felpy.model.core.wavefront import Wavefront
 from wpg.wpg_uti_wf import integral_intensity, calculate_fwhm
 
 from model.src.coherent import construct_SA1_wavefront
-from model.beamline.structure import BeamlineModel
+from model.beamline.structure import Instrument
 
 def loadPulse(wdir):
     
@@ -33,7 +33,7 @@ def loadPulse(wdir):
 
 def propagatePulse(wfr, outdir, mode = 'direct'):
     
-    spb = BeamlineModel()
+    spb = Instrument()
     
     spb.setupHOMs(wfr.params.photonEnergy/1000, 2.2e-03)
     spb.setupKBs(wfr.params.photonEnergy/1000, 3.5e-03)
@@ -41,7 +41,11 @@ def propagatePulse(wfr, outdir, mode = 'direct'):
     spb.mirrorProfiles(toggle = "on", aperture = True, overwrite = True)
     
     spb.build_elements(focus = "micron")
+<<<<<<< HEAD
     spb.build_beamline(focus = "micron")
+=======
+    spb.buildBeamline(focus = "micron")
+>>>>>>> 108cfb9b6fc97d3841ee1db54862523eee5b184e
     
     #spb.scale(wfr, isc = 501) 
     
@@ -62,7 +66,7 @@ def constructCoherentEquiv(wfr, outdir, mode = 'direct'):
     
     cwfr.initial_intensity = integral_intensity(cwfr)
     
-    spb = BeamlineModel()
+    spb = Instrument()
     
     spb.setupHOMs(wfr.params.photonEnergy/1000, 2.2e-03)
     spb.setupKBs(wfr.params.photonEnergy/1000, 3.5e-03)
@@ -70,7 +74,11 @@ def constructCoherentEquiv(wfr, outdir, mode = 'direct'):
     spb.mirrorProfiles(toggle = "on", aperture = True, overwrite = True)
     
     spb.build_elements(focus = "micron")
+<<<<<<< HEAD
     spb.build_beamline(focus = "micron")
+=======
+    spb.buildBeamline(focus = "micron")
+>>>>>>> 108cfb9b6fc97d3841ee1db54862523eee5b184e
     
     #spb.scale(cwfr, isc = 150) 
     

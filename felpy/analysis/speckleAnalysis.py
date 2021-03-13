@@ -244,7 +244,7 @@ def test():
     
     arr = wfr.get_intensity()[:,:,0]
     
-    cors = getFeatureSize(ii = arr, nWindows = 64, px = wfr.pixelsize()[0], bPlot = True)
+    cors = getFeatureSize(ii = arr, nWindows = 64, px = wfr.get_spatial_resolution()[0], bPlot = True)
     
     return cors    
 

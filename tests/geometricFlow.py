@@ -24,7 +24,7 @@ from model.beamline.structure import propagation_parameters
 from model.tools import constructPulse
 from utils.banded_utils import diagonal_form, solve_banded
 from wpg.optical_elements import Drift
-from wpg.beamline import Beamline
+from felpy.model.core.beamline import Beamline
 from OpticalFlow import processOneProjection
 
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
@@ -32,7 +32,7 @@ from sklearn.preprocessing import minmax_scale as norm
 from matplotlib import pyplot as plt
 from model.src.coherent import construct_SA1_wavefront
 from wpg import srwlib
-from wpg.wpg_uti_wf import getAxis
+from wpg.wpg_uti_wf import get_axis
 from scipy.constants import h,c,e
 if __name__ == "__main__":
     
@@ -51,10 +51,10 @@ if __name__ == "__main__":
     
     wfr = construct_SA1_wavefront(nx,ny,4.96,0.25)
     wav = (h*c)/(wfr.params.photonEnergy*e)
-    sp = phaseMask(np.random.rand(50,50), [ getAxis(wfr, axis = 'x').max()-
-                                            getAxis(wfr, axis = 'x').min(),
-                                            getAxis(wfr, axis = 'y').max()-
-                                            getAxis(wfr, axis = 'y').min()], wav) ##speckle
+    sp = phaseMask(np.random.rand(50,50), [ get_axis(wfr, axis = 'x').max()-
+                                            get_axis(wfr, axis = 'x').min(),
+                                            get_axis(wfr, axis = 'y').max()-
+                                            get_axis(wfr, axis = 'y').min()], wav) ##speckle
     slc = 2
     N = 10
     
@@ -74,10 +74,10 @@ if __name__ == "__main__":
         pm = np.random.rand(nx,ny)*1e-2
         print(pm[val,val])
         srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')    
-        ps = phaseMask(pm, [ getAxis(wfr, axis = 'x').max()-
-                                                getAxis(wfr, axis = 'x').min(),
-                                                getAxis(wfr, axis = 'y').max()-
-                                                getAxis(wfr, axis = 'y').min()], wav) ##speckle
+        ps = phaseMask(pm, [ get_axis(wfr, axis = 'x').max()-
+                                                get_axis(wfr, axis = 'x').min(),
+                                                get_axis(wfr, axis = 'y').max()-
+                                                get_axis(wfr, axis = 'y').min()], wav) ##speckle
             
         bl = Beamline()
         bl.append(sp, propagation_parameters(1,1,1,1))

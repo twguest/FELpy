@@ -1,10 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Sun Aug 16 20:06:28 2020
 
-@author: twguest
 """
+FELPY
+
+__author__ = "Trey Guest"
+__credits__ = ["Trey Guest"]
+__license__ = "EuXFEL"
+__version__ = "1.0.1"
+__maintainer__ = "Trey Guest"
+__email__ = "twguest@students.latrobe.edu.au"
+__status__ = "Developement"
+"""
+
 import shutil 
 import numpy as np
 import seaborn as sns
@@ -311,7 +319,6 @@ def plot_fill_between(data, title = "",
     plt.show()
     
 
-
 def simple_line_plot(data, title = "",
                       xlabel = "",
                       ylabel = "",
@@ -354,7 +361,8 @@ def colorbar_plot(arr,
                   cmap = 'bone',
                   normalise = False,
                   vmin = 0, vmax = 1,
-                  scale = 1e6):
+                  scale = 1e6,
+                  aspect = 'auto'):
     
     """ 
     plot a 2D array with a colorbar (x,y)
@@ -378,7 +386,8 @@ def colorbar_plot(arr,
     img = ax1.imshow(arr, cmap = cmap,
                      extent = [np.min(mesh[1])*scale, np.max(mesh[1])*scale,
                                np.min(mesh[0])*scale, np.max(mesh[0])*scale],
-                     vmin = vmin, vmax = vmax)
+                     vmin = vmin, vmax = vmax,
+                     aspect = aspect)
     
     ax1.set_title(title)
 
@@ -400,4 +409,54 @@ def colorbar_plot(arr,
         fig.show()
     else:
         fig.savefig(sdir + ".png")
+
         plt.show()
+        
+def signal_plot(xdata, ydata,
+        xlabel,
+        ylabel,
+        title,
+        context = 'notebook',
+        return_axes = False):
+
+    sns.set_context(context)
+    sns.set_style('dark')
+    fig, ax1 = plt.subplots()
+    
+    ax1.plot(xdata, ydata)
+    
+    ax1.set_xlabel(xlabel)
+    ax1.set_ylabel(ylabel)
+    ax1.set_title(title)
+    
+    if return_axes:
+        return ax1
+    else:
+        plt.show()
+        
+def scatter_plot(xdata, ydata = None,
+        xlabel = "",
+        ylabel = "",
+        title = "",
+        context = 'notebook',
+        return_axes = False):
+
+    if ydata is None:
+        ydata = np.arange(0, len(xdata), len(xdata))
+                          
+    sns.set_context(context)
+    sns.set_style('dark')
+    fig, ax1 = plt.subplots()
+    
+    ax1.scatter(xdata, ydata)
+    
+    ax1.set_xlabel(xlabel)
+    ax1.set_ylabel(ylabel)
+    ax1.set_title(title)
+    
+    if return_axes:
+        return ax1
+    else:
+        plt.show()
+        
+ 

@@ -1,4 +1,18 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+"""
+FELPY
+
+__author__ = "Trey Guest"
+__credits__ = ["Trey Guest"]
+__license__ = "EuXFEL"
+__version__ = "1.0.1"
+__maintainer__ = "Trey Guest"
+__email__ = "twguest@students.latrobe.edu.au"
+__status__ = "Developement"
+"""
+
 import numpy as np
 
 from scipy.constants import c,h,e
@@ -51,21 +65,21 @@ def get_required_distance(W, sigma_det, wav):
     return zreq
 
 
-def get_image_properties(W, M, d_pixelsize, d_npix):
+def get_image_properties(W, M, d_get_spatial_resolution, d_npix):
     """
     Return degree to which beam FWHM fills detector
     
     :param W: approx. beam size [m]
     :param M: magnification factor 
-    :param d_pixelsize: detector pixelsize [m]
+    :param d_get_spatial_resolution: detector get_spatial_resolution [m]
     :param d_npix: number of pixels at detector
     """
     
-    if type(d_pixelsize) == list:
-        d_px = d_pixelsize[0]
-        d_py = d_pixelsize[1]
+    if type(d_get_spatial_resolution) == list:
+        d_px = d_get_spatial_resolution[0]
+        d_py = d_get_spatial_resolution[1]
     else:
-        d_px = d_py = d_pixelsize
+        d_px = d_py = d_get_spatial_resolution
         
     if type(d_npix) == list:
         d_nx = d_npix[0]

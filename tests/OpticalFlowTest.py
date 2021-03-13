@@ -24,15 +24,15 @@ from model.beamline.structure import propagation_parameters
 from model.tools import constructPulse
 from utils.banded_utils import diagonal_form, solve_banded
 from wpg.optical_elements import Drift
-from wpg.beamline import Beamline
+from felpy.model.core.beamline import Beamline
 from OpticalFlow import processOneProjection
-from wpg.wavefront import Wavefront
+from felpy.model.core.wavefront import Wavefront
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
 from sklearn.preprocessing import minmax_scale as norm
 from matplotlib import pyplot as plt
 from model.src.coherent import construct_SA1_wavefront
 from wpg import srwlib
-from wpg.wpg_uti_wf import getAxis
+from wpg.wpg_uti_wf import get_axis
 from scipy.constants import h,c,e
 from scipy.ndimage.filters import gaussian_filter
 from matplotlib import colors
@@ -62,10 +62,10 @@ if __name__ == "__main__":
     plt.imshow(pm)
     
     sp = phaseMask(pm,
-                    [ getAxis(wfr, axis = 'x').max()-
-                                            getAxis(wfr, axis = 'x').min(),
-                                            getAxis(wfr, axis = 'y').max()-
-                                            getAxis(wfr, axis = 'y').min()], wav) ##speckle
+                    [ get_axis(wfr, axis = 'x').max()-
+                                            get_axis(wfr, axis = 'x').min(),
+                                            get_axis(wfr, axis = 'y').max()-
+                                            get_axis(wfr, axis = 'y').min()], wav) ##speckle
 
     
 

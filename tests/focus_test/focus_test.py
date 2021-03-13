@@ -27,11 +27,11 @@ import numpy as np
 import matplotlib as mpl
 from copy import copy
 
-from wpg.beamline import Beamline
+from felpy.model.core.beamline import Beamline
 from wpg.srwlib import SRWLOptD
 
 from model.src.coherent import construct_SA1_wavefront
-from model.beamline.structure import BeamlineModel, propagation_parameters
+from model.beamline.structure import Instrument, propagation_parameters
 from model.materials.load_refl import load_refl, get_refl
 
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity 
@@ -41,10 +41,14 @@ from matplotlib import pyplot as plt
 
 def sliceFocus(wfr, ekev, focus = 'micron', nslices = 500, axisName = 'x', outdir = None):
     
-    spb = BeamlineModel(overwrite_mirrors = False)
+    spb = Instrument(overwrite_mirrors = False)
     spb.setupHOMs(ekev)
     spb.build_elements(focus = focus)
+<<<<<<< HEAD
     spb.build_beamline(focus = focus)
+=======
+    spb.buildBeamline(focus = focus)
+>>>>>>> 108cfb9b6fc97d3841ee1db54862523eee5b184e
     
     el_n = len(spb.bl.propagation_options[0]['optical_elements'])-1
     

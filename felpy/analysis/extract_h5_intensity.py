@@ -12,9 +12,13 @@ import numpy as np
 from felpy.utils.os_utils import mkdir_p
 from felpy.utils.job_utils import JobScheduler
  
+<<<<<<< HEAD
 from wpg.wavefront import Wavefront
 from labwork.about import logs, dCache 
 
+=======
+from felpy.model.core.wavefront import Wavefront
+>>>>>>> 108cfb9b6fc97d3841ee1db54862523eee5b184e
 
 indir = dCache + "NanoKB-Pulse/source/"
 outdir = dCache + "NanoKB-Pulse/source_data/"
@@ -55,7 +59,7 @@ def extract_intensity(fname):
     
    
     np.save(intensity_dir + fname, wfr.get_intensity().sum(-1))
-    np.save(complex_dir + fname, wfr.toComplex().sum(-1))
+    np.save(complex_dir + fname, wfr.as_complex_array().sum(-1))
     
 def compile_intensity_data():
     """
