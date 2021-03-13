@@ -409,6 +409,7 @@ def colorbar_plot(arr,
         fig.show()
     else:
         fig.savefig(sdir + ".png")
+
         plt.show()
         
 def signal_plot(xdata, ydata,
@@ -458,3 +459,4 @@ def scatter_plot(xdata, ydata = None,
     else:
         plt.show()
         
+ 

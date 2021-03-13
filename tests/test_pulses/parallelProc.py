@@ -88,7 +88,11 @@ def getSPB(wfr):
     spb.mirrorProfiles(toggle = "off", aperture = True, overwrite = True)
     
     spb.build_elements(focus)
+<<<<<<< HEAD
+    spb.build_beamline(focus)
+=======
     spb.buildBeamline(focus)
+>>>>>>> 108cfb9b6fc97d3841ee1db54862523eee5b184e
     spb.scale(wfr, isc = 512) 
     
     
@@ -108,7 +112,7 @@ def propagatePulses(fname):
  
     bl = getSPB(wfr)
     #bl = getSimpleBl()
-    bl.propagateSeq(wfr)
+    bl.propagate_sequential(wfr)
     
     wfr.store_hdf5(outdir + fname)
     

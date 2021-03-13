@@ -51,7 +51,7 @@ def quadratic_prop(outdir):
     bl.propagation_options[0]['optical_elements'] = [Drift]
     bl.propagation_options[0]['propagation_parameters'] = [bl.propagation_options[0]['propagation_parameters'][0]]
     
-    bl.propagateSeq(wfr, outdir = outdir + "quadratic/")
+    bl.propagate_sequential(wfr, outdir = outdir + "quadratic/")
     D2 = wfr.params.Mesh.xMax - wfr.params.Mesh.xMin
     print(D1, D2)
     
@@ -66,7 +66,7 @@ def fresnel_prop(outdir, pp):
     bl.propagation_options[0]['optical_elements'] = [Drift]
     bl.propagation_options[0]['propagation_parameters'] = [pp]
     
-    bl.propagateSeq(wfr, outdir = outdir + "fresnel/")
+    bl.propagate_sequential(wfr, outdir = outdir + "fresnel/")
 
     print(wfr.params.Mesh.xMax - wfr.params.Mesh.xMin)
 if __name__ == '__main__':

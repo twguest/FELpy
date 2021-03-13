@@ -35,7 +35,11 @@ def setupBL(ekev, toggle = "on"):
     
     
     spb.build_elements(focus = "nano")
+<<<<<<< HEAD
+    spb.build_beamline(focus = "nano")
+=======
     spb.buildBeamline(focus = "nano")
+>>>>>>> 108cfb9b6fc97d3841ee1db54862523eee5b184e
     
     spb.crop_beamline(element1 = "HOM2")
     

@@ -34,6 +34,16 @@ def define_wfr(ekev):
 
     :param ekev: energy of the source
     """
+<<<<<<< HEAD:felpy/tests/refl_test/refl_test.py
+    
+    spb = BeamlineModel()
+    spb.build_elements(focus = 'nano')
+    
+    spb.build_beamline(focus = 'nano')
+    
+    spb.cropBeamline(element1 = "d1")
+    
+=======
 
     spb = Instrument()
     spb.build_elements(focus = 'nano')
@@ -42,6 +52,7 @@ def define_wfr(ekev):
 
     spb.crop_beamline(element1 = "d1")
 
+>>>>>>> 108cfb9b6fc97d3841ee1db54862523eee5b184e:felpy/examples/refl_test/refl_test.py
     bl = spb.get_beamline()
 
     wfr = construct_SA1_wavefront(512, 512, ekev, 0.25)
@@ -65,8 +76,13 @@ def getTransmission(ekev, ang):
     spb.adjust_mirror("HOM1", ekev = ekev, new_ang = ang)
     spb.build_elements(focus = 'nano')
     spb.build_beamline(focus = 'nano')
+<<<<<<< HEAD:felpy/tests/refl_test/refl_test.py
+    spb.cropBeamline(element1 = "HOM1", element2 = "HOM1")
+    
+=======
     spb.crop_beamline(element1 = "HOM1", element2 = "HOM1")
 
+>>>>>>> 108cfb9b6fc97d3841ee1db54862523eee5b184e:felpy/examples/refl_test/refl_test.py
     bl = spb.get_beamline()
 
     wfr = define_wfr(ekev)

@@ -48,7 +48,11 @@ def beamline_setup(mode, ekev, ang = 3.3e-03):
  
     spb.adjust_mirror("HOM1", ekev, ang)
     spb.build_elements(focus = "nano")
+<<<<<<< HEAD:felpy/tests/aperture_test/aperture_test.py
+    spb.build_beamline(focus = "nano")
+=======
     spb.buildBeamline(focus = "nano")
+>>>>>>> 108cfb9b6fc97d3841ee1db54862523eee5b184e:felpy/examples/aperture_test/aperture_test.py
     
     if mode == 'pre': ### OPTION FOR PROPAGATING TO THE MIRROR SURFACE
         spb.crop_beamline(element1 = "d1") ### ie we propagate to the plane prior

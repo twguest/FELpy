@@ -248,5 +248,6 @@ if __name__ == "__main__":
     
     a = get_coherence_time_wpg(wfr)    
     b = get_coherence_time_wpg(wfr, mpi = True)    
-    #get_coherence_len_wpg(wfr)
+    
+    get_coherence_len_wpg(wfr)
 

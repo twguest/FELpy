@@ -72,8 +72,13 @@ def core(ang, ekev, mirror_name):
     spb.adjust_mirror("HOM1", 5.0, new_ang = ang)
 >>>>>>> Stashed changes
     spb.build_elements(focus = FOCUS)
+<<<<<<< HEAD:felpy/tests/mirror_angle_optimisation/mirror_angle_optimisation.py
+    spb.build_beamline(focus = FOCUS)
+    spb.cropBeamline(spb.params['HOM1']['next_drift'])
+=======
     spb.buildBeamline(focus = FOCUS)
     spb.crop_beamline(spb.params['HOM1']['next_drift'])
+>>>>>>> 108cfb9b6fc97d3841ee1db54862523eee5b184e:felpy/examples/mirror_angle_optimisation/mirror_angle_optimisation.py
     bl = spb.get_beamline()
     
 <<<<<<< Updated upstream

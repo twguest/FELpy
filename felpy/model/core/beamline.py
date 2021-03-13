@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import os
 from wpg.beamline import Beamline as WPG_Beamline
 from wpg import srwlib
 from wpg import srwlpy as srwl
@@ -31,7 +31,7 @@ class Beamline(WPG_Beamline):
 
         if outdir is not None:
             wfr.write(outdir + "initialSource")
-            plotIntensity(wfr, save = outdir + "source")
+            wfr.view()
             
         for itr in range(len(self.propagation_options[0]['optical_elements'])):
             oe = self.propagation_options[0]['optical_elements'][itr]
@@ -48,7 +48,7 @@ class Beamline(WPG_Beamline):
             
  
             if outdir is None:
-                wfr.view
+                wfr.view()
 
 
 if __name__ == '__main__':

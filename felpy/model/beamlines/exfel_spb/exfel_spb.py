@@ -418,7 +418,7 @@ class Instrument:
             self.bl.append(self.NVE, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
             
             
-            self.bl.append(self.df, propagation_parameters(5,1,5,1, mode = 'converge'))
+            self.bl.append(self.df, propagation_parameters(1,1,1,1, mode = 'converge'))
 
             
         self.bl.params = self.params
@@ -455,7 +455,7 @@ class Instrument:
 
     def add_screen(self,position, distance, screenName = None):
         """
-        add a screening plane at drift beyond some element position
+        add a screening plane at drift beyond some element posiFalsetion
         
         :param position: last optical element before screen
         :param distance: position from last optical element to screen

@@ -44,7 +44,11 @@ def sliceFocus(wfr, ekev, focus = 'micron', nslices = 500, axisName = 'x', outdi
     spb = Instrument(overwrite_mirrors = False)
     spb.setupHOMs(ekev)
     spb.build_elements(focus = focus)
+<<<<<<< HEAD
+    spb.build_beamline(focus = focus)
+=======
     spb.buildBeamline(focus = focus)
+>>>>>>> 108cfb9b6fc97d3841ee1db54862523eee5b184e
     
     el_n = len(spb.bl.propagation_options[0]['optical_elements'])-1
     

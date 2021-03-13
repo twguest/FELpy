@@ -49,8 +49,13 @@ if __name__ == "__main__":
         
         
         spb.build_elements(focus = "micron")
+<<<<<<< HEAD
+        spb.build_beamline(focus = "micron")
+        spb.cropBeamline(element1 = element)
+=======
         spb.buildBeamline(focus = "micron")
         spb.crop_beamline(element1 = element)
+>>>>>>> 108cfb9b6fc97d3841ee1db54862523eee5b184e
         
         bl = spb.get_beamline()
         

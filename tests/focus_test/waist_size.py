@@ -50,7 +50,11 @@ def getFocusSize(ekev, q, focus = 'micron'):
     spb.setupKBs(ekev, 3.5e-03)
     
     spb.build_elements(focus = focus)
+<<<<<<< HEAD
+    spb.build_beamline(focus = focus)
+=======
     spb.buildBeamline(focus = focus)
+>>>>>>> 108cfb9b6fc97d3841ee1db54862523eee5b184e
     bl = spb.get_beamline()
     
     bl.propagate(wfr)

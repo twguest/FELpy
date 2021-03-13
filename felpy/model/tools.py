@@ -172,3 +172,28 @@ def concatenate_pulses(wfrs):
     ensemble = np.concatenate([wfr.as_complex_array() for wfr in wfrs], axis = -1)
     
     return ensemble
+
+    
+def scale(wfr, iscx = 1024, iscy = 1024):
+    """
+    DEPR.
+    narrow functionality for scaling a wavefront (ie the number of pixels)
+    in the source plane
+
+    :param wfr: wpg wfr strucutre
+    :param isc: ideal scale
+    :param ifov: ideal field of view
+
+    :returns wfr: scaled wpg wfr structure
+    """
+
+    nx, ny = wfr.params.Mesh.nx, wfr.params.Mesh.ny
+    dx, dy = wfr.params.Mesh.xMax-wfr.params.Mesh.xMin, wfr.params.Mesh.yMax-wfr.params.Mesh.yMin
+
+
+
+    scbl = Beamline()
+    scbl.append(Drift(0), propagation_parameters(1, iscx/nx, 1, iscy/ny))
+    scbl.propagate(wfr)
+
+    return wfr
