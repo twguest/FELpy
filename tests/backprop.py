@@ -15,7 +15,7 @@ sys.path.append("/opt/WPG/")
 
 from model.tools import constructPulse
 from model.beamline.structure import propagation_parameters
-from wpg.beamline import Beamline
+from felpy.model.core.beamline import Beamline
 from wpg.optical_elements import Drift
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
 

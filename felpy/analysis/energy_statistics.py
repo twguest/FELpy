@@ -6,16 +6,7 @@ Created on Mon Jul 13 09:32:40 2020
 @author: twguest
 """
 
-###############################################################################
-import sys
-sys.path.append("/opt/WPG/") # LOCAL PATH
-sys.path.append("/gpfs/exfel/data/user/guestt/WPG") # DESY MAXWELL PATH
-
-sys.path.append("/opt/spb_model") # LOCAL PATH
-sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
-###############################################################################
-###############################################################################
-
+ 
 import os
 
 import numpy as np
@@ -23,7 +14,7 @@ import numpy as np
 import wpg.srwlib as srwlib
 
 from wpg.wpg_uti_wf import calc_pulse_energy, get_axial_power_density, get_centroid, get_profile_1d, get_axis
-from wpg.wavefront import Wavefront
+from felpy.model.core.wavefront import Wavefront
 
 from felpy.model.src.coherent import construct_spb_pulse
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
@@ -82,16 +73,6 @@ def get_pulse_energy(wfr, mode = 'integrated'):
             E[slc,2] = E[slc,1] / (ax*ay)
    
     return E
-
-
-
-def run(wfr):
-    ci = get_centroid(wfr, mode = 'integrated')
-    cs = get_centroid(wfr, mode = 'pulse')
-    Ei = getPulseEnergy(wfr, mode = 'integrated')
-    Ep = getPulseEnergy(wfr, mode = 'pulse')
-    
-    return ci, cs, Ei, Ep
 
 if __name__ == '__main__':
     

@@ -7,7 +7,7 @@ FELPY
 __author__ = "Trey Guest"
 __credits__ = ["Trey Guest"]
 __license__ = "EuXFEL"
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __maintainer__ = "Trey Guest"
 __email__ = "twguest@students.latrobe.edu.au"
 __status__ = "Developement"
@@ -32,7 +32,7 @@ from matplotlib import pyplot as plt
 
 import wpg.srwlpy
 
-from wpg.wavefront import Wavefront
+from felpy.model.core.wavefront import Wavefront
 from wpg.wpg_uti_wf import look_at_q_space, calculate_fwhm
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
 from wpg.wpg_uti_wf import plot_intensity_qmap as plotKspace
@@ -41,7 +41,7 @@ from wpg.wpg_uti_wf import plot_intensity_qmap as plotKspace
 from wpg.generators import build_gauss_wavefront_xy as build_gaussian
 from wpg.generators import build_gauss_wavefront as build_gaussian_3D
 
-from wpg.beamline import Beamline
+from felpy.model.core.beamline import Beamline
 
 from wpg.srwlib import SRWLOptL as thinLens
 

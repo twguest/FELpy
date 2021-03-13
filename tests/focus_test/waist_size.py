@@ -27,11 +27,11 @@ import numpy as np
 import matplotlib as mpl
 from copy import copy
 
-from wpg.beamline import Beamline
+from felpy.model.core.beamline import Beamline
 from wpg.srwlib import SRWLOptD
 
 from model.src.coherent import construct_SA1_wavefront
-from model.beamline.structure import BeamlineModel, propagation_parameters
+from model.beamline.structure import Instrument, propagation_parameters
 from model.materials.load_refl import load_refl, get_refl
 
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity 
@@ -44,12 +44,12 @@ def getFocusSize(ekev, q, focus = 'micron'):
     
     wfr = construct_SA1_wavefront(1024, 1024, ekev, q)
     
-    spb = BeamlineModel(overwrite_mirrors =  True)
+    spb = Instrument(overwrite_mirrors =  True)
     
     spb.setupHOMs(ekev, 2.2e-03)
     spb.setupKBs(ekev, 3.5e-03)
     
-    spb.buildElements(focus = focus)
+    spb.build_elements(focus = focus)
     spb.buildBeamline(focus = focus)
     bl = spb.get_beamline()
     

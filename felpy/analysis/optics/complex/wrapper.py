@@ -11,11 +11,11 @@ def get_coherence_time(wfr, VERBOSE = True):
     
     srwl.SetRepresElecField(wfr._srwl_wf, 't')
     time_step = (wfr.params.Mesh.sliceMax - wfr.params.Mesh.sliceMin)/wfr.params.Mesh.nSlices
-    return gct(wfr.as_complex(), time_step)
+    return gct(wfr.as_complex_array(), time_step)
 
 def get_coherence_len(wfr, VERBOSE = True):
     srwl.SetRepresElecField(wfr._srwl_wf, 't')
-    return gcl(wfr.as_complex(), wfr.get_spatial_resolution()[0], wfr.get_spatial_resolution()[1])
+    return gcl(wfr.as_complex_array(), wfr.get_spatial_resolution()[0], wfr.get_spatial_resolution()[1])
     
 if __name__ == '__main__':
     

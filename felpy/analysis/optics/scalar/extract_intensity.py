@@ -21,7 +21,7 @@ import numpy as np
 from utils.os_utils import mkdir_p
 from utils.job_utils import JobScheduler
  
-from wpg.wavefront import Wavefront
+from felpy.model.core.wavefront import Wavefront
 
 indir = "/gpfs/exfel/data/user/guestt/labwork/dCache/NanoKB-Pulse/EHC/"
 
@@ -55,7 +55,7 @@ def getIntensity(fname):
     
    
     np.save(outdir1 + fname, wfr.get_intensity())
-    np.save(outdir2 + fname, wfr.as_complex()[0,:,:,:])
+    np.save(outdir2 + fname, wfr.as_complex_array()[0,:,:,:])
     
 if __name__ == '__main__':
     

@@ -23,4 +23,4 @@ def Complex2HSV(z, rmin, rmax, hue_start=90):
     v = (amp -rmin) / (rmax - rmin)
     return hsv_to_rgb(np.dstack((h,s,v)))
 
-plt.imshow(Complex2HSV(wfr.as_complex()[0,:,:,0], 100, np.max(wfr.as_complex()[0,:,:,0].real/1000)))
+plt.imshow(Complex2HSV(wfr.as_complex_array()[0,:,:,0], 100, np.max(wfr.as_complex_array()[0,:,:,0].real/1000)))

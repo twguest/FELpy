@@ -17,7 +17,7 @@ sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
 import os
 
 from model.src.coherent import construct_SA1_wavefront
-from model.beamline.structure import BeamlineModel
+from model.beamline.structure import Instrument
 from model.beamline.samplingCalc import samresPlot
 
 
@@ -41,16 +41,16 @@ if __name__ == "__main__":
             
         wfr = construct_SA1_wavefront(1024, 1024, ekev, q)
         
-        spb = BeamlineModel()
+        spb = Instrument()
         spb.setupHOMs(ekev, 2.2e-03)
         spb.setupKBs(ekev, 3.5e-03)
         spb.mirrorProfiles(toggle = "on", overwrite = False)
         
         
         
-        spb.buildElements(focus = "micron")
+        spb.build_elements(focus = "micron")
         spb.buildBeamline(focus = "micron")
-        spb.cropBeamline(element1 = element)
+        spb.crop_beamline(element1 = element)
         
         bl = spb.get_beamline()
         

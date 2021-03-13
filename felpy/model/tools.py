@@ -11,14 +11,14 @@ sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
 import numpy as np
 import os
 from wpg import srwlib
-from wpg.wavefront import Wavefront
+from felpy.model.core.wavefront import Wavefront
 from wpg.wpg_uti_wf import integral_intensity, calculate_fwhm, look_at_q_space
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
 from felpy.model.src.coherent import construct_SA1_pulse
 from wpg.srwlib import SRWLOptD as Drift
 from wpg.srwlib import SRWLOptA as Aperture
 from wpg.generators import build_gauss_wavefront
-from wpg.beamline import Beamline
+from felpy.model.core.beamline import Beamline
 from felpy.utils.np_utils import gaussian_2d
 
 def propagation_parameters(sx, zx, sy, zy, mode = "fresnel"):
@@ -169,6 +169,6 @@ def generateTestPulses(savedir, nx = 1024, ny = 1024, N = 5):
 
 def concatenate_pulses(wfrs):
     
-    ensemble = np.concatenate([wfr.as_complex() for wfr in wfrs], axis = -1)
+    ensemble = np.concatenate([wfr.as_complex_array() for wfr in wfrs], axis = -1)
     
     return ensemble

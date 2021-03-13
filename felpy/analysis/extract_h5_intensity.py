@@ -13,7 +13,7 @@ import numpy as np
 from utils.os_utils import mkdir_p
 from utils.job_utils import JobScheduler
  
-from wpg.wavefront import Wavefront
+from felpy.model.core.wavefront import Wavefront
 
 indir = "/opt/FELpy/felpy/data/test_pulses/"
 outdir = "/opt/FELpy/felpy/data/"
@@ -53,7 +53,7 @@ def extract_intensity(fname):
     
    
     np.save(intensity_dir + fname, wfr.get_intensity().sum(-1))
-    np.save(complex_dir + fname, wfr.as_complex().sum(-1))
+    np.save(complex_dir + fname, wfr.as_complex_array().sum(-1))
     
 def compile_intensity_data():
     """

@@ -18,7 +18,7 @@ sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
 
 import numpy as np
 
-from wpg.wavefront import Wavefront
+from felpy.model.core.wavefront import Wavefront
 from wpg.generators import build_gauss_wavefront
 
 

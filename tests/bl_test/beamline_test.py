@@ -21,13 +21,13 @@ sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
 import time
 
 from model.src.coherent import construct_SA1_wavefront
-from model.beamline.structure import BeamlineModel
+from model.beamline.structure import Instrument
 
     
 def testNano(wfr, outdir = None, toggle = 'on'):
      
     print("Testing SPB-SFX Instrument in Nano-KB Config")
-    spb = BeamlineModel()
+    spb = Instrument()
 
     print("Setting Up Beamline")
     spb.setupHOMs(wfr.params.photonEnergy/1000, 2.2e-03)
@@ -35,7 +35,7 @@ def testNano(wfr, outdir = None, toggle = 'on'):
     spb.mirrorProfiles(toggle = toggle, overwrite = False)
     
     print("Building Beamline")
-    spb.buildElements(focus = "nano")
+    spb.build_elements(focus = "nano")
     spb.buildBeamline(focus = "nano")
   
     bl = spb.get_beamline()
@@ -50,7 +50,7 @@ def testNano(wfr, outdir = None, toggle = 'on'):
 
 def plotMirrorProfiles(outdir):
 
-    spb = BeamlineModel()
+    spb = Instrument()
     spb.mirrorProfiles(toggle = "on", overwrite = True)
     
     spb.plotMirrorProfile("HOM1", outdir = outdir)

@@ -17,15 +17,15 @@ sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
 ###############################################################################
 ###############################################################################
 from wpg import srwlib
-from wpg.wavefront import Wavefront
+from felpy.model.core.wavefront import Wavefront
 from wpg.wpg_uti_wf import integral_intensity, calculate_fwhm, look_at_q_space
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
 from model.src.coherent import construct_SA1_wavefront
-from model.beamline.structure import BeamlineModel, propagation_parameters
+from model.beamline.structure import Instrument, propagation_parameters
 from wpg.srwlib import SRWLOptD as Drift
 from wpg.srwlib import SRWLOptA as Aperture
 from wpg.generators import build_gauss_wavefront
-from wpg.beamline import Beamline
+from felpy.model.core.beamline import Beamline
 
 def constructPulse():
     

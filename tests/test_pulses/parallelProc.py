@@ -19,14 +19,14 @@ sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
 import multiprocessing
 
 from model.beamline.structure import propagation_parameters
-from model.beamline.structure import BeamlineModel
+from model.beamline.structure import Instrument
 
 from wpg import srwlib
 
 from wpg.srwlib import SRWLOptD as Drift
 
-from wpg.wavefront import Wavefront
-from wpg.beamline import Beamline
+from felpy.model.core.wavefront import Wavefront
+from felpy.model.core.beamline import Beamline
 
 from wpg.wpg_uti_wf import calc_pulse_energy, calculate_fwhm, get_axial_power_density
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
@@ -80,14 +80,14 @@ def getSimpleBl():
 
 def getSPB(wfr):
     
-    spb = BeamlineModel()
+    spb = Instrument()
     
     spb.setupHOMs(wfr.params.photonEnergy/1000, 2.2e-03)
     spb.setupKBs(wfr.params.photonEnergy/1000, 3.5e-03)
     
     spb.mirrorProfiles(toggle = "off", aperture = True, overwrite = True)
     
-    spb.buildElements(focus)
+    spb.build_elements(focus)
     spb.buildBeamline(focus)
     spb.scale(wfr, isc = 512) 
     

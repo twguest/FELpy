@@ -20,14 +20,14 @@ sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
 import multiprocessing
 
 from model.beamline.structure import propagation_parameters
-from model.beamline.structure import BeamlineModel
+from model.beamline.structure import Instrument
 from model.src.coherent import construct_SA1_wavefront
 from wpg import srwlib
 
 from wpg.srwlib import SRWLOptD as Drift
 
-from wpg.wavefront import Wavefront
-from wpg.beamline import Beamline
+from felpy.model.core.wavefront import Wavefront
+from felpy.model.core.beamline import Beamline
 
 from wpg.wpg_uti_wf import calc_pulse_energy, calculate_fwhm, get_axial_power_density, get_centroid
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity

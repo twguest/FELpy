@@ -24,7 +24,7 @@ from matplotlib.colors import LogNorm
 import wpg.srwlib as srwlib
 from model.src.coherent import construct_SA1_wavefront
 from wpg.wpg_uti_wf import calc_pulse_energy, get_axial_power_density, get_centroid
-from wpg.wavefront import Wavefront
+from felpy.model.core.wavefront import Wavefront
 from matplotlib import pyplot as plt
 from matplotlib import ticker, cm
 from model.tools import constructPulse, argmax2d
