@@ -13,9 +13,7 @@ import numpy as np
 from time import time
 from wpg import srwlib
 from felpy.model.tools import radial_profile, binArray
-from felpy.model.src.coherent import construct_SA1_pulse ## for testings
 from wpg.wpg_uti_wf import get_axis
-from felpy.model.core.wavefront import Wavefront 
 from tqdm import tqdm
 from felpy.utils.job_utils import JobScheduler
 #import wpg.srwlib as srwl
@@ -224,14 +222,14 @@ def get_complex_radial_profile(wfr):
  
 
  
-def run(wfr):
+def coherent_test(wfr):
     
     tstep = get_axis(wfr, axis = 't')
-    tstep = tstep[1]-tstep[0]
+    tstep = wfr.get_temporal_resolution()
     
     xstep, ystep = wfr.get_spatial_resolution()
     
-    wfr = wfr.as_complex_array()[0,:,:,:]
+    wfr = wfr.as_complex_array() 
     
     
     tau = get_coherence_time(wfr, tstep, VERBOSE=True)
@@ -244,10 +242,4 @@ def run(wfr):
 
 
 if __name__ == "__main__":
-    wfr = construct_SA1_pulse(512,512,10,5.0,0.25)
-    
-    a = get_coherence_time_wpg(wfr)    
-    b = get_coherence_time_wpg(wfr, mpi = True)    
-    
-    get_coherence_len_wpg(wfr)
-
+    pass

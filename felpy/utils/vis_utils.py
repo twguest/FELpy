@@ -459,4 +459,60 @@ def scatter_plot(xdata, ydata = None,
     else:
         plt.show()
         
- 
+def double_colorbar_plot(arr1, arr2,
+                         extent1 = None,
+                         extent2 = None,
+                         xlabel1 = "",
+                         xlabel2 = "",
+                         ylabel1 = "",
+                         ylabel2 = "",
+                         clabel1 = "",
+                         clabel2 = "",
+                         title1 = "",
+                         title2 = "",
+                         cmap1 = 'bone',
+                         cmap2 = 'hsv',
+                         vmin1 = None,
+                         vmax1 = None,
+                         vmin2 = None,
+                         vmax2 = None,
+                         aspect = 'auto',
+                         context = 'talk',
+                         sdir = None):
+    
+    sns.set_style('dark')
+    sns.set_context(context)
+    
+    fig = plt.figure()
+    ax1 = fig.add_subplot(121)
+    
+    im1 = ax1.imshow(arr1, interpolation='None', extent = extent1,
+                     cmap = cmap1, vmin = vmin1, vmax = vmax1)
+    
+    ax1.set_xlabel(xlabel1)
+    ax1.set_ylabel(ylabel1)
+    ax1.set_title(title1)
+    
+    divider = make_axes_locatable(ax1)
+    cax1 = divider.append_axes('right', size='7.5%', pad=0.05)
+    
+    cbar1 = fig.colorbar(im1, cax=cax1, orientation='vertical')
+    cbar1.set_label(clabel1)
+
+    ax2 = fig.add_subplot(122)
+    im2 = ax2.imshow(arr2, interpolation='None', extent = extent2,
+                     cmap = cmap2, vmin = vmin2, vmax = vmax2)
+    ax2.set_xlabel(xlabel2)
+    ax2.set_ylabel(ylabel2)
+    ax2.set_title(title2)
+    
+    divider = make_axes_locatable(ax2)
+    cax2 = divider.append_axes('right', size='7.5%', pad=0.05)
+    
+    cbar2 = fig.colorbar(im2, cax=cax2, orientation='vertical')
+    cbar2.set_label(clabel2)
+    #fig.tight_layout()
+    #plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.5, hspace=None)
+
+    if sdir is not None:
+        fig.savefig(sdir)

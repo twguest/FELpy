@@ -5,6 +5,16 @@ import imageio
 import numpy as np
 from wpg.wpg_uti_wf import calculate_fwhm
 from felpy.analysis.optics.scalar.get_energy_statistics import get_energy_statistics
+from felpy.utils.vis_utils import double_colorbar_plot, colorbar_plot
+import numpy as np
+from wpg.wpg_uti_wf import calculate_fwhm
+import seaborn as sns
+from felpy.utils.np_utils import get_mesh
+from felpy.analysis.optics.scalar.enclosed_energy import get_enclosed_energy
+from scipy.constants import h, c, e
+from felpy.analysis.optics.scalar.centroid import get_com
+from felpy.analysis.optics.complex.coherence import get_coherence_time
+from felpy.model.core.fresnel_propagator import frensel_propagator
 
 class Wavefront(WPG_Wavefront):
     
@@ -90,7 +100,7 @@ class Wavefront(WPG_Wavefront):
 
 
     def get_wavelength(self):
-        return (h*c)/(self.params.photonEnergy)
+        return (h*c)/(e*self.params.photonEnergy)
 
 
     def set_electric_field_representation(self, domain):
@@ -120,13 +130,14 @@ class Wavefront(WPG_Wavefront):
 
         return sig_x, sig_y
 
-    def get_energy_statistics(self, integrate = False, VERBOSE = False, mpi = True):
+    def get_energy_statistics(self, integrate = False, VERBOSE = False, mpi = True, write = False):
         
         
         ii = self.get_intensity()
         
         if integrate:
-            ii.sum(-1)
+            ii = ii.sum(-1)
+            
         
         dx, dy = self.get_spatial_resolution()
     
@@ -137,12 +148,140 @@ class Wavefront(WPG_Wavefront):
         
         ekev = self.params.photonEnergy/1000
         
-        return get_energy_statistics(ii, dx, dy, dt, ekev, mpi = mpi, VERBOSE = VERBOSE).run()        
+        results = get_energy_statistics(ii, dx, dy, dt, ekev, mpi = mpi, VERBOSE = VERBOSE).run()    
+        
+        if write:
+            self.custom_fields['pulse energy'] = results[0]
+            self.custom_fields['nphotons'] = results[1]
+        else:
+            return results 
+        
+    def plot_intensity(self, scale = "mm", label = "", title = "", context = 'talk', sdir = None):
+        
+        ii = self.get_intensity().sum(-1)
+        
+        ls = {"m": 1,
+              "cm": 1e2,
+              "mm": 1e3,
+              "um": 1e6,
+              "nm": 1e9}
+        
+        mesh = get_mesh(ii, *self.get_spatial_resolution())
+
+        colorbar_plot(ii, mesh,
+                      label = label,
+                      title = title,
+                      xlabel = "x ({})".format(scale),
+                      ylabel = "y ({})".format(scale),
+                      clabel = "Intensity (a.u.)",
+                      vmax = np.max(ii),
+                      context = context,
+                      cmap = 'bone',
+                      sdir = sdir, 
+                      scale = ls[scale],
+                      aspect = 'equal')
+        
+ 
         
         
+    def plot_phase(self, scale = "mm", label = "", title = "", context = 'talk', sdir = None):
+        
+        phase = self.get_phase().sum(-1)
+        
+        ls = {"m": 1,
+              "cm": 1e2,
+              "mm": 1e3,
+              "um": 1e6,
+              "nm": 1e9}
+        
+        mesh = get_mesh(phase, *self.get_spatial_resolution())
 
+        colorbar_plot(phase, mesh,
+                      label = label,
+                      title = title,
+                      xlabel = "x ({})".format(scale),
+                      ylabel = "y ({})".format(scale),
+                      clabel = "Phase",
+                      vmin = -np.pi,
+                      vmax = np.pi,
+                      context = context,
+                      cmap = 'hsv',
+                      sdir = sdir, 
+                      scale = ls[scale],
+                      aspect = 'equal')
+                      
+    def get_beam_size(self, write = True):
+        
+        if write: 
+            self.custom_fields['beam size'] = get_enclosed_energy(self.get_intensity().sum(-1), *self.get_spatial_resolution())
+        else:
+            return get_enclosed_energy(self.get_intensity().sum(-1), *self.get_spatial_resolution())
+    
+    def get_com(self, longitudinal = False, write = False):
+        
+        if longitudinal: 
+            ii = self.get_intensity()
+        else:    
+            ii = self.get_intensity().sum(-1)
+        
+        idx = get_com(ii)
+        
+        px, py = self.get_spatial_resolution()
+        
+        if write:
+            self.custom_fields['com'] = [px*idx[1], py*idx[0]]
+        else:
+            return [px*idx[1], py*idx[0]]
+        
+    def get_profile_1d(self):
+        """
+        return 1d profiles along the center of each transverse axis.
+        """
+        
+        
+        ii = self.get_intensity().sum(-1)
+        
+        idx = get_com(ii)
 
+                
+        
+        ix = ii[:, int(idx[1])]
+        iy = ii[int(idx[0]), :]
+        
+        return ix, iy
+
+    def get_coherence_time(self, mpi = False, write = False):
+    
+        self.set_electric_field_representation('t')
+        time_step = self.get_temporal_resolution()
+        
+        if write:
+            get_coherence_time(self.as_complex_array(), time_step, mpi = mpi)
+        else:
+            get_coherence_time(self.as_complex_array(), time_step, mpi = mpi)
+            
+ 
+    
+    def propagate(self, z, upsample = 1):
+        """
+        returns propagated wfr
+        """
+
+        px, py = self.get_spatial_resolution()
+        wf = frensel_propagator(self.as_complex_array().sum(-1), px, py,
+                           self.get_wavelength(), z)
+        return wf
+    
+    
 if __name__ == '__main__':
+    
     from felpy.model.src.coherent import construct_SA1_pulse
-    wfr = construct_SA1_pulse(50,50,5,1,1)
-    energy_statistics = wfr.get_energy_statistics(mpi = False)
+    wfr = construct_SA1_pulse(200,200,2,1,1)
+    
+    wfr.get_com(write = True)
+    wfr.get_beam_size(write = True)
+    wfr.get_energy_statistics(integrate = True, mpi = False, write = True)
+    print(["{} {}".format(item, wfr.custom_fields[item]) for item in wfr.custom_fields])
+    ef = wfr.propagate(1) 
+    plt.imshow(abs(ef)**2)
+    wfr.get_coherence_time()

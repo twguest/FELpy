@@ -44,7 +44,7 @@ def define_wfr(ekev):
     spb.cropBeamline(element1 = "d1")
     
 =======
-
+ 
     spb = Instrument()
     spb.build_elements(focus = 'nano')
 

@@ -14,7 +14,6 @@ import numpy as np
 from matplotlib.colors import LogNorm
 import wpg.srwlib as srwlib
 from wpg.wpg_uti_wf import calc_pulse_energy, get_axial_power_density, get_centroid
-from felpy.model.core.wavefront import Wavefront
 from matplotlib import pyplot as plt
 from matplotlib import ticker, cm
 from felpy.model.tools import argmax2d

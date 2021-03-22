@@ -63,7 +63,7 @@ class get_energy_statistics():
         else:
             
             if self.ii.ndim == 2:
-                self.get_pulse_energy(self.ii)
+                energy_statistics = self.get_pulse_energy(self.ii)
     
             elif self.ii.ndim == 3:
                 energy_statistics = np.zeros([2, self.ii.shape[-1]])

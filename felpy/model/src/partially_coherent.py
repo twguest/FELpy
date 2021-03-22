@@ -10,44 +10,32 @@ import numpy as np
 from matplotlib import pyplot as plt
 import seaborn as sns
 from felpy.utils.np_utils import gaussian_2d
+ 
+kx = np.pi/4
+ky = 0
 
-def gaussian(x, mu, sig):
-    return np.exp(-np.power(x - mu, 2.) / (2 * np.power(sig, 2.)))
+wav = 0.1e-10
+k = np.pi*2/wav
 
-nSamples = 200
-time = np.linspace(-100,100,nSamples)
-pulse_time = 40e-15
-sampling_interval = (2*np.pi)//pulse_time
+z = 1
+x = -np.linspace(-400, 400, 400)
+y = np.linspace(-400, 400, 400)
+grid = np.meshgrid(x,y)
+
+def define_wfr_tilt(mesh, kx, ky):
+    """ 
+    define a two-dimensional complex tilted plane-wave, tilted along transverse pointing vectors kx and ky
+    
+    :param mesh: [2,nx,ny] array of coordinates, first-axis corresponds to x and y axis,
+    see felpy.utils.np_utils.get_mesh for more
+    :param kx: horizontal pointing vector [-pi, pi]
+    :param ky: vertical pointing vector [-pi, pi]
+    """
+    wfr_tilt =   np.exp(1j*(kx*grid[0]+ky*grid[1])) #*np.exp(1j*k*z)
+    return wfr_tilt
+
+ 
 
 
-random_phases = np.ones(nSamples, dtype = 'complex64')*np.random.rand(nSamples)*(2*np.pi)-np.pi
-plt.plot(random_phases.imag)
-plt.show()
+# -*- coding: utf-8 -*-
 
-envelope = gaussian(time, 0, 35)
-plt.plot(envelope)
-spectral_env = envelope*np.exp(1j*random_phases)
-temporal_env = np.fft.fft(spectral_env)*envelope
-
-plt.plot(time, abs(temporal_env)**2)
-plt.show()
-
-profile = gaussian_2d(100, 100)+1j*gaussian_2d(100, 100)
-plt.imshow(abs(profile**2))
-plt.show()
-
-wfr = np.zeros([100,100,nSamples], dtype = 'complex64')
-
-for itr in range(nSamples):
-    wfr[:,:,itr] = profile
-plt.imshow(wfr.mean(-1).imag)
-plt.show()
-
-wfr = wfr*temporal_env
-
-plt.plot(abs(wfr.mean(0).mean(0))**2)
-plt.show()
-
-plt.imshow(wfr.mean(-1).imag)
-plt.imshow(abs(wfr.mean(-1)**2))
-plt.show()
