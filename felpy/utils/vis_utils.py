@@ -362,7 +362,8 @@ def colorbar_plot(arr,
                   normalise = False,
                   vmin = 0, vmax = 1,
                   scale = 1e6,
-                  aspect = 'auto'):
+                  aspect = 'auto',
+                  grid = True):
     
     """ 
     plot a 2D array with a colorbar (x,y)
@@ -379,7 +380,7 @@ def colorbar_plot(arr,
         arr = norm(arr)
         
     sns.set_context(context)
-    sns.set_style('dark')
+    sns.set_style('white', {'axes.grid' : grid})
     
     fig, ax1 = plt.subplots()
     

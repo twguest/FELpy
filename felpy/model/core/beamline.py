@@ -48,7 +48,7 @@ class Beamline(WPG_Beamline):
             
  
             if outdir is None:
-                wfr.view()
+                wfr.plot()
 
 
 if __name__ == '__main__':
@@ -56,7 +56,9 @@ if __name__ == '__main__':
     from felpy.model.src.coherent import construct_SA1_pulse
     from felpy.model.tools import propagation_parameters
     from wpg.optical_elements import Drift
-    wfr = construct_SA1_pulse(100,100,2,1,1)
+    wfr = construct_SA1_pulse(512,512,2,5.0,1)
+    print(wfr.params.wDomain)
+    wfr.plot()
     bl = Beamline()
-    bl.append(Drift(10), propagation_parameters(1,1,1,1,'quadratic'))
+    bl.append(Drift(10), propagation_parameters(2,1,2,1,'quadratic'))
     bl.propagate_sequential(wfr)

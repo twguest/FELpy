@@ -16,15 +16,11 @@ from setuptools import find_packages
 
 class MyInstall(DistutilsInstall):
     def run(self):
-        
+
         DistutilsInstall.run(self)
-        system("echo making WPG")
-        system("rm develop")
-        system("git submodule update --init")
-        system("cd FELpy/WPG; make")
-        system("pip install -e FELpy/WPG")
-        system("cd ../; pip install -e FELpy")
-        
+	print("Installing FELpy")
+	print("****************")
+
 setup(name='FELpy',
       version='0.1.1',
       ext_modules=[],
@@ -40,12 +36,19 @@ setup(name='FELpy',
                          'pandas>=1.0.3',
                          'pillow>=7.0.0',
                          'pip>=20.0.2',
+		         'seaborn',
                          'scikit-learn>=0.22.1',
                          'scipy>=1.4.1',
-                         'spyder>=4.1.0',
                          'tqdm>=4.46.0',
                          'wheel>=0.34.2'
                          ],
-      
+
       packages=find_packages()
       )
+
+
+setup(
+    name='scripts',
+    scripts=['scripts/hello_world.sh',
+    'scripts/test_input.sh']
+)

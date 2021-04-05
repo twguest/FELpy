@@ -417,7 +417,7 @@ class Instrument:
             self.bl.append(self.NVE, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
             
             
-            self.bl.append(self.df, propagation_parameters(5,1,5,1, mode = 'converge'))
+            self.bl.append(self.df, propagation_parameters(1/20,1,1/20,1, mode = 'converge'))
 
             
         self.bl.params = self.params

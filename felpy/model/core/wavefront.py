@@ -15,6 +15,15 @@ from scipy.constants import h, c, e
 from felpy.analysis.optics.scalar.centroid import get_com
 from felpy.analysis.optics.complex.coherence import get_coherence_time
 from felpy.model.core.fresnel_propagator import frensel_propagator
+from felpy.utils.vis_utils import colorbar_plot
+from felpy.utils.np_utils import get_mesh
+
+
+ls = {"m": 1,
+      "cm": 1e2,
+      "mm": 1e3,
+      "um": 1e6,
+      "nm": 1e9}
 
 class Wavefront(WPG_Wavefront):
     
@@ -27,10 +36,10 @@ class Wavefront(WPG_Wavefront):
 
 
     def get_spatial_resolution(self):
-
+        
         px = (self.params.Mesh.xMax - self.params.Mesh.xMin) / self.params.Mesh.nx
         py = (self.params.Mesh.yMax - self.params.Mesh.yMin) / self.params.Mesh.ny
-
+        
         return px, py
     
     def get_temporal_resolution(self):
@@ -121,14 +130,17 @@ class Wavefront(WPG_Wavefront):
         :param wfr: WPG wavefront structure
         """
         
-        wDomain = self.params.wDomain
         self.set_electric_field_representation('a') 
-        
         sig_x, sig_y = calculate_fwhm(self)['fwhm_x'], calculate_fwhm(self)['fwhm_y']
         
-        self.set_electric_field_representation(wDomain) 
+        self.set_electric_field_representation('f') 
 
         return sig_x, sig_y
+    
+    def get_fwhm(self):
+        sig_x, sig_y = calculate_fwhm(self)['fwhm_x'], calculate_fwhm(self)['fwhm_y']
+        return sig_x, sig_y
+
 
     def get_energy_statistics(self, integrate = False, VERBOSE = False, mpi = True, write = False):
         
@@ -155,7 +167,15 @@ class Wavefront(WPG_Wavefront):
             self.custom_fields['nphotons'] = results[1]
         else:
             return results 
+     
         
+    def get_pulse_duration(self):
+        
+        self.set_electric_field_representation('t')
+        t = self.params.Mesh.nSlices*self.get_temporal_resolution()
+        self.set_electric_field_representation('f')
+        return t
+    
     def plot_intensity(self, scale = "mm", label = "", title = "", context = 'talk', sdir = None):
         
         ii = self.get_intensity().sum(-1)
@@ -241,12 +261,12 @@ class Wavefront(WPG_Wavefront):
         
         ii = self.get_intensity().sum(-1)
         
-        idx = get_com(ii)
-
+        idx = self.params.Mesh.nx//2
+        idy = self.params.Mesh.ny//2
                 
         
-        ix = ii[:, int(idx[1])]
-        iy = ii[int(idx[0]), :]
+        ix = ii[:, int(idx)]
+        iy = ii[int(idy), :]
         
         return ix, iy
 
@@ -273,6 +293,27 @@ class Wavefront(WPG_Wavefront):
         return wf
     
     
+    def get_mesh(self):
+        mesh = get_mesh(self.get_intensity().sum(-1), *self.get_spatial_resolution())
+        return mesh
+    
+    def plot(self, scale = 'mm', sdir = None, label = None):
+        
+            ii = self.get_intensity().sum(-1)
+            
+            
+            colorbar_plot(ii, mesh = self.get_mesh(),
+                          label = label,
+                  xlabel = "x ({})".format(scale),
+                  ylabel = "y ({})".format(scale),
+                  scale = ls[scale],
+                  context = 'talk',
+                  clabel = "Intensity (a.u.)",
+                  grid = False,
+                  aspect = 'equal',
+                  vmax = np.max(ii),
+                  sdir = sdir)
+    
 if __name__ == '__main__':
     
     from felpy.model.src.coherent import construct_SA1_pulse
@@ -285,3 +326,4 @@ if __name__ == '__main__':
     ef = wfr.propagate(1) 
     plt.imshow(abs(ef)**2)
     wfr.get_coherence_time()
+    wfr.plot()

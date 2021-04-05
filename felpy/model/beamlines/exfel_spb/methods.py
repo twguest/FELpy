@@ -17,7 +17,7 @@ from felpy.model.core.instrument import Instrument
 
  
 def get_beamline_object(params = "", options = 'nano', ekev = 5.0,
-                        apertures = True, surface = True):
+                        apertures = True, surface = True, crop = None):
     
     """ 
     return desired beamline
@@ -41,7 +41,7 @@ def get_beamline_object(params = "", options = 'nano', ekev = 5.0,
         if mirror in ['HOM1', 'HOM2']:    
             spb.adjust_mirror(mirror,
                               ekev,
-                              params[mirror]['ang_max'])
+                              2.3e-03)#params[mirror]['ang_max'])
         else:    
             spb.adjust_mirror(mirror,
                               ekev,
@@ -52,6 +52,9 @@ def get_beamline_object(params = "", options = 'nano', ekev = 5.0,
         
     spb.build_elements(focus = 'nano')
     spb.build_beamline(focus = 'nano')
+    
+    if crop is not None:
+        spb.crop_beamline(crop[0], crop[1])
 
 
     return spb.get_beamline()
