@@ -1,4 +1,4 @@
-name: optics
+name: felpy
 channels:
   - conda-forge
   - defaults

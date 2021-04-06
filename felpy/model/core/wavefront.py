@@ -1,4 +1,4 @@
-from wpg import srwlpy 
+from wpg.srw import srwlpy 
 from wpg.wavefront import Wavefront as WPG_Wavefront
 from matplotlib import pyplot as plt
 import imageio

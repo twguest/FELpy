@@ -2,7 +2,7 @@
 import os
 from wpg.beamline import Beamline as WPG_Beamline
 from wpg import srwlib
-from wpg import srwlpy as srwl
+from wpg.srw import srwlpy as srwl
 
 class Beamline(WPG_Beamline):
     

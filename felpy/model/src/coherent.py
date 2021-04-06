@@ -22,7 +22,7 @@ import scipy
 import numpy as np
 
 from wpg import srwlib
-from wpg import srwlpy
+from wpg.srw import srwlpy
 
 from copy import deepcopy
 

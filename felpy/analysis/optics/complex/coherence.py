@@ -17,7 +17,7 @@ from felpy.model.tools import radial_profile, binArray
 from tqdm import tqdm
 from felpy.utils.job_utils import JobScheduler
 #import wpg.srwlib as srwl
-from wpg import srwlpy as srwl
+from wpg.srw import srwlpy as srwl
 from felpy.utils.np_utils import memory_map, readMap
 import multiprocessing as mp
 from functools import partial
