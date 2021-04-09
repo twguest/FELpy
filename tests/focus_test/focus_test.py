@@ -30,102 +30,85 @@ from copy import copy
 from felpy.model.core.beamline import Beamline
 from wpg.srwlib import SRWLOptD
 
-from model.src.coherent import construct_SA1_wavefront
-from model.beamline.structure import Instrument, propagation_parameters
-from model.materials.load_refl import load_refl, get_refl
+from felpy.model.src.coherent import construct_SA1_wavefront
+from felpy.model.beamlines.exfel_spb.exfel_spb import Instrument, propagation_parameters
+from felpy.model.materials.load_refl import load_refl, get_refl
 
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity 
 from wpg.wpg_uti_wf import plot_intensity_qmap as plotPhase
-
+from felpy.utils.vis_utils import colorbar_plot
+from felpy.utils.np_utils import get_mesh
 from matplotlib import pyplot as plt 
 
-def sliceFocus(wfr, ekev, focus = 'micron', nslices = 500, axisName = 'x', outdir = None):
+
+def sliceFocus(wfr, ekev, focus = 'nano', nslices = 500, axisName = 'x', outdir = None):
     
-    spb = Instrument(overwrite_mirrors = False)
-    spb.setupHOMs(ekev)
+    spb = Instrument()
+    
+    spb.mirror_profiles(toggle = 'off', aperture = False)
     spb.build_elements(focus = focus)
-<<<<<<< HEAD
-    spb.build_beamline(focus = focus)
-=======
-    spb.buildBeamline(focus = focus)
->>>>>>> 108cfb9b6fc97d3841ee1db54862523eee5b184e
-    
+ 
+    spb.build_beamline(focus = focus) 
     el_n = len(spb.bl.propagation_options[0]['optical_elements'])-1
     
-    slice_interval = copy(spb.bl.propagation_options[0]['optical_elements'][el_n].L/1000) 
     spb.bl.propagation_options[0]['optical_elements'][el_n].L *= 0.75
-    spb.bl.propagation_options[0]['propagation_parameters'][el_n] = propagation_parameters(1/5,5,1/5,5, mode = 'quadratic')
+    slice_interval = copy(spb.bl.propagation_options[0]['optical_elements'][el_n].L/nslices) 
+
+    spb.bl.propagation_options[0]['propagation_parameters'][el_n] = propagation_parameters(1/4,2,1/4,2, mode = 'quadratic')
+   
     bl = spb.get_beamline()
     bl.propagate(wfr)
+    plotIntensity(wfr)
+    
     
     if axisName == 'x':
         data_focslice = np.zeros([nslices, np.shape(wfr.data.arrEhor)[0]])
     elif axisName == 'y':
         data_focslice = np.zeros([nslices, np.shape(wfr.data.arrEhor)[1]])
     
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    
+ 
     
     
     for n in range(nslices):
         print("Slice {}/{}".format(n+1, nslices))
         
         bl = Beamline()
-        bl.append(SRWLOptD(slice_interval), propagation_parameters(1,1,1,1, mode = 'normal'))
+        bl.append(SRWLOptD(slice_interval), propagation_parameters(1,1,1,1, mode = 'fresnel'))
         bl.propagate(wfr)
-        
-        data_focslice[-n-1, :] = wfr.get_profile_1d()[0]
+        plotIntensity(wfr)
+        data_focslice[-n-1, :] = wfr.get_intensity()[:,:,0].sum(-1)
+        #plt.plot(data_focslice[-n-1, :])
+        plt.show()
         
     
     y = np.linspace(spb.bl.propagation_options[0]['optical_elements'][el_n].L,
                     spb.bl.propagation_options[0]['optical_elements'][el_n].L + nslices*slice_interval,
                     nslices)
     
-    if axisName == 'x':
-        extent = [wfr.params.Mesh.xMin*1e6, wfr.params.Mesh.xMax*1e6,
-                          y.min(), y.max()]
-    elif axisName == 'y':
-        extent = [wfr.params.Mesh.yMin*1e6, wfr.params.Mesh.yMax*1e6,
-                  y.min(), y.max()]
-    ax.imshow(data_focslice,
-              extent= extent,
-              aspect = 'auto',
-              norm=mpl.colors.LogNorm())
+ 
+
+# =============================================================================
+#     ax1 =     colorbar_plot(data_focslice,
+#               get_mesh(data_focslice,
+#                                wfr.get_spatial_resolution()[0]*1e6,
+#                                y[1]-y[0]),
+#               aspect = 'auto',
+#               scale = 1,
+#               #norm=mpl.colors.LogNorm(),
+#               xlabel = "x($\mu m$)",
+#               ylabel = "z(m)",
+#               return_axes = True)
+#     
+# =============================================================================
+    return data_focslice
     
-    if focus == "micron":
-        ax.set_title("Micron Focus Location")
-        ax.set_ylabel("Longitudinal Distance from MKB (m)")
-        
-        if axisName == 'x':
-            x = np.linspace(wfr.params.Mesh.xMin*1e6, wfr.params.Mesh.xMax*1e6, wfr.params.Mesh.nx)
-            ax.set_xlabel("x ($\mu$m)")
-        elif axisName == 'y':
-            x = np.linspace(wfr.params.Mesh.yMin*1e6, wfr.params.Mesh.yMax*1e6, wfr.params.Mesh.ny)
-            ax.set_xlabel("y ($\mu$m)")
-    
-    if focus == "nano":
-        ax.set_title("Nano Focus Location")
-        ax.set_ylabel("Longitudinal Distance from NKB (m)")
-        
-        if axisName == 'x':
-            x = np.linspace(wfr.params.Mesh.xMin*1e6, wfr.params.Mesh.xMax*1e6, wfr.params.Mesh.nx)
-            ax.set_xlabel("x ($\mu$m)")
-        elif axisName == 'y':
-            x = np.linspace(wfr.params.Mesh.yMin*1e6, wfr.params.Mesh.yMax*1e6, wfr.params.Mesh.ny)
-            ax.set_xlabel("y ($\mu$m)")
-            
-    
-    ax.plot(x, np.ones(x.shape)*spb.bl.params["df"]["distance"], 'r--')
-    plt.legend(["Design Focal Plane"])
-    
-    plt.show()
-    
-    estr = str(ekev).replace(".","-")
-    
-    if outdir is not None:
-        fig.savefig(outdir + "{}_focus_slice_{}_{}".format(focus, estr, axisName))
-        
+ 
+# =============================================================================
+#     
+#     ax1.plot(data_focslice[0]*1e6, np.ones(data_focslice.shape[0])*spb.bl.params["df"]["distance"], 'r--')
+#     
+# =============================================================================
+
 if __name__ == '__main__':
     
     ekev = 9.2
@@ -137,5 +120,5 @@ if __name__ == '__main__':
 #     sliceFocus(wfr = wfr, ekev = ekev, focus = 'micron', nslices = 500, axisName = 'y', outdir = "focus_test/")
 #     
 # =============================================================================
-    sliceFocus(wfr = wfr, ekev = ekev, focus = 'nano', nslices = 500, axisName = 'x', outdir = "focus_test/")
+    df = sliceFocus(wfr = wfr, ekev = ekev, focus = 'nano', nslices = 50, axisName = 'x', outdir = "focus_test/")
     #sliceFocus(wfr = wfr, ekev = ekev, focus = 'nano', nslices = 500, axisName = 'y', outdir = "focus_test/")

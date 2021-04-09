@@ -356,14 +356,15 @@ def colorbar_plot(arr,
                   xlabel = None,
                   ylabel = None,
                   clabel = "",
-                  context = 'notebook',
+                  context = None,
                   sdir = None,
                   cmap = 'bone',
-                  normalise = False,
+                  normalise = True,
                   vmin = 0, vmax = 1,
                   scale = 1e6,
                   aspect = 'auto',
-                  grid = True):
+                  grid = True,
+                  return_axes = False):
     
     """ 
     plot a 2D array with a colorbar (x,y)
@@ -379,8 +380,9 @@ def colorbar_plot(arr,
     if normalise:
         arr = norm(arr)
         
-    sns.set_context(context)
-    sns.set_style('white', {'axes.grid' : grid})
+    
+    plt.style.use(['science','ieee'])
+
     
     fig, ax1 = plt.subplots()
     
@@ -406,12 +408,21 @@ def colorbar_plot(arr,
                     xy = (0,1),
                     c = 'white')
     
-    if sdir is None:
-        fig.show()
+    if context is not None:
+        sns.set_context(context)
+    
+    if return_axes:
+        return ax1
+    
     else:
-        fig.savefig(sdir + ".png")
+        if sdir is None:
+            fig.show()
+        else:
+            fig.savefig(sdir + ".png")
+    
+            plt.show()
+    
 
-        plt.show()
         
 def signal_plot(xdata, ydata,
         xlabel,
@@ -440,21 +451,36 @@ def scatter_plot(xdata, ydata = None,
         ylabel = "",
         title = "",
         context = 'notebook',
-        return_axes = False):
+        parse_axes = None,
+        return_axes = False,
+        marker= 'o',
+        marker_size = 12,
+        color = 'b',
+        legend = False,
+        legend_title = "",
+        label = None):
+    
+    plt.style.use(['science','ieee'])
 
     if ydata is None:
         ydata = np.arange(0, len(xdata), len(xdata))
-                          
-    sns.set_context(context)
-    sns.set_style('dark')
-    fig, ax1 = plt.subplots()
+                  
+
+    if parse_axes is not None:
+        ax1 = parse_axes
+    else:
+        fig, ax1 = plt.subplots()
     
-    ax1.scatter(xdata, ydata)
+    ax1.scatter(xdata, ydata, label = label, marker = marker, s = marker_size)
     
     ax1.set_xlabel(xlabel)
     ax1.set_ylabel(ylabel)
     ax1.set_title(title)
     
+    if legend:
+        ax1.legend(title=legend_title)
+    #ax1.autoscale(tight=True) 
+    #sns.set_context(context)
     if return_axes:
         return ax1
     else:

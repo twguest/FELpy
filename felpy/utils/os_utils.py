@@ -55,3 +55,16 @@ def felpy_path():
     fpath = os.path.join(fpath.split("felpy/")[0] + "/felpy/")
     
     return fpath
+
+
+class color:
+   PURPLE = '\033[95m'
+   CYAN = '\033[96m'
+   DARKCYAN = '\033[36m'
+   BLUE = '\033[94m'
+   GREEN = '\033[92m'
+   YELLOW = DEBUG = '\033[93m'
+   RED = '\033[91m'
+   BOLD = '\033[1m'
+   UNDERLINE = HEADER = '\033[4m'
+   END = '\033[0m'

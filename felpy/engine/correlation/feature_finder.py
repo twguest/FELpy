@@ -6,20 +6,27 @@ from matplotlib import pyplot as plt
 from felpy.utils.analysis_utils import get_windows
 from felpy.analysis.statistics.correlation import norm_difference
 from PIL import Image
+
 def test_array(npts, sx, sy):
     
     arr1 = np.random.rand(npts, npts)
-    
-
-    
-    
-    arr2 = np.roll(arr1, sy, axis = 0)
-    arr2 = np.roll(arr2, sx, axis = 1)
-    
+    arr2 = shift_image(arr1, sx, sy)
     #arr1 = gaussian_filter(arr1, 10)
     #arr2 = gaussian_filter(arr2, 10)
     return arr1, arr2
     
+def shift_image(X, dx, dy):
+    X = np.roll(X, dy, axis=0)
+    X = np.roll(X, dx, axis=1)
+    if dy>0:
+        X[:dy, :] = 0
+    elif dy<0:
+        X[dy:, :] = 0
+    if dx>0:
+        X[:, :dx] = 0
+    elif dx<0:
+        X[:, dx:] = 0
+    return X
 
 def odd_even(N):
     """
@@ -69,10 +76,10 @@ def double_plot(arr1, arr2):
     
     fig, axs = plt.subplots(1,2)
     ax1, ax2 = axs
-    ax1.imshow(arr1, vmin = 0, vmax = 255)
+    ax1.imshow(arr1, vmin = 0, vmax = 1)
     ax1.set_title("reference")
     ax2.set_title("perturbed")
-    ax2.imshow(arr2, vmin = 0, vmax = 255)
+    ax2.imshow(arr2, vmin = 0, vmax = 1)
     plt.show()
 
 def window_stack(a, stepsize=1, width=3):
@@ -87,33 +94,25 @@ def rolling_window(a, shape):  # rolling window for 2D array
     
 if __name__ == '__main__':
     
-    arr1, arr2 = test_array(100, sx = 4, sy = 0)
+    arr1, arr2 = test_array(100, sx = 0, sy = 4)
     #arr1 = np.asarray(Image.open('../../data/samples/test.jpg').convert('LA'))[:,:,0]
     #arr1 = np.arange(10000).reshape(100,100)
     
-    print(arr1[25,25])
     double_plot(arr1,arr1)
     
  
     ### analysis window  
-    #window = get_window(arr1, c = c, l = 24)
     c = [25,25]
+    window = get_window(arr1, c = c, l = 25)
+    print(window.shape)
     ### feature window
     
 
-    f = rolling_window(np.pad(arr2, 2), shape = (5,5))
+    f = rolling_window(np.pad(arr2, 2), shape = (25,25))
     fwindow = f[25,25,]
-    
-    w = rolling_window(arr1,(5,5))
-    #double_plot(window, fwindow)
-    ans = np.zeros([w.shape[0],w.shape[1]])
-    
-    for dx in range(w.shape[0]):
-        for dy in range(w.shape[1]):
-            ans[dx,dy] = correlation(w[dx,dy,], fwindow )
-            
-    ans = np.pad(ans, 2)
-    print(np.where((ans == np.max(ans))))
+    from skimage.registration import phase_cross_correlation
+    print(phase_cross_correlation(fwindow, window,upsample_factor = 5))
+
 # =============================================================================
 #     corrs = np.zeros([window.shape[0],
 #                       window.shape[1]])

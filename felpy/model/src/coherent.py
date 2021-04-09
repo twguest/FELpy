@@ -33,7 +33,7 @@ from matplotlib import pyplot as plt
 import wpg.srwlpy
 
 from felpy.model.core.wavefront import Wavefront
-from wpg.wpg_uti_wf import look_at_q_space, calculate_fwhm
+from wpg.wpg_uti_wf import look_at_q_space, calculate_fwhm, calc_pulse_energy
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
 from wpg.wpg_uti_wf import plot_intensity_qmap as plotKspace
 
@@ -51,6 +51,12 @@ from wpg.srwlib import SRWLOptD
 fwhm2rms = np.sqrt(8*np.log(2)) ### FWHM = sqrt(8ln(2))*sigma
 h = scipy.constants.physical_constants['Planck constant in eV s'][0]
 
+def get_pulse_energy(wfr):
+    wfr.set_electric_field_representation('t')
+    energy = calc_pulse_energy(wfr)[0]
+    wfr.set_electric_field_representation('f')
+    return energy
+    
 def analytical_pulse_energy(q, ekev):
     """
     Estimate of analytical_pulse_energy from electron bunch charge and radiation energy
@@ -122,8 +128,16 @@ def modify_beam_divergence(wfr, sig, dtheta):
 
     wfr.params.Mesh.zCoord = 0
 
+def modify_beam_energy(wfr, desired):
+    
+    
+    actual = get_pulse_energy(wfr)
+    diff = actual/desired
+    
+    wfr.data.arrEhor *= diff
 
-def construct_SA1_wavefront(nx, ny, ekev, q, xoff = 0, yoff = 0, modify_beam_divergenceergence = True):
+def construct_SA1_wavefront(nx, ny, ekev, q, xoff = 0, yoff = 0, mx = 0, my = 0,
+                            tiltX = 0, tiltY = 0):
     """
     Construct a fully-coherent Gaussian source with properties related to the
     energy of the radiation and beam charge.
@@ -152,7 +166,7 @@ def construct_SA1_wavefront(nx, ny, ekev, q, xoff = 0, yoff = 0, modify_beam_div
     tau = analytical_pulse_duration(q)
 
 
-    gsnBm = build_gaussian(nx, ny, ekev, xMin, xMax, yMin, yMax, sigX, sigY, 1, xoff = xoff, yoff = yoff, pulseTau = tau)
+    gsnBm = build_gaussian(nx, ny, ekev, xMin, xMax, yMin, yMax, sigX, sigY, 1, xoff = xoff, yoff = yoff, pulseTau = tau, _mx = mx, _my = my, tiltX= tiltX, tiltY = tiltY)
 
     wfr = Wavefront(gsnBm)
     wfr.params.wavelength = wavelength
@@ -162,7 +176,7 @@ def construct_SA1_wavefront(nx, ny, ekev, q, xoff = 0, yoff = 0, modify_beam_div
     return wfr
 
 
-def construct_SA1_pulse(nx, ny, nz, ekev, q, modify_beam_divergenceergence = True):
+def construct_SA1_pulse(nx, ny, nz, ekev, q, modify_beam_divergenceergence = True, mx = 0, my = 0):
     """
     Construct a fully-coherent Gaussian source with properties related to the
     energy of the radiation and beam charge.
@@ -200,14 +214,17 @@ def construct_SA1_pulse(nx, ny, nz, ekev, q, modify_beam_divergenceergence = Tru
                               d2waist = 1,
                               tau = tau,
                               pulseRange = 1,
-                              pulseEn = 2*pulseEn)
+                              pulseEn = 2*pulseEn,
+                              _mx = mx,
+                              _my = _my)
 
     wfr = Wavefront(gsnBm)
     srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
 
     wfr.params.wavelength = wavelength
     modify_beam_divergence(wfr,analytical_pulse_width(ekev),analytical_pulse_divergence(q,ekev))
-
+    
+    modify_beam_energy(wfr, desired = 2*pulseEn)
     return wfr
 
 

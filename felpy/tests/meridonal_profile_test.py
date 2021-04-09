@@ -9,6 +9,7 @@ Created on Thu Jul 30 09:55:11 2020
 DOC_DIR = "/opt/FELpy/docs/coherent_focus_test/"
 SLC_DIR = DOC_DIR + "/slices/"
 PLT_DIR = DOC_DIR + "/plots/"
+
 from tqdm import tqdm
 from felpy.model.beamlines.exfel_spb.methods import get_beamline_object
 from felpy.model.src.coherent import construct_SA1_wavefront
@@ -18,6 +19,7 @@ from felpy.utils.np_utils import get_mesh
 import numpy as np
 from felpy.utils.vis_utils import animate,colorbar_plot
 from felpy.utils.os_utils import mkdir_p
+from felpy.model.core.beamline import Beamline
 
 def get_beamline(ekev):
     bl = get_beamline_object(ekev = ekev, crop = ["d1", "NVE"])
@@ -51,14 +53,16 @@ def propThruFocus():
 
     for itr in tqdm(range(nz)):
         
-
-        spb.append(Drift(dz*(itr+1)), propagation_parameters(1,1,1,1, mode = 'fresnel'))
-        spb.propagate(wfr)
+        bl= Beamline()
+        bl.append(Drift(dz*(itr+1)), propagation_parameters(1,1,1,1, mode = 'fresnel'))
+        bl.propagate(wfr)
         
-        wfr.plot(scale = "um",
-                 label = "$\Delta$z = {} m".format(-1.1 + itr*dz), 
-                 sdir = PLT_DIR + "{:04d}.png".format(itr))
-        
+# =============================================================================
+#         wfr.plot(scale = "um",
+#                  label = "$\Delta$z = {} m".format(-1.1 + itr*dz), 
+#                  sdir = PLT_DIR + "{:04d}.png".format(itr))
+#         
+# =============================================================================
         mx[:,itr], my[:,itr] = wfr.get_profile_1d()
         
         

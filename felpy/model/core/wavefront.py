@@ -230,12 +230,14 @@ class Wavefront(WPG_Wavefront):
                       scale = ls[scale],
                       aspect = 'equal')
                       
-    def get_beam_size(self, write = True):
+    def get_beam_size(self, write = True, fraction = 0.5, threshold = 0.01):
         
+        res, err = get_enclosed_energy(self.get_intensity().sum(-1), *self.get_spatial_resolution(), efraction = fraction, VERBOSE = False,
+                                       threshold = threshold)
+       
         if write: 
-            self.custom_fields['beam size'] = get_enclosed_energy(self.get_intensity().sum(-1), *self.get_spatial_resolution())
-        else:
-            return get_enclosed_energy(self.get_intensity().sum(-1), *self.get_spatial_resolution())
+            self.custom_fields['beam size'] = res
+        return res, err
     
     def get_com(self, longitudinal = False, write = False):
         
@@ -250,8 +252,8 @@ class Wavefront(WPG_Wavefront):
         
         if write:
             self.custom_fields['com'] = [px*idx[1], py*idx[0]]
-        else:
-            return [px*idx[1], py*idx[0]]
+    
+        return [px*idx[1], py*idx[0]]
         
     def get_profile_1d(self):
         """

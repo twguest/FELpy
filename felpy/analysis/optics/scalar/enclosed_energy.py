@@ -114,11 +114,11 @@ def plotEnclosed(ii, r, c, label = None, outdir = None):
         
 
 
-def get_enclosed_energy(ii, dx, dy, efraction = 0.5, sdir = None, plot = False, VERBOSE = True):
+def get_enclosed_energy(ii, dx, dy, efraction = 0.5, sdir = None, plot = False, VERBOSE = True, threshold = 0.01):
     
     nx, ny = ii.shape
     c = get_com(ii)
-    results, err = finder(ii, nx, ny, c, efraction, VERBOSE = VERBOSE)
+    results, err = finder(ii, nx, ny, c, efraction, VERBOSE = VERBOSE, threshold = threshold)
     
     
     if plot:
@@ -127,7 +127,7 @@ def get_enclosed_energy(ii, dx, dy, efraction = 0.5, sdir = None, plot = False, 
     
     results = (float(results)*dx, float(results*dy))
     
-    return results
+    return results, err
     
  
 

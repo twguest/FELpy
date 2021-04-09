@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
-from felpy.model.beamlines.methods import get_beamline_object
+from felpy.model.beamlines.exfel_spb.methods import get_beamline_object
 from felpy.model.src.coherent import construct_SA1_pulse
 
 
