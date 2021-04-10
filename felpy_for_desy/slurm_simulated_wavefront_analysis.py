@@ -36,7 +36,7 @@ def launch_single(in_directory, out_directory,
                  logDir = logs,
                  nodes = nodes,
                  jobType = 'array',
-                 jobArray = os.listdir(in_directory),
+                 jobArray = in_directory,
                  options = out_directory)
     
    

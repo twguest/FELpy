@@ -11,7 +11,8 @@ if __name__ == '__main__':
     out_directory = sys.argv[2]
     
     wfr = Wavefront()
-    wfr.analysis()
+    wfr.load_hdf5(in_directory)
+    wfr.analysis(VERBOSE = True, BATCH = True)
     
         
     
