@@ -493,5 +493,4 @@ if __name__ == '__main__':
     from felpy.model.src.coherent import construct_SA1_pulse
    
     wfr = construct_SA1_pulse(200,200,4,1,1)
-#    print(wfr.params.Mesh.xMax, wfr.params.Mesh.xMin, wfr.params.Mesh.nx)
     custom_fields = wfr.analysis(DEBUG = True)
