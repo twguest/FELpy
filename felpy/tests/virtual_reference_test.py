@@ -103,17 +103,19 @@ arr2 = arr2[200:400,200:400,0]
 
 #arr2 = shift_image(arr1, 2, 2)
 plt.imshow(arr1[:,:])
-plt.show()
-plt.imshow(arr2[:,:])
-plt.show()
-
-
-c = np.zeros_like(arr1)
-from skimage.registration import phase_cross_correlation
-
-for nx in range(arr1.shape[0]):
-    for ny in range(arr1.shape[1]):
-        #print(phase_cross_correlation(get_window(arr1, (nx,ny), 10), get_window(arr2, (nx,ny), 10)))
-        c[nx,ny] = phase_cross_correlation(get_window(arr1, (nx,ny), 10), get_window(arr2, (nx,ny), 10))[0][1]
-        #print(c[nx,ny])
-        plt.imshow(c)
+# =============================================================================
+# plt.show()
+# plt.imshow(arr2[:,:])
+# plt.show()
+# 
+# 
+# c = np.zeros_like(arr1)
+# from skimage.registration import phase_cross_correlation
+# 
+# for nx in range(arr1.shape[0]):
+#     for ny in range(arr1.shape[1]):
+#         #print(phase_cross_correlation(get_window(arr1, (nx,ny), 10), get_window(arr2, (nx,ny), 10)))
+#         c[nx,ny] = phase_cross_correlation(get_window(arr1, (nx,ny), 10), get_window(arr2, (nx,ny), 10))[0][1]
+#         #print(c[nx,ny])
+#         plt.imshow(c)
+# =============================================================================

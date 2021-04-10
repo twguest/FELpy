@@ -4,10 +4,9 @@ from matplotlib import pyplot as plt
 import imageio
 import numpy as np
 from wpg.wpg_uti_wf import calculate_fwhm
-from felpy.analysis.optics.scalar.get_energy_statistics import get_energy_statistics
 from felpy.utils.vis_utils import double_colorbar_plot, colorbar_plot
 import numpy as np
-from wpg.wpg_uti_wf import calculate_fwhm
+from wpg.wpg_uti_wf import calculate_fwhm, calc_pulse_energy
 import seaborn as sns
 from felpy.utils.np_utils import get_mesh
 from felpy.analysis.optics.scalar.enclosed_energy import get_enclosed_energy
@@ -17,13 +16,14 @@ from felpy.analysis.optics.complex.coherence import get_coherence_time
 from felpy.model.core.fresnel_propagator import frensel_propagator
 from felpy.utils.vis_utils import colorbar_plot
 from felpy.utils.np_utils import get_mesh
-
+from felpy.model.tools import radial_profile
 
 ls = {"m": 1,
       "cm": 1e2,
       "mm": 1e3,
       "um": 1e6,
       "nm": 1e9}
+
 
 class Wavefront(WPG_Wavefront):
     
@@ -33,16 +33,21 @@ class Wavefront(WPG_Wavefront):
     def save_tif(self, outdir):
         imgReal = self.get_intensity()
         imageio.imwrite(outdir + ".tif", imgReal)
-
-
-    def get_spatial_resolution(self):
+ 
+    def get_spatial_resolution(self, VERBOSE = False):
         
         px = (self.params.Mesh.xMax - self.params.Mesh.xMin) / self.params.Mesh.nx
         py = (self.params.Mesh.yMax - self.params.Mesh.yMin) / self.params.Mesh.ny
         
+        
+        self.custom_fields['spatial resolution'] = px, py
+        
+        
+        if VERBOSE:
+            print(self.custom_fields['spatial resolution'])
         return px, py
     
-    def get_temporal_resolution(self):
+    def get_temporal_resolution(self, VERBOSE = False):
         
         wDomain = self.params.wDomain
         
@@ -53,9 +58,17 @@ class Wavefront(WPG_Wavefront):
             delta_tau = (self.params.Mesh.sliceMax - self.params.Mesh.sliceMin) / self.params.Mesh.nSlices
             self.set_electric_field_representation(wDomain)
 
+
+        self.custom_fields['temporal resolution'] = delta_tau
+        
+        if VERBOSE: self.custom_fields['temporal resolution']
+        
         return delta_tau
 
-    def write(self, outdir):
+
+    def to_txt(self, outdir):
+        
+  
         output = open(outdir + ".txt", "w")
         output.write(self.__str__())
         output.close()
@@ -66,6 +79,7 @@ class Wavefront(WPG_Wavefront):
         
         returns [Ehor, Ever]
         """
+        
         
         for slc in range(self.params.Mesh.nSlices):
             
@@ -84,9 +98,11 @@ class Wavefront(WPG_Wavefront):
                 Etmp = (self.data.arrEver[:,:,slc,0].astype('complex128')+(self.data.arrEver[:,:,slc,1]*1j)).reshape((*self.data.arrEver.shape[0:2], 1))
                 Ever = np.concatenate((Ever, Etmp), axis = 2)
                 
+                
         Ehor.imag, Ever.imag = np.imag(Ehor), np.imag(Ever)
         
         return np.array([Ehor, Ever])[0,:,:,:]### PRETTY SURE THIS JUST RETURNS Ehor
+    
     
     def view(self):
         
@@ -108,8 +124,14 @@ class Wavefront(WPG_Wavefront):
         plt.show()
 
 
-    def get_wavelength(self):
-        return (h*c)/(e*self.params.photonEnergy)
+    def get_wavelength(self, VERBOSE = False):
+        
+        self.custom_fields['wavelength'] = (h*c)/(e*self.params.photonEnergy)
+        
+        if VERBOSE: print("wavelength")
+        if VERBOSE: self.custom_fields['temporal resolution']
+        
+        return self.custom_fields['wavelength'] 
 
 
     def set_electric_field_representation(self, domain):
@@ -134,46 +156,44 @@ class Wavefront(WPG_Wavefront):
         sig_x, sig_y = calculate_fwhm(self)['fwhm_x'], calculate_fwhm(self)['fwhm_y']
         
         self.set_electric_field_representation('f') 
-
+        
+        self.custom_fields['divergence'] = sig_x, sig_y
+        
         return sig_x, sig_y
     
     def get_fwhm(self):
         sig_x, sig_y = calculate_fwhm(self)['fwhm_x'], calculate_fwhm(self)['fwhm_y']
+        
+        self.custom_fields['fwhm'] = sig_x, sig_y
+        
         return sig_x, sig_y
 
 
     def get_energy_statistics(self, integrate = False, VERBOSE = False, mpi = True, write = False):
         
-        
-        ii = self.get_intensity()
-        
-        if integrate:
-            ii = ii.sum(-1)
-            
-        
-        dx, dy = self.get_spatial_resolution()
+
+        self.set_electric_field_representation('t')
+        energy = calc_pulse_energy(self)
+        self.set_electric_field_representation('f')
     
-        dt = self.get_temporal_resolution()
+        self.custom_fields['pulse energy'] = energy[0]
+        self.custom_fields['nphotons'] = energy[1]
         
-        if integrate:
-            dt *= self.params.Mesh.nSlices
-        
-        ekev = self.params.photonEnergy/1000
-        
-        results = get_energy_statistics(ii, dx, dy, dt, ekev, mpi = mpi, VERBOSE = VERBOSE).run()    
-        
-        if write:
-            self.custom_fields['pulse energy'] = results[0]
-            self.custom_fields['nphotons'] = results[1]
-        else:
-            return results 
+        return energy 
      
         
-    def get_pulse_duration(self):
+    def get_pulse_duration(self, VERBOSE = False):
         
         self.set_electric_field_representation('t')
         t = self.params.Mesh.nSlices*self.get_temporal_resolution()
         self.set_electric_field_representation('f')
+        
+        self.custom_fields['pulse duration'] = t
+        
+        if VERBOSE: 
+            print("Pulse Duration")
+            print(self.custom_fields['pulse duration'])
+            
         return t
     
     def plot_intensity(self, scale = "mm", label = "", title = "", context = 'talk', sdir = None):
@@ -230,16 +250,20 @@ class Wavefront(WPG_Wavefront):
                       scale = ls[scale],
                       aspect = 'equal')
                       
-    def get_beam_size(self, write = True, fraction = 0.5, threshold = 0.01):
+    def get_beam_size(self, write = True, fraction = np.sqrt(np.log(1/2)/-2), threshold = 0.01, VERBOSE = False):
         
-        res, err = get_enclosed_energy(self.get_intensity().sum(-1), *self.get_spatial_resolution(), efraction = fraction, VERBOSE = False,
+        px, py = self.get_spatial_resolution()
+        ### fraction set to sqrt(ln(1/2)/-2) which equals the2sigma width for a guassian
+        res, err = get_enclosed_energy(self.get_intensity().sum(-1), px, py, efraction = fraction, VERBOSE = VERBOSE,
                                        threshold = threshold)
        
-        if write: 
-            self.custom_fields['beam size'] = res
+        
+        self.custom_fields['beam size'] = res
+        if VERBOSE: print(self.custom_fields['beam size'])
+        
         return res, err
     
-    def get_com(self, longitudinal = False, write = False):
+    def get_com(self, longitudinal = False, VERBOSE = False):
         
         if longitudinal: 
             ii = self.get_intensity()
@@ -250,10 +274,12 @@ class Wavefront(WPG_Wavefront):
         
         px, py = self.get_spatial_resolution()
         
-        if write:
-            self.custom_fields['com'] = [px*idx[1], py*idx[0]]
+        self.custom_fields['com'] = [px*idx[1], py*idx[0]]
     
+        if VERBOSE: print(self.custom_fields['com'])
+        
         return [px*idx[1], py*idx[0]]
+    
         
     def get_profile_1d(self):
         """
@@ -272,17 +298,18 @@ class Wavefront(WPG_Wavefront):
         
         return ix, iy
 
-    def get_coherence_time(self, mpi = False, write = False):
+    def get_coherence_time(self, mpi = False, VERBOSE = False):
     
         self.set_electric_field_representation('t')
         time_step = self.get_temporal_resolution()
         
-        if write:
-            get_coherence_time(self.as_complex_array(), time_step, mpi = mpi)
-        else:
-            get_coherence_time(self.as_complex_array(), time_step, mpi = mpi)
+        ctime = get_coherence_time(self.as_complex_array(), time_step, mpi = mpi)
             
- 
+        self.custom_fields['coherence time'] = ctime
+    
+        if VERBOSE: print(self.custom_fields['coherence time'])
+        return ctime
+    
     
     def propagate(self, z, upsample = 1):
         """
@@ -315,17 +342,156 @@ class Wavefront(WPG_Wavefront):
                   aspect = 'equal',
                   vmax = np.max(ii),
                   sdir = sdir)
+
+    def get_complex_radial_profile(self):
+        """
+        Calculate the radial profile of a complex array by azimuthal averaging:
+        
+            I_{radial}(R) = \int_0^R \frac{I(r)2\pi r}{\pi R^2} dr
+        
+        :param wfr: complex wavefield [np array]
+        
+        :returns prof: radial profile
+        """
+        wfr = self.as_complex_array()
+        r = radial_profile(wfr[:,:,0].real, [wfr.shape[0]//2,wfr.shape[1]//2])[1]
+        
+        r = np.diag(r).copy()
+        r[:r.shape[0]//2] *= -1
+        
+        rp = np.stack([radial_profile(wfr[:,:,i].real,
+                                      [wfr.shape[0]//2,wfr.shape[1]//2])[0]
+                       + radial_profile(wfr[:,:,i].imag,
+                                        [wfr.shape[0]//2,wfr.shape[1]//2])[0]*1j
+                       for i in range(wfr.shape[-1])])
+        
+        prof = np.moveaxis(rp, 0, -1)
+        
+        return prof, r
+  
+
+
+    def get_transverse_doc(self, VERBOSE = False):
+        """
+        get transverse degree of coherence of the wavefront across each of the
+        transverse dimensions slices
+        """
+        
+        p, r =  self.get_complex_radial_profile()
+        nt = self.as_complex_array().shape[-1]
+        J = np.dot(p, p.T.conjugate())/nt
+        
+        
+        tdoc = np.diag(np.dot(J, J)).sum() / np.diag(J).sum()**2
+        
+        if VERBOSE:
+            print("Transverse Degree of Coherence: {:.4f}".format(tdoc.real))
+        
+        self.custom_fields['tdoc'] = tdoc     
+        return tdoc
+
+
+
+
+    def get_coherence_len(self, VERBOSE = False):
+        """
+        Calculate coherence length of a complex wavefield of shape
+        [nx, ny. nz]
+        
+        :param wfr: complex wavefield
+        :param dx: horizontal pixel size
+        :param dy: vertical pixel size
+        
+        :returns Jd: complex degree of coherence
+        :returns clen: coherence length [m]
+        """
+        profile, r = self.get_complex_radial_profile()
+        dx, dy = self.get_spatial_resolution()
+        
+        nt = self.as_complex_array().shape[-1]
+        
+        J = np.dot(profile, profile.T.conjugate())/ nt
+        II = np.abs(np.diag(J))  # intensity as the main diagonal
+        
+        J /= II**0.5 * II[:, np.newaxis]**0.5
+        Jd = np.abs(np.diag(np.fliplr(J)))  # DoC as the cross-diagonal
+        
+        lm = np.arange(Jd.shape[0])
     
+        lm = lm[(lm >= Jd.shape[0]//2) & (Jd[lm] < 0.5)]
+    
+        rstep = np.sqrt((dx)**2 + (dy)**2)
+    
+        
+        try:
+            lm = lm[0] - Jd.shape[0]//2 
+        except(IndexError):
+            lm = np.inf
+         
+        clen = lm*rstep
+    
+        if VERBOSE: 
+            print("Radial Coherence Length: {:.2f} um".format(clen*1e6))
+        
+        self.custom_fields['coherence length'] = clen
+        
+        return clen
+
+
+    def analysis(self, VERBOSE = False, DEBUG = False):
+        """
+        run a full analysis of the non-plotting utils and write to h5 file        
+        """
+        
+        print("Running Full Analysis")
+        print("")
+        
+        
+        if DEBUG:
+            VERBOSE = True
+            
+        if VERBOSE: print("PULSE DURATION")
+        self.get_pulse_duration(VERBOSE = DEBUG)
+        
+        if VERBOSE: print("SPATIAL RESOLUTION")
+        self.get_spatial_resolution(VERBOSE = DEBUG)
+
+        if VERBOSE: print("TEMPORAL RESOLUTION")
+        self.get_temporal_resolution(VERBOSE = DEBUG)
+
+        if VERBOSE: print("WAVELENGTH")
+        self.get_wavelength(VERBOSE = DEBUG)
+
+        if VERBOSE: print("ENERGY STATISTICS")
+        self.get_energy_statistics(VERBOSE = DEBUG)
+
+        if VERBOSE: print("PULSE DURATION")
+        self.get_pulse_duration(VERBOSE = DEBUG)
+
+        if VERBOSE: print("BEAM SIZE")
+        self.get_beam_size(VERBOSE = DEBUG)
+
+        if VERBOSE: print("CENTER OF MASS")
+        self.get_com(VERBOSE = DEBUG)
+
+        if VERBOSE: print("COHERENCE TIME")
+        self.get_coherence_time(VERBOSE = DEBUG)
+
+        if VERBOSE: print("COHERENCE LENGTH")
+        self.get_coherence_len(VERBOSE = DEBUG)
+
+        if VERBOSE: print("TDOC")
+        self.get_transverse_doc(VERBOSE = DEBUG)
+
+
+        if DEBUG:
+            return self.custom_fields
+
+
 if __name__ == '__main__':
     
     from felpy.model.src.coherent import construct_SA1_pulse
-    wfr = construct_SA1_pulse(200,200,2,1,1)
-    
-    wfr.get_com(write = True)
-    wfr.get_beam_size(write = True)
-    wfr.get_energy_statistics(integrate = True, mpi = False, write = True)
-    print(["{} {}".format(item, wfr.custom_fields[item]) for item in wfr.custom_fields])
-    ef = wfr.propagate(1) 
-    plt.imshow(abs(ef)**2)
-    wfr.get_coherence_time()
-    wfr.plot()
+   
+    wfr = construct_SA1_pulse(200,200,4,1,1)
+#    print(wfr.params.Mesh.xMax, wfr.params.Mesh.xMin, wfr.params.Mesh.nx)
+    custom_fields = wfr.analysis(DEBUG = True)

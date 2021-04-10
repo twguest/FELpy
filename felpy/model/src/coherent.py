@@ -216,7 +216,7 @@ def construct_SA1_pulse(nx, ny, nz, ekev, q, modify_beam_divergenceergence = Tru
                               pulseRange = 1,
                               pulseEn = 2*pulseEn,
                               _mx = mx,
-                              _my = _my)
+                              _my = my)
 
     wfr = Wavefront(gsnBm)
     srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')

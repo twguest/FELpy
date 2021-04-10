@@ -18,6 +18,7 @@ def get_pulse_energy(wfr):
     energy = calc_pulse_energy(wfr)[0]
     wfr.set_electric_field_representation('f')
     return energy 
+
 def get_all_properties(ekev, q, DEBUG = False, VERBOSE = True):
     
     wfr = construct_SA1_pulse(1024, 1024, 6, ekev, q)
