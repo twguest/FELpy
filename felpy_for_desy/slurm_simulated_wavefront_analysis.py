@@ -2,11 +2,10 @@
 import sys
 import os
 from felpy.utils.job_utils import JobScheduler
-from felpy.model.core.wavefront import Wavefront
 
 from labwork.about import logs
 
-PYCMD = os.getcwd() + "simulated_wavefront_analysis.py"
+PYCMD = os.getcwd() + "/simulated_wavefront_analysis.py"
 
 
 
@@ -31,14 +30,16 @@ def launch_single(in_directory, out_directory,
    
     
     
-    JobScheduler(pycmd = PYCMD,
+    js = JobScheduler(pycmd = PYCMD,
                  jobName = job_name,
                  logDir = logs,
                  nodes = nodes,
-                 jobType = 'array',
+                 jobType = 'single',
                  jobArray = in_directory,
-                 options = out_directory)
+                 options = [in_directory, out_directory])
     
+    js.run(test = False)
+
    
 if __name__ == '__main__':
     
@@ -77,7 +78,7 @@ if __name__ == '__main__':
         mode = 'batch'
 
     if mode == 'single':
-        
+        print("Launching Single Job")
         launch_single(in_directory,
                       out_directory,
                       job_name,
@@ -96,4 +97,4 @@ if __name__ == '__main__':
         print(out_directory)
         print(job_name)
         print(logs)
-        print(nodes)
+        print("nodes: ",nodes)

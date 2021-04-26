@@ -219,7 +219,8 @@ class Wavefront(WPG_Wavefront):
                       cmap = 'bone',
                       sdir = sdir, 
                       scale = ls[scale],
-                      aspect = 'equal')
+                      aspect = 'equal',
+                     norm = None)
         
  
         
@@ -474,9 +475,11 @@ class Wavefront(WPG_Wavefront):
         if VERBOSE: print("CENTER OF MASS")
         self.get_com(VERBOSE = DEBUG)
 
-        if VERBOSE: print("COHERENCE TIME")
-        self.get_coherence_time(VERBOSE = DEBUG)
-
+# =============================================================================
+#         if VERBOSE: print("COHERENCE TIME")
+#         self.get_coherence_time(VERBOSE = DEBUG, mpi = True)
+# 
+# =============================================================================
         if VERBOSE: print("COHERENCE LENGTH")
         self.get_coherence_len(VERBOSE = DEBUG)
 
@@ -485,8 +488,7 @@ class Wavefront(WPG_Wavefront):
 
 
         if DEBUG:
-            return self.custom_fields
-
+            print(self.custom_fields)
 
 if __name__ == '__main__':
     
