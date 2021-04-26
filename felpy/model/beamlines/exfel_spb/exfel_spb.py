@@ -363,7 +363,7 @@ class Instrument:
             self.d5.name = self.params["d5"]['name']
             
             self.df =  Drift(self.params["df"]['distance'])
-            self.df.name = self.params["df"]['name']
+            self.df.name =  'df'
             
     def build_beamline(self, focus = "nano", screens = "false"):
         """
@@ -384,7 +384,7 @@ class Instrument:
             self.bl.append(self.HOM2,  propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
             self.bl.append(self.d3, propagation_parameters(1,1,1,1, mode = 'fraunhofer'))
             
-            self.bl.append(self.MKB_pslit, propagation_parameters(1/5, 1, 1/5, 1, mode = 'fresnel'))
+            self.bl.append(self.MKB_pslit, propagation_parameters(1/10, 1, 1/5, 1, mode = 'fresnel'))
             self.bl.append(self.d4, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
             self.bl.append(self.MHP, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
             self.bl.append(self.d5, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
@@ -400,25 +400,25 @@ class Instrument:
        
         elif focus == "nano":
             
-            self.bl.append(self.d1, propagation_parameters(1,1,1,1, mode = "fraunhofer"))
+            self.bl.append(self.d1, propagation_parameters(1,1,1,1, mode = "quadratic"))
     
             self.bl.append(self.HOM1, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
             self.bl.append(self.d2, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
             self.bl.append(self.HOM2,  propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
             self.bl.append(self.d3, propagation_parameters(1,1,1,1, mode = 'fraunhofer'))
             
-            self.bl.append(self.NKB_pslit, propagation_parameters(1/10, 1, 1/10,  1, mode = 'fresnel'))
-            self.bl.append(self.d4, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
-            self.bl.append(self.NHE_error, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
-            self.bl.append(self.NHE, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
+            #self.bl.append(self.NKB_pslit, propagation_parameters(1/10, 1, 1/10,  1, mode = 'fresnel'))
+            #self.bl.append(self.d4, propagation_parameters(1, 1, 1, 1, mode = 'fraunhofer'))
+            #self.bl.append(self.NHE_error, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
+            #self.bl.append(self.NHE, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
             
             
-            self.bl.append(self.d5, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
-            self.bl.append(self.NVE_error, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
-            self.bl.append(self.NVE, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
+            #self.bl.append(self.d5, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
+            #self.bl.append(self.NVE_error, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
+            #self.bl.append(self.NVE, propagation_parameters(1/3, 1, 1/3, 1, mode = 'fresnel'))
             
             
-            self.bl.append(self.df, propagation_parameters(1,1,1,1, mode = 'converge'))
+            #self.bl.append(self.df, propagation_parameters(1,1,1,1, mode = 'converge'))
 
             
         self.bl.params = self.params

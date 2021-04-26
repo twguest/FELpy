@@ -3,6 +3,7 @@ import os
 from wpg.beamline import Beamline as WPG_Beamline
 from wpg import srwlib
 from wpg.srw import srwlpy as srwl
+from wpg.wpg_uti_wf import plot_intensity_map
 
 class Beamline(WPG_Beamline):
     
@@ -48,7 +49,7 @@ class Beamline(WPG_Beamline):
             
  
             if outdir is None:
-                wfr.plot()
+                plot_intensity_map(wfr)
 
 
 if __name__ == '__main__':
