@@ -17,7 +17,8 @@ from felpy.model.beamlines.exfel_spb.exfel_spb import Instrument
 
  
 def get_beamline_object(params = "", options = 'nano', ekev = 5.0,
-                        apertures = True, surface = True, crop = None):
+                        apertures = True, surface = True, crop = None,
+                        theta_HOM = 2.3e-03, theta_KB = 3.5e-03):
     
     """ 
     return desired beamline
@@ -41,11 +42,11 @@ def get_beamline_object(params = "", options = 'nano', ekev = 5.0,
         if mirror in ['HOM1', 'HOM2']:    
             spb.adjust_mirror(mirror,
                               ekev,
-                              2.3e-03)#params[mirror]['ang_max'])
+                              theta_HOM)#params[mirror]['ang_max'])
         else:    
             spb.adjust_mirror(mirror,
                               ekev,
-                              3.1e-03)
+                              theta_KB)
         
     spb.mirror_profiles(toggle = surface, aperture = apertures, overwrite = False)
 
