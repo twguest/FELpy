@@ -405,17 +405,17 @@ class Instrument:
             self.bl.append(self.HOM1, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
             self.bl.append(self.d2, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
             self.bl.append(self.HOM2,  propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
-            self.bl.append(self.d3, propagation_parameters(1,1,1,1, mode = 'fraunhofer'))
+            self.bl.append(self.d3, propagation_parameters(2,1,2,1, mode = 'fraunhofer'))
             
-            #self.bl.append(self.NKB_pslit, propagation_parameters(1/10, 1, 1/10,  1, mode = 'fresnel'))
-            #self.bl.append(self.d4, propagation_parameters(1, 1, 1, 1, mode = 'fraunhofer'))
-            #self.bl.append(self.NHE_error, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
-            #self.bl.append(self.NHE, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
+            self.bl.append(self.NKB_pslit, propagation_parameters(1/10, 1, 1/10,  1, mode = 'fresnel'))
+            self.bl.append(self.d4, propagation_parameters(1, 1, 1, 1, mode = 'fraunhofer'))
+            self.bl.append(self.NHE_error, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
+            self.bl.append(self.NHE, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
             
             
-            #self.bl.append(self.d5, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
-            #self.bl.append(self.NVE_error, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
-            #self.bl.append(self.NVE, propagation_parameters(1/3, 1, 1/3, 1, mode = 'fresnel'))
+            self.bl.append(self.d5, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
+            self.bl.append(self.NVE_error, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
+            self.bl.append(self.NVE, propagation_parameters(1/3, 1, 1/3, 1, mode = 'fresnel'))
             
             
             #self.bl.append(self.df, propagation_parameters(1,1,1,1, mode = 'converge'))

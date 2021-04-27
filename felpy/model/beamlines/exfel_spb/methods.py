@@ -13,7 +13,7 @@ __email__ = "twguest@students.latrobe.edu.au"
 __status__ = "Developement"
 """
 
-from felpy.model.core.instrument import Instrument
+from felpy.model.beamlines.exfel_spb.exfel_spb import Instrument
 
  
 def get_beamline_object(params = "", options = 'nano', ekev = 5.0,
