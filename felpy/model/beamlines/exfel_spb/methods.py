@@ -47,6 +47,11 @@ def get_beamline_object(params = "", options = 'nano', ekev = 5.0,
             spb.adjust_mirror(mirror,
                               ekev,
                               theta_KB)
+    ## bad python / quick fix
+    if surface == True: 
+        surface = "on"
+    else: 
+        surface = "off"
         
     spb.mirror_profiles(toggle = surface, aperture = apertures, overwrite = False)
 

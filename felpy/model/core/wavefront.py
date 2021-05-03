@@ -480,11 +480,11 @@ class Wavefront(WPG_Wavefront):
 #         self.get_coherence_time(VERBOSE = DEBUG, mpi = True)
 # 
 # =============================================================================
-        if VERBOSE: print("COHERENCE LENGTH")
-        self.get_coherence_len(VERBOSE = DEBUG)
+        #if VERBOSE: print("COHERENCE LENGTH")
+        #self.get_coherence_len(VERBOSE = DEBUG)
 
-        if VERBOSE: print("TDOC")
-        self.get_transverse_doc(VERBOSE = DEBUG)
+        #if VERBOSE: print("TDOC")
+        #self.get_transverse_doc(VERBOSE = DEBUG)
 
 
         if DEBUG:

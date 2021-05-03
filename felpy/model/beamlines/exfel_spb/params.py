@@ -44,7 +44,7 @@ def get_params():
                       "incidence angle": 2.1e-03,
                       "xc": 0,
                       "yc": 0,
-                      "transmission": 1,
+                      "reflectivity": 1,
                       'next_drift' : 'd2',
                       'ang_min': 1.1e-03,
                       'ang_max': 3.6e-03}
@@ -59,7 +59,7 @@ def get_params():
                       "mirror profile": "../../data/spb/mirror_surface/hom2_mir_real.dat",
                       "orientation": 'x',
                       "incidence angle": 2.4e-03,
-                      "transmission": 1,
+                      "reflectivity": 1,
                       "xc": 0,
                       "yc": 0,
                       'next_drift' : 'd3',

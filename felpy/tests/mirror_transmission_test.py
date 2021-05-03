@@ -14,13 +14,12 @@ from felpy.utils.np_utils import memory_map, readMap
 
 from functools import partial
 
-DATA = "/opt/FELpy/felpy/data/spb/kb_refl/B4C_refl.npy"
-data = np.load(DATA)
+
 
 def no_mirror(ekev = 5.0):
     wfr= construct_SA1_wavefront(512, 512, ekev, 0.25)
         
-    bl = get_beamline_object(ekev, apertures = False, surface = True,
+    bl = get_beamline_object(ekev, apertures = False, surface = False,
                              crop = ["d1", "d1"])
     
     bl.propagate(wfr)
@@ -39,7 +38,7 @@ def no_aperture(angle = 1e-03, ekev = 5.0):
                              crop = ["d1", "HOM1"], theta_HOM = angle)
     
     bl.propagate(wfr)
-     
+    print(wfr.get_intensity().sum())
     return wfr.get_intensity().sum()
 
 def aperture(angle = 1e-03, ekev = 5.0):
@@ -64,8 +63,8 @@ if __name__ == '__main__':
     
     #ii = no_mirror()
     
-    energies = [5.0, 9.0, 12.0]
-    angles = np.linspace(0, 3.5e-03, 10)
+    energies = [5.0, 7.0, 9.0, 11.0, 12.0]
+    angles = np.linspace(0, 10e-03, 35)
     
     noap = memory_map(SDIR + "mirror_refl_no_aperture", shape = (len(energies), len(angles),2))
     ap = memory_map(SDIR + "mirror_refl_aperture", shape = (len(energies), len(angles),2))
@@ -75,11 +74,12 @@ if __name__ == '__main__':
         pool = mpi.Pool(processes = mpi.cpu_count()//2)
         #ii = no_mirror(energy)
         func_a = partial(no_aperture, ekev = energies[a])
+      
         res = pool.map(func_a, tqdm(angles))
         noap[a, :, :] = np.array([angles, res]).T
         
         func_b = partial(aperture, ekev = energies[a])
-        res = pool.map(func_a, tqdm(angles))
+        res = pool.map(func_b, tqdm(angles))
         ap[a, :, :] = np.array([angles, res]).T
         
         

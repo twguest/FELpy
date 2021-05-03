@@ -90,18 +90,20 @@ class Instrument:
         
     def adjust_mirror(self, mirror_name, ekev, new_ang, mirror_refl = None):
      
-        if mirror_refl == None: 
+        if mirror_refl is None: 
             if ekev >= 7.5:
                 material = "B4C"
             else: 
                 material = "Ru"    
 
             refl = get_refl(load_refl(material), ekev, new_ang)
-        
+            print("ADJUST 2{}".format(refl))
         else:
             refl = mirror_refl 
-        
+            print("ADJUST {}".format(refl))
+     
         new_ang = new_ang + np.tan(self.params[mirror_name]["xc"]/self.params[self.params[mirror_name]['next_drift']]['distance'])
+        self.params[mirror_name]["design angle"] = new_ang
         self.params[mirror_name]["incidence angle"] = new_ang
         self.params[mirror_name]['reflectivity'] = refl
 
@@ -186,7 +188,7 @@ class Instrument:
  
     def build_elements(self, focus = "nano"):
         
-
+        print("PARMAS", self.params['HOM1']['reflectivity'])
         self.d1 =  Drift(self.params["HOM1"]['distance from source'])
         self.d1.name = self.params["d1"]['name']
         
@@ -195,7 +197,7 @@ class Instrument:
                      _ang = self.params['HOM1']['incidence angle'], 
                      _amp_coef = 1,
                      _x = self.params['HOM1']['xc'], _y = self.params['HOM1']['yc'],
-                     _refl = self.params['HOM1']['transmission']) 
+                     _refl = self.params['HOM1']['reflectivity']) 
         
         self.HOM1.name = self.params['HOM1']['name']
 
@@ -207,11 +209,10 @@ class Instrument:
                      _ang = self.params['HOM2']['incidence angle'], 
                      _amp_coef = 1,
                      _x = self.params['HOM2']['xc'], _y = self.params['HOM2']['yc'],
-                     _refl = self.params['HOM2']['transmission']) 
+                     _refl = self.params['HOM2']['reflectivity']) 
         
         self.HOM2.name = self.params['HOM2']['name']
         
-
         
         if focus == "micron":
             self.d3 =  Drift(self.params["d3"]['distance'])
