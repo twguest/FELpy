@@ -161,12 +161,14 @@ def basic_plot(ii, mesh, sdir = None,
         ii = ii[roi[0]:roi[1], roi[2]:roi[3]]
             
         img = ax1.imshow(ii, cmap = cmap,
-                         extent = [mesh[0,0,roi[0]]*scale, mesh[0,0,roi[1]]*scale,
-                                   mesh[1,roi[2],0]*scale, mesh[1,roi[3],0]*scale])
+                         extent = [mesh[1,roi[2],0]*scale, mesh[1,roi[3],0]*scale,
+                                     mesh[0,0,roi[0]]*scale, mesh[0,0,roi[1]]*scale],
+                        aspect = 'equal')
     else:
         img = ax1.imshow(ii, cmap = cmap,
                          extent = [np.min(mesh[1])*scale, np.max(mesh[1])*scale,
-                                   np.min(mesh[0])*scale, np.max(mesh[0])*scale])
+                                   np.min(mesh[0])*scale, np.max(mesh[0])*scale],
+                        aspect = 'auto')
   
     divider = make_axes_locatable(ax1)
     cax = divider.append_axes('right', size='7.5%', pad=0.05)
