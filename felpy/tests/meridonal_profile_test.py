@@ -11,76 +11,76 @@ SLC_DIR = DOC_DIR + "/slices/"
 PLT_DIR = DOC_DIR + "/plots/"
 
 from tqdm import tqdm
-from felpy.model.beamlines.exfel_spb.methods import get_beamline_object
-from felpy.model.src.coherent import construct_SA1_wavefront
-from felpy.model.tools import propagation_parameters
-from wpg.srwlib import SRWLOptD as Drift
-from felpy.utils.np_utils import get_mesh
 import numpy as np
-from felpy.utils.vis_utils import animate,colorbar_plot
-from felpy.utils.os_utils import mkdir_p
+from wpg.wpg_uti_wf import plot_intensity_map
+
+from felpy.model.beamlines.exfel_spb.exfel_spb import Instrument
+from wpg.optical_elements import Drift
+from wpg.optical_elements import Mirror_elliptical as MirEl
 from felpy.model.core.beamline import Beamline
+from felpy.model.tools import propagation_parameters
+from felpy.model.core.wavefront import Wavefront
+from felpy.model.src.coherent import construct_SA1_wavefront
 
-def get_beamline(ekev):
-    bl = get_beamline_object(ekev = ekev, crop = ["d1", "NVE"])
-    return bl
+wfr = construct_SA1_wavefront(512, 512, 9, 0.1)
+plot_intensity_map(wfr)
+spb = Instrument()
+params = spb.params
 
-
-def propThruFocus():
-    
-    mkdir_p(DOC_DIR)
-    mkdir_p(PLT_DIR)
-    
-    nx, ny = 512, 512
-    wfr = construct_SA1_wavefront(nx, ny, 5.0, 0.25)
-    
-    dof = 100e-06
-    foc= 2.2
-    nz = 100
-    start  = foc-(dof/2)
-    dz = dof/nz
-    
-    ekev = 5.0
-    
-    spb = get_beamline(ekev)
-    spb.append(Drift(start), propagation_parameters(1,1,1,1, 'quadratic'))
-    spb.propagate(wfr)
-    
-    mx = np.ones([nx, nz])
-    my = np.ones([ny, nz])
+NHE = MirEl(orient = params['NHE']["orientation"], p = 1, q = params['NHE']["distance to focus"],
+        thetaE = params['NHE']["design angle"], theta0 = params['NHE']["incidence angle"],
+        _x = params["NHE"]["xc"],
+        _y = params["NHE"]["yc"],
+        length = params['NHE']["length"],
+        roll = params['NHE']["roll"],
+        yaw = params['NHE']["yaw"],
+        _refl = params['NHE']["reflectivity"],
+        _ext_in = params['NHE']["_ext_in"], _ext_out = params['NHE']["_ext_out"]) 
 
  
+NVE = MirEl(orient = params['NVE']["orientation"], p = 1, q = params['NVE']["distance to focus"],
+        thetaE = params['NVE']["design angle"], theta0 = params['NVE']["incidence angle"],
+        _x = params["NVE"]["xc"],
+        _y = params["NVE"]["yc"],
+        length = params['NVE']["length"],
+        roll = params['NVE']["roll"],
+        yaw = params['NVE']["yaw"],
+        _refl = params['NVE']["reflectivity"],
+        _ext_in = params['NVE']["_ext_in"], _ext_out = params['NVE']["_ext_out"]) 
 
-    for itr in tqdm(range(nz)):
-        
-        bl= Beamline()
-        bl.append(Drift(dz*(itr+1)), propagation_parameters(1,1,1,1, mode = 'fresnel'))
-        bl.propagate(wfr)
-        
-# =============================================================================
-#         wfr.plot(scale = "um",
-#                  label = "$\Delta$z = {} m".format(-1.1 + itr*dz), 
-#                  sdir = PLT_DIR + "{:04d}.png".format(itr))
-#         
-# =============================================================================
-        mx[:,itr], my[:,itr] = wfr.get_profile_1d()
-        
-        
-    px, py = wfr.get_spatial_resolution()
-    mer_mesh_x = get_mesh(mx, px, dz)
-    mer_mesh_y = get_mesh(my, py, dz)
+
+drift = Drift(1.0)
+
+bl = Beamline()
+bl.append(NHE, propagation_parameters(1, 1, 1, 1))
+bl.append(drift, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
+bl.append(NVE, propagation_parameters(2, 1, 2, 1))
+bl.append(Drift(2.), propagation_parameters(1/2, 1, 1/2, 1, mode = 'quadratic'))
+
+bl.propagate(wfr)
+
+plot_intensity_map(wfr)
+
+SFILE = "/opt/FELpy/tmp/post_beamline"
+wfr.store_hdf5(SFILE)
+focus_distance = 0.2
+slices = 25
+dz = focus_distance/slices
+
+beam_size = np.zeros(slices)
+
+for itr in tqdm(range(slices)):
     
-    colorbar_plot(mx, mer_mesh_x,
-                  xlabel = "x (m)",
-                  ylabel = "z (m)",
-                  clabel = "Intensity (a.u.)",
-                  cmap = 'jet',
-                  scale = 1,
-                  normalise = True,
-                  sdir = DOC_DIR + "x_mer.png")
+    wfr = Wavefront()
+    wfr.load_hdf5(SFILE)
     
-    animate(PLT_DIR, DOC_DIR, "through_focus")
- 
-if __name__ == '__main__':
-    propThruFocus()
- 
+    bl = Beamline()
+    bl.append(Drift(dz*(itr+1)), propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
+    bl.propagate(wfr)
+    
+    plot_intensity_map(wfr)
+    
+    beam_size[itr] = wfr.get_fwhm()[0]
+
+from matplotlib import pyplot as plt
+plt.plot(beam_size)

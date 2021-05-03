@@ -51,10 +51,10 @@ def sliceFocus(wfr, ekev, focus = 'nano', nslices = 500, axisName = 'x', outdir 
     spb.build_beamline(focus = focus) 
     el_n = len(spb.bl.propagation_options[0]['optical_elements'])-1
     
-    spb.bl.propagation_options[0]['optical_elements'][el_n].L *= 0.75
+    spb.bl.propagation_options[0]['optical_elements'][el_n].L *= 0.65
     slice_interval = copy(spb.bl.propagation_options[0]['optical_elements'][el_n].L/nslices) 
 
-    spb.bl.propagation_options[0]['propagation_parameters'][el_n] = propagation_parameters(1/4,2,1/4,2, mode = 'quadratic')
+    spb.bl.propagation_options[0]['propagation_parameters'][el_n] = propagation_parameters(2,1,2,1, mode = 'converge')
    
     bl = spb.get_beamline()
     bl.propagate(wfr)
@@ -113,7 +113,7 @@ if __name__ == '__main__':
     
     ekev = 9.2
     
-    wfr = construct_SA1_wavefront(1024, 1024, ekev, 0.5)
+    wfr = construct_SA1_wavefront(512, 512, ekev, 0.5)
     
 # =============================================================================
 #     sliceFocus(wfr = wfr, ekev = ekev, focus = 'micron', nslices = 500, axisName = 'x', outdir = "focus_test/")
