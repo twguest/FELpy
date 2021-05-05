@@ -97,10 +97,8 @@ class Instrument:
                 material = "Ru"    
 
             refl = get_refl(load_refl(material), ekev, new_ang)
-            print("ADJUST 2{}".format(refl))
         else:
             refl = mirror_refl 
-            print("ADJUST {}".format(refl))
      
         new_ang = new_ang + np.tan(self.params[mirror_name]["xc"]/self.params[self.params[mirror_name]['next_drift']]['distance'])
         self.params[mirror_name]["design angle"] = new_ang
@@ -333,7 +331,7 @@ class Instrument:
             
             self.NVE.name = self.params["NVE"]["name"]
             
-            self.NVE_error = MirPl(np.loadtxt(self.fpath + self.params['NVE_error']['mirror profile'].replace("../../","")),
+            self.NVE_error = MirPl(np.loadtxt(self.fpath + self.params['NVE_error']['mirror profile'].replace("../../",""))*1e-09,
                             _dim = self.params['NVE_error']['orientation'],
                             _ang = self.params['NVE_error']['incidence angle']+self.params['NVE']['incidence angle'], 
                             _refl = self.params['NVE_error']['transmission'],
@@ -341,7 +339,7 @@ class Instrument:
             
             self.NVE_error.name = self.params['NVE_error']['name']
             
-            self.NHE_error = MirPl(np.loadtxt(self.fpath + self.params['NHE_error']['mirror profile'].replace("../../","")),
+            self.NHE_error = MirPl(np.loadtxt(self.fpath + self.params['NHE_error']['mirror profile'].replace("../../",""))*1e-09,
                 _dim = self.params['NHE_error']['orientation'],
                 _ang = self.params['NHE_error']['incidence angle']+self.params['NHE']['incidence angle'], 
                 _refl = self.params['NHE_error']['transmission'],
@@ -419,7 +417,7 @@ class Instrument:
             self.bl.append(self.NVE, propagation_parameters(1/3, 1, 1/3, 1, mode = 'fresnel'))
             
             
-            #self.bl.append(self.df, propagation_parameters(1,1,1,1, mode = 'converge'))
+            self.bl.append(self.df, propagation_parameters(1,1,1,1, mode = 'converge'))
 
             
         self.bl.params = self.params
@@ -480,40 +478,19 @@ class Instrument:
         if toggle == "off":
             self.define_mirror_profiles(overwrite = overwrite, aperture = aperture, surface = 'flat')
             
-    def plot_mirror_profiles(self, mirror_name, sdir = None):
+    def get_mirror_profile(self, mirror_name, sdir = None):
         
-        sns.set()
+        
         
         surface = np.loadtxt(self.params[mirror_name]['mirror profile'])
         
-        x = surface[1:, 0]
-        y = surface[0, 1:]
         
-        surface = surface[1:,1:]
+        x = surface[1:, 0]*1e3
+        y = surface[0, 1:]*1e3
         
-        extent = [x.min()*1e03, x.max()*1e03, y.min()*1e03, y.max()*1e03]
+        
+        surface = surface[1:,1:]*1e9
+        
+        return surface, x, y
     
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        
-
-        ax.set_title(mirror_name + " Surface")
-
-        
-        img = ax.imshow(surface*1e9,
-                        extent = extent,
-                        aspect = 'auto')
-        
-        ax.set_xlabel("x (mm)")
-        ax.set_ylabel("y (mm)")
-        ax.grid(False)
-        cb = plt.colorbar(img, ax = ax)
-        cb.ax.get_yaxis().labelpad = 15
-        cb.ax.set_ylabel("Height Error (nm)", rotation = 270)
-        
-        if sdir is not None:
-            fig.savefig(sdir + mirror_name + "_surface.eps")
-        else:
-            plt.show()
     
- 

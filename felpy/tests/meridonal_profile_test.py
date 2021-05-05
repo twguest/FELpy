@@ -63,7 +63,7 @@ plot_intensity_map(wfr)
 
 SFILE = "/opt/FELpy/tmp/post_beamline"
 wfr.store_hdf5(SFILE)
-focus_distance = 0.2
+focus_distance = 0.4
 slices = 25
 dz = focus_distance/slices
 
@@ -75,7 +75,7 @@ for itr in tqdm(range(slices)):
     wfr.load_hdf5(SFILE)
     
     bl = Beamline()
-    bl.append(Drift(dz*(itr+1)), propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
+    bl.append(Drift(dz*(itr+1)), propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
     bl.propagate(wfr)
     
     plot_intensity_map(wfr)

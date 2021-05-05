@@ -321,23 +321,33 @@ def plot_fill_between(data, title = "",
     plt.show()
     
 
-def simple_line_plot(data, title = "",
+def simple_line_plot(x, y = None,
+                     title = "",
                       xlabel = "",
                       ylabel = "",
                       context = 'notebook',
                       xlim = None,
                       ylim = None,
-                      color = 'blue'):
+                      color = 'blue',
+                      parse_axes = None,
+                      return_axes = False,
+                      label = ""):
     """
     plot the mean of a 2D data set with the 95% confidence interval filled
     """
     #sns.set()
-    sns.set_style("dark")
+    plt.style.use(['science','ieee'])
     sns.set_context(context)
     
-    fig, ax1 = plt.subplots()
-    
-    ax1.plot(data, color = color)
+    if parse_axes is None:    
+        fig, ax1 = plt.subplots()
+    else: 
+        ax1 = parse_axes
+        
+    if y is not None:
+        ax1.plot(x, y, color = color, label = label)
+    else:    
+        ax1.plot(x, color = color, label = label)
 
     if xlim is not None:
         ax1.set_xlim(xlim)
@@ -348,7 +358,10 @@ def simple_line_plot(data, title = "",
     ax1.set_xlabel(xlabel)
     ax1.set_ylabel(ylabel)
     
-    plt.show()
+    if return_axes:
+        return ax1
+    else:
+        plt.show()
     
     
 def colorbar_plot(arr,

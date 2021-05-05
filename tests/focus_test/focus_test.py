@@ -40,24 +40,20 @@ from felpy.utils.vis_utils import colorbar_plot
 from felpy.utils.np_utils import get_mesh
 from matplotlib import pyplot as plt 
 
+from felpy.model.beamlines.exfel_spb.methods import get_beamline_object
 
 def sliceFocus(wfr, ekev, focus = 'nano', nslices = 500, axisName = 'x', outdir = None):
     
-    spb = Instrument()
+    spb = get_beamline_object(apertures = False, surface = False)
     
-    spb.mirror_profiles(toggle = 'off', aperture = False)
-    spb.build_elements(focus = focus)
- 
-    spb.build_beamline(focus = focus) 
-    el_n = len(spb.bl.propagation_options[0]['optical_elements'])-1
+    el_n = len(spb.propagation_options[0]['optical_elements'])-1
     
-    spb.bl.propagation_options[0]['optical_elements'][el_n].L *= 0.65
-    slice_interval = copy(spb.bl.propagation_options[0]['optical_elements'][el_n].L/nslices) 
+    spb.propagation_options[0]['optical_elements'][el_n].L *= 0.98
+    slice_interval = 2.2-copy(spb.propagation_options[0]['optical_elements'][el_n].L/nslices) 
 
-    spb.bl.propagation_options[0]['propagation_parameters'][el_n] = propagation_parameters(2,1,2,1, mode = 'converge')
-   
-    bl = spb.get_beamline()
-    bl.propagate(wfr)
+    spb.propagation_options[0]['propagation_parameters'][el_n] = propagation_parameters(5,1,5,1, mode = 'fresnel')
+    
+    spb.propagate(wfr)
     plotIntensity(wfr)
     
     
