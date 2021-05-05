@@ -188,7 +188,6 @@ class Instrument:
  
     def build_elements(self, focus = "nano"):
         
-        print("PARMAS", self.params['HOM1']['reflectivity'])
         self.d1 =  Drift(self.params["HOM1"]['distance from source'])
         self.d1.name = self.params["d1"]['name']
         

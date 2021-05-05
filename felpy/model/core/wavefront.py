@@ -475,16 +475,15 @@ class Wavefront(WPG_Wavefront):
         if VERBOSE: print("CENTER OF MASS")
         self.get_com(VERBOSE = DEBUG)
 
-# =============================================================================
-#         if VERBOSE: print("COHERENCE TIME")
-#         self.get_coherence_time(VERBOSE = DEBUG, mpi = True)
-# 
-# =============================================================================
-        #if VERBOSE: print("COHERENCE LENGTH")
-        #self.get_coherence_len(VERBOSE = DEBUG)
 
-        #if VERBOSE: print("TDOC")
-        #self.get_transverse_doc(VERBOSE = DEBUG)
+        if VERBOSE: print("COHERENCE TIME")
+        self.get_coherence_time(VERBOSE = DEBUG, mpi = True)
+
+        if VERBOSE: print("COHERENCE LENGTH")
+        self.get_coherence_len(VERBOSE = DEBUG)
+
+        if VERBOSE: print("TDOC")
+        self.get_transverse_doc(VERBOSE = DEBUG)
 
 
         if DEBUG:
