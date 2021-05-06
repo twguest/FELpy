@@ -15,7 +15,7 @@ __status__ = "Developement"
 
 import os
 import numpy as np
-
+from copy import copy
 def get_mesh(ii, dx, dy):
     """
     
@@ -107,7 +107,56 @@ def memory_map(map_loc, shape, dtype = 'float64'):
     return memmap
 
 
+def equate_mesh(mesh1, mesh2):
+    """
+    crops mesh2 to the size of mesh1
+    """
+    
+    xmin, xmax = np.min(mesh1[0,]), np.max(mesh1[0,])
+    ymin, ymax = np.min(mesh1[1,]), np.max(mesh1[1,])
+    
+    print(xmin, xmax)
+    print(ymin, ymax)
+    
+    mesh3 = mesh2[1,
+                  find_nearest_above(mesh2[1,0,], xmin): find_nearest_above(mesh2[1,0,], xmax),
+                  find_nearest_above(mesh2[1,0,], xmin): find_nearest_above(mesh2[1,0,], xmax)]
+    print(mesh3.shape)
+    
+    mesh4 = mesh2[0,
+                  find_nearest_above(mesh2[0,0,], ymin): find_nearest_above(mesh2[0,0,], ymax)+1,
+                  find_nearest_above(mesh2[0,0,], ymin): find_nearest_above(mesh2[0,0,], ymax)+1]
+    print(mesh4.shape)
+    
+    mesh3 = np.array([mesh3, mesh4])
+    print(mesh3.shape)
+    
+    return mesh3
+    
+    #mesh3[0,] = mesh2[0, np.where(mesh2[0,] == xmin), np.where(mesh2[0,] == xmin)]
+    #mesh3[1,] = mesh2[1, np.where(mesh2[1,] == xmin), np.where(mesh2[1,] == xmin)]
+
+def find_nearest_above(my_array, target):
+    diff = my_array - target
+    mask = np.ma.less_equal(diff, 0)
+    # We need to mask the negative differences and zero
+    # since we are looking for values above
+    if np.all(mask):
+        return None # returns None if target is greater than any value
+    masked_diff = np.ma.masked_array(diff, mask)
+    return masked_diff.argmin()
+
+def test_equate_mesh():
+    a = np.random.rand(50,50)
+    b = np.random.rand(75,75)
+    
+    da = 1
+    db = 1.25
+    
+    mesh1 = get_mesh(a, da, da)
+    mesh2 = get_mesh(b, db, db)
+    
+    mesh3 = equate_mesh(mesh1, mesh2)
+    return mesh3
 if __name__ == '__main__':
-    from matplotlib import pyplot as plt
-    g = gaussian_2d(10,25)
-    plt.imshow(g)
+    mesh3 = test_equate_mesh()

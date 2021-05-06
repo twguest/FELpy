@@ -488,10 +488,23 @@ class Wavefront(WPG_Wavefront):
 
         if DEBUG:
             print(self.custom_fields)
-
+            
+    
+    def print(self):
+        print(self.custom_fields)
+        
+    def get_keys(self):
+        return list(self.custom_fields.keys())
+    
+    def get_values(self):
+        return list(self.custom_fields.values())
+    
+    
+    
 if __name__ == '__main__':
     
     from felpy.model.src.coherent import construct_SA1_pulse
    
-    wfr = construct_SA1_pulse(200,200,4,1,1)
-    custom_fields = wfr.analysis(DEBUG = True)
+    wfr = construct_SA1_pulse(200,200,4,1,.1)
+    wfr.analysis()
+ 
