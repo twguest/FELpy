@@ -16,6 +16,9 @@ __status__ = "Developement"
 import os
 import numpy as np
 from copy import copy
+
+
+
 def get_mesh(ii, dx, dy):
     """
     
@@ -37,6 +40,9 @@ def get_mesh(ii, dx, dy):
     
     return grid
 
+
+
+
 def get_wpg_mesh(wfr):
     
     dx, dy = wfr.get_spatial_resolution()
@@ -49,6 +55,9 @@ def get_wpg_mesh(wfr):
     
     return mesh
 
+
+
+
 def crop_array(arr, llim, ulim):
     
     coords = np.argwhere(np.logical_and(arr >= llim, arr <= ulim))
@@ -57,6 +66,9 @@ def crop_array(arr, llim, ulim):
     cropped = arr[x_min:x_max+1, y_min:y_max+1]
     extent = [x_min, x_max, y_min, y_max]
     return cropped, extent
+
+
+
 
 def extent_from_mesh(mesh, xlims, ylims):
     
@@ -70,6 +82,9 @@ def extent_from_mesh(mesh, xlims, ylims):
     
     return extent
     
+
+
+
 def gaussian_2d(nx, ny):
     """
     generate a 2d gaussian-like beam in array form
@@ -82,6 +97,9 @@ def gaussian_2d(nx, ny):
     sigma, mu = 1.0, 0.0
     g = np.exp(-( (d-mu)**2 / ( 2.0 * sigma**2 ) ) )
     return g
+
+
+
 
 def readMap(mapdir,shape,dtype = 'float64'):
     """
@@ -107,6 +125,7 @@ def memory_map(map_loc, shape, dtype = 'float64'):
     return memmap
 
 
+
 def equate_mesh(mesh1, mesh2):
     """
     crops mesh2 to the size of mesh1
@@ -115,26 +134,23 @@ def equate_mesh(mesh1, mesh2):
     xmin, xmax = np.min(mesh1[0,]), np.max(mesh1[0,])
     ymin, ymax = np.min(mesh1[1,]), np.max(mesh1[1,])
     
-    print(xmin, xmax)
-    print(ymin, ymax)
-    
+
     mesh3 = mesh2[1,
                   find_nearest_above(mesh2[1,0,], xmin): find_nearest_above(mesh2[1,0,], xmax),
                   find_nearest_above(mesh2[1,0,], xmin): find_nearest_above(mesh2[1,0,], xmax)]
-    print(mesh3.shape)
     
     mesh4 = mesh2[0,
                   find_nearest_above(mesh2[0,0,], ymin): find_nearest_above(mesh2[0,0,], ymax)+1,
                   find_nearest_above(mesh2[0,0,], ymin): find_nearest_above(mesh2[0,0,], ymax)+1]
-    print(mesh4.shape)
     
     mesh3 = np.array([mesh3, mesh4])
-    print(mesh3.shape)
     
     return mesh3
     
     #mesh3[0,] = mesh2[0, np.where(mesh2[0,] == xmin), np.where(mesh2[0,] == xmin)]
     #mesh3[1,] = mesh2[1, np.where(mesh2[1,] == xmin), np.where(mesh2[1,] == xmin)]
+
+
 
 def find_nearest_above(my_array, target):
     diff = my_array - target
@@ -145,6 +161,8 @@ def find_nearest_above(my_array, target):
         return None # returns None if target is greater than any value
     masked_diff = np.ma.masked_array(diff, mask)
     return masked_diff.argmin()
+
+
 
 def test_equate_mesh():
     a = np.random.rand(50,50)
@@ -158,5 +176,27 @@ def test_equate_mesh():
     
     mesh3 = equate_mesh(mesh1, mesh2)
     return mesh3
+
+
+def crop_to(arr1, arr2):
+    
+    if arr1.shape[0] < arr2.shape[0]:
+        arr2 = arr2[arr2.shape[0]//2 - arr1.shape[0]//2 : arr2.shape[0]//2 + arr1.shape[0]//2]
+    elif arr2.shape[0] < arr1.shape[0]:
+        arr1 = arr1[arr1.shape[0]//2 - arr2.shape[0]//2 : arr1.shape[0]//2 + arr2.shape[0]//2]
+    if arr1.shape[1] < arr2.shape[1]:
+        arr2 = arr2[:,arr2.shape[1]//2 - arr1.shape[1]//2 : arr2.shape[1]//2 + arr1.shape[1]//2]
+    elif arr2.shape[1] < arr1.shape[1]:
+        arr1 = arr1[:,arr1.shape[1]//2 - arr2.shape[1]//2 : arr1.shape[1]//2 + arr2.shape[1]//2]
+
+    return arr1, arr2
+
+
+
 if __name__ == '__main__':
-    mesh3 = test_equate_mesh()
+    
+    arr1 = np.random.rand(530, 200)
+    arr2 = np.random.rand(406, 410)
+    
+    arr1, arr2 = crop_to(arr1, arr2)
+    print(arr1.shape, arr2.shape)

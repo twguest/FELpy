@@ -133,7 +133,8 @@ def basic_plot(ii, mesh, sdir = None,
                label = None,
                title = None,
                cmap = 'bone',
-               scale = 1e6):
+               scale = 1e6,
+               context = 'notebook'):
     
     """ 
     a simple plot of some two-dimensional intensity array
@@ -154,6 +155,9 @@ def basic_plot(ii, mesh, sdir = None,
     else:
         mode = "[" + str(scale) + "m]"
         
+    plt.style.use(['science','ieee'])
+    sns.set_context(context)
+    
     fig, ax1 = plt.subplots()
     
     if xlims is not None and ylims is not None:
