@@ -499,8 +499,7 @@ class Wavefront(WPG_Wavefront):
     def get_values(self):
         return list(self.custom_fields.values())
     
-    
-    
+ 
 if __name__ == '__main__':
     
     from felpy.model.src.coherent import construct_SA1_pulse
