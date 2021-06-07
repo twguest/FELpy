@@ -31,7 +31,7 @@ from matplotlib import pyplot as plt
 
 
 import wpg.srwlpy
-
+from felpy.utils.opt_utils import ekev2wav
 from felpy.model.core.wavefront import Wavefront
 from wpg.wpg_uti_wf import look_at_q_space, calculate_fwhm, calc_pulse_energy
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
@@ -135,6 +135,20 @@ def modify_beam_energy(wfr, desired):
     diff = actual/desired
     
     wfr.data.arrEhor *= diff
+
+
+def construct_gaussian(nx, ny, ekev, extent, sigX, sigY, divergence, xoff = 0, yoff = 0, tau = 1, mx = 0, my = 0, tiltX = 0, tiltY = 0):
+    gsnBm = build_gaussian(nx, ny, ekev, xMin = extent[0], xMax = extent[1], yMin = extent[2], yMax = extent[3],
+                           sigX = sigX, sigY = sigY, d2waist = 1, xoff = xoff, yoff = yoff, pulseTau = tau, _mx = mx, _my = my, tiltX= tiltX, tiltY = tiltY)
+
+    wfr = Wavefront(gsnBm)
+    wfr.params.wavelength = ekev2wav(ekev)
+    
+    modify_beam_divergence(wfr,sigX, divergence)
+
+    return wfr
+
+
 
 def construct_SA1_wavefront(nx, ny, ekev, q, xoff = 0, yoff = 0, mx = 0, my = 0,
                             tiltX = 0, tiltY = 0):
