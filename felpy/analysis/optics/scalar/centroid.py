@@ -11,6 +11,8 @@ from os import listdir
 from scipy.ndimage import center_of_mass
 
 
+
+
 def get_com(arr):
     
     """ 
