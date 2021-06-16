@@ -20,13 +20,12 @@ def hollow_cylinder_thickness(x,a,b):
     return np.sqrt(a**2-x**2)-np.sqrt(b**2-x**2)
 
 
-def phase_gradient(x, a, b, k, delta):
-    return 2*x*delta*((1/np.sqrt(a**2-x**2)) )#-(1/np.sqrt(b**2-x**2)))
+def phase_gradient(x, a, k, delta, offset = 0):
+    return 2*(x-offset)*delta*((1/np.sqrt(a**2-(x-offset)**2))) 
 
 
-
-def phase(x, a, b, k, delta):
-    return k*delta*(2*np.sqrt(a**2-x**2)-2*np.sqrt(b**2-x**2))
+def phase(x, a, k, delta, offset = 0):
+    return k*delta*(2*np.sqrt(a**2-(x-offset)**2))
 
 if __name__ == '__main__':  
     
