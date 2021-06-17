@@ -91,7 +91,7 @@ def run_divergence_test():
     #ax.set_xlim(2, 15)
 
 
-def run_width_test(efraction = 0.5):
+def run_width_test(efraction = 0.760968108550488):
  
  
     EKEV = np.arange(3,15)
@@ -108,10 +108,10 @@ def run_width_test(efraction = 0.5):
         
         wfr = construct_SA1_pulse(1024, 1024, 2, ekev, q)
         res, err = wfr.get_beam_size(efraction, threshold = 0.0001)
-        res = res[0]* 1e6*(1/0.588)
+        res = res[0]* 1e6 *2
         
         err = err/(efraction/res)
-        err *= wfr.get_spatial_resolution()[0]*1e6
+        err *= wfr.get_spatial_resolution()[0]*1e6*2
         
         divs.append(res)
         errs.append(err)
@@ -124,7 +124,7 @@ def run_width_test(efraction = 0.5):
     
     ax.errorbar(EKEV, divs, yerr = errs, fmt = 'none')
     
-    ax.plot(EKEV, analytical_pulse_width(EKEV)*2*1e6/(fwhm2rms))
+    ax.plot(EKEV, analytical_pulse_width(EKEV)*1e6*np.sqrt(2*np.log(2)))
 
     ax.set_xlim(2, 15)
     

@@ -17,6 +17,12 @@ import numpy as np
 
 from scipy.constants import c,h,e
 
+def wrap_phase(phase):
+    return (np.pi * phase % (2 * np.pi) - np.pi)
+
+def get_phase_shift(OPD, wav):
+    return (2*np.pi*OPD)/wav
+
 def ekev2wav(ekev):
     return (h*c)/(e*ekev*1000)
 

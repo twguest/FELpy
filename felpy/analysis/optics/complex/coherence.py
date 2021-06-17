@@ -12,7 +12,7 @@ import os
 import numpy as np
 from time import time
 from wpg import srwlib
-from felpy.model.tools import radial_profile, binArray
+from felpy.model.tools import radial_profile
 #from wpg.wpg_uti_wf import get_axis
 from tqdm import tqdm
 from felpy.utils.job_utils import JobScheduler
@@ -21,9 +21,8 @@ from wpg.srw import srwlpy as srwl
 from felpy.utils.np_utils import memory_map, readMap
 import multiprocessing as mp
 from functools import partial
-
-
-
+from scipy.sparse import csr_matrix
+from felpy.model.materials.mirror_surface import binArray
 
 def get_longitudinal_coherence(slice_no, cfr, map_loc = None, bins = 1, VERBOSE = True):
     """
@@ -57,6 +56,101 @@ def get_longitudinal_coherence(slice_no, cfr, map_loc = None, bins = 1, VERBOSE 
     else:
         return ((A*B.conjugate()).mean(axis = -1))/np.sqrt(
         (abs(A)**2).mean(axis=-1)*(abs(B)**2).mean(axis = -1))
+
+def get_longitudinal_coherence_new(slice_no, cfr, map_loc = None, bins = 1, VERBOSE = True):
+    """
+    Calculate the longitudinal correlation of each slice of a complex wavefront
+    of shape [nx, ny, nz] against a single slice of shape [nx,ny] at longitudinal
+    interval defined by the slice_no
+    
+    :param cfr: complex wavefield
+    :param slice_no: longitudinal index [int]
+    
+    :returns g: complex degree of coherence
+    """
+    
+    A = np.roll(cfr, -slice_no, axis = 2)
+    B = np.repeat(cfr[:,:,slice_no][:, :, np.newaxis], cfr.shape[-1], axis=-1)
+
+    ## DEGUB print(A[:,:,0] == wfr[:,:,i])
+    ## DEBUG print([B[:,:,k] == wfr[:,:,i] for k in range(wfr.shape[-1])])
+    
+  
+    if map_loc is not None:
+        
+        mmap = memory_map(map_loc,
+                  shape = cfr.shape,
+                  dtype = 'complex64')
+            
+        mmap[:,:,slice_no] = ((A*B.conjugate()).mean(axis = -1))/np.sqrt(
+        (abs(A)**2).mean(axis=-1)*(abs(B)**2).mean(axis = -1))
+
+        
+    else:
+        return ((A*B.conjugate()).mean(axis = -1))/np.sqrt(
+        (abs(A)**2).mean(axis=-1)*(abs(B)**2).mean(axis = -1))
+
+
+def get_coherence_time_new(cfr, tStep, mpi = False, map_loc = "/tmp/coherence_map",
+                       bins = 1, VERBOSE = True):
+    """
+    Calculate the coherence time of complex wavefield of shape
+    [nx, ny, nt].
+    
+    Relevant for statistically stationary sources. 
+    
+    ref: Coherence properties of the radiation from X-ray free electron laser
+    
+    :param cfr: complex wavefield
+    :param tstep: temporal step between slices
+    
+    :returns tau: coherence time [s]
+    """
+    
+
+
+    
+    mmap = memory_map(map_loc = map_loc,
+                      shape = cfr.shape,
+                      dtype = 'complex64')
+    
+    nz0 = cfr.shape[-1]
+    
+    if bins == 1:
+        nz1 = nz0
+    else:
+        cfr = binArray(cfr, axis = -1, binstep = nz0//bins, binsize = 1 )
+        
+        nz1 = cfr.shape[-1]
+        tStep *= (nz0/nz1)
+    
+    g = np.zeros([*cfr.shape], dtype = 'complex64')
+    
+    if VERBOSE: 
+        print("Calculating Coherence Time")
+
+    if mpi:
+        processes = mp.cpu_count()//2
+        pool = mp.Pool(processes)
+        pool.map(partial(get_longitudinal_coherence, cfr = cfr, map_loc = map_loc),
+                 range(cfr.shape[-1]))
+        g = readMap(map_loc, cfr.shape, dtype = 'complex64')        
+    else:        
+        for i in tqdm(range(cfr.shape[-1])):            
+            g[:,:,i] = get_longitudinal_coherence(slice_no = i, cfr = cfr)
+    
+    tau = (abs(g)**2).sum(axis = -1)[0,0]
+    
+    if VERBOSE:
+        print("\n")
+        print(tau)
+        print("Time Step: {} fs".format(tStep*1e15))
+        print("Coherence Time: {:.2e} fs".format(tau*1e15*tStep))
+    
+    del mmap
+    os.remove(map_loc)
+
+    return tau*tStep
 
 
 
@@ -109,7 +203,8 @@ def get_coherence_time(cfr, tStep, mpi = False, map_loc = "/tmp/coherence_map",
             g[:,:,i] = get_longitudinal_coherence(slice_no = i, cfr = cfr)
             
     tau = (abs(g)**2).sum(axis = -1)[0,0]
-    
+    print("g", np.max(g))
+
     if VERBOSE:
         print("\n")
         print(tau)
@@ -119,7 +214,7 @@ def get_coherence_time(cfr, tStep, mpi = False, map_loc = "/tmp/coherence_map",
     del mmap
     os.remove(map_loc)
 
-    return tau*tStep
+    return tau*tStep, g
 
 def get_coherence_time_wpg(wfr, mpi = False, VERBOSE = True):
     
@@ -149,7 +244,8 @@ def get_coherence_len(wfr, dx, dy, VERBOSE = True):
     
     J = np.dot(profile, profile.T.conjugate())/ nt
     II = np.abs(np.diag(J))  # intensity as the main diagonal
-    
+    print(J.shape)
+
     J /= II**0.5 * II[:, np.newaxis]**0.5
     Jd = np.abs(np.diag(np.fliplr(J)))  # DoC as the cross-diagonal
     
@@ -172,9 +268,7 @@ def get_coherence_len(wfr, dx, dy, VERBOSE = True):
     return clen
 
 
-def get_coherence_len_wpg(wfr, VERBOSE = True):
-    srwl.SetRepresElecField(wfr._srwl_wf, 't')
-    return get_coherence_len(wfr.as_complex_array(), wfr.get_spatial_resolution()[0], wfr.get_spatial_resolution()[1])
+
 
 def get_transverse_doc(wfr, VERBOSE = True):
     """

@@ -85,7 +85,7 @@ def extent_from_mesh(mesh, xlims, ylims):
 
 
 
-def gaussian_2d(nx, ny):
+def gaussian_2d(nx, ny, sigma, mu = 0):
     """
     generate a 2d gaussian-like beam in array form
     
@@ -95,7 +95,7 @@ def gaussian_2d(nx, ny):
     x, y = np.meshgrid(np.linspace(-1,1,nx), np.linspace(-1,1,ny))
     d = np.sqrt(x*x+y*y)
     sigma, mu = 1.0, 0.0
-    g = np.exp(-( (d-mu)**2 / ( 2.0 * sigma**2 ) ) )
+    g = np.exp(-(1j* (d-mu)**2 / ( 2.0 * sigma**2 ) ) )
     return g
 
 

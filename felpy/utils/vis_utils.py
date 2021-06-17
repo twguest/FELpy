@@ -562,3 +562,37 @@ def double_colorbar_plot(arr1, arr2,
 
     if sdir is not None:
         fig.savefig(sdir)
+        
+def contour_plot(x,y,z,
+                 xlabel = "",
+                 ylabel = "",
+                 title = "",
+                 clabel = "",
+                 aspect = 'auto',
+                 return_axes = False,
+                 cbar_scale = 1,
+                 context = 'notebook',
+                 cmap = 'viridis'):
+    
+    fig, ax1 = plt.subplots()
+    plt.style.use(['science','ieee'])
+    sns.set_context(context)
+
+        
+    ax1.set_xlabel(xlabel)
+    ax1.set_ylabel(ylabel)
+    ax1.set_title(title)
+    
+    im1 = ax1.contourf(x,y,z*cbar_scale,
+                       cmap = cmap)
+    divider = make_axes_locatable(ax1)
+    cax1 = divider.append_axes('right', size='7.5%', pad=0.05)
+    
+    cbar1 = fig.colorbar(im1, cax=cax1, orientation='vertical')
+    cbar1.set_label(clabel, fontsize = 12)
+    
+    ax1.set_aspect(aspect)
+    
+    if return_axes:
+        return ax1
+    
