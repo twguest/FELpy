@@ -1,0 +1,13 @@
+# Define the number of dimensions we are working on
+dim = 2
+
+# Define the image coordinates
+speckle.tif; ; (0.0, 0.0)
+speckle.tif; ; (0.0, 0.0)
+speckle.tif; ; (0.0, 0.0)
+speckle.tif; ; (0.0, 0.0)
+speckle.tif; ; (0.0, 0.0)
+speckle.tif; ; (0.0, 0.0)
+speckle.tif; ; (0.0, 0.0)
+speckle.tif; ; (0.0, 0.0)
+speckle.tif; ; (0.0, 0.0)

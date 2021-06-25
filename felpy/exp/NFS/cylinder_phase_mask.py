@@ -13,11 +13,9 @@ from matplotlib import cm
 import seaborn as sns
 
 
-def hollow_cylinder_thickness(x,a,b):
-    
-    #assert(a>b)
-    
-    return np.sqrt(a**2-x**2)-np.sqrt(b**2-x**2)
+def cylinder_thickness(x,a, offset = 0):
+
+    return (2*np.sqrt(a**2-(x-offset)**2))
 
 
 def phase_gradient(x, a, k, delta, offset = 0):
@@ -26,6 +24,22 @@ def phase_gradient(x, a, k, delta, offset = 0):
 
 def phase(x, a, k, delta, offset = 0):
     return k*delta*(2*np.sqrt(a**2-(x-offset)**2))
+
+def edge_diffraction_gradient(x, r, k, dz, offset = 0):
+    xo = x-offset
+    return k*abs(r-xo)*1/(np.sqrt(dz**2+abs(r-xo))**2)
+
+def edge_phase(x,r,k,dz,offset = 0):
+    xo = x-offset
+    return k*(np.sqrt(dz**2+abs(r-xo))**2)
+
+
+def edge_condition(x,r,delta,dz):
+    ec = 2*(x-r) * 1/np.sqrt(x*(2*r-x))-(x)/(delta*dz**(3/2))
+    if np.max(ec) >= -0:
+        print("use edge condition")
+    else:
+        print("no need")
 
 if __name__ == '__main__':  
     

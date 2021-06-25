@@ -18,17 +18,54 @@ from felpy.utils.vis_utils import colorbar_plot
 from felpy.utils.np_utils import get_mesh
 from felpy.model.tools import radial_profile
 
+
+
 ls = {"m": 1,
       "cm": 1e2,
       "mm": 1e3,
       "um": 1e6,
       "nm": 1e9}
 
+def complex_converter(carr):
+    """
+    convert a complex array to wpg format (note, currently only taking hor.
+                                           polarised component).
+    
+    :param carr: numpy style complex array
+    """
+    if len(carr.shape) == 3:
+        
+        cwfr = np.ones([carr.shape[0], carr.shape[1], 2, carr.shape[2]])
+        cwfr[:,:,0,:] = carr.real
+        cwfr[:,:,1,:] = carr.imag
+    else:
+        
+        cwfr = np.ones([carr.shape[0], carr.shape[1], 1,2])
+    
+        cwfr[:,:,0,0] = carr.real
+        cwfr[:,:,0,1] = carr.imag
+
+    return cwfr
+
 
 class Wavefront(WPG_Wavefront):
     
     def __init__(self, _srwl_wf = None):
         super().__init__(_srwl_wf)
+        
+    def load_complex_array(self, carr):
+        """
+        load a complex array in WPG format, assumes no change in f.o.v etc.
+        """
+        self.data.arrEhor /= self.data.arrEhor 
+        self.data.arrEhor *= complex_converter(carr)
+        
+    def multiply_by_complex(self, carr):
+        """
+        multiply the current electric field by a complex array
+        """
+        self.data.arrEhor[:,:,:,0] *= (complex_converter(carr)[:,:,:,0]).astype(np.float32)
+        self.data.arrEhor[:,:,:,1] += (complex_converter(carr)[:,:,:,1]).astype(np.float32)
         
     def save_tif(self, outdir):
         imgReal = self.get_intensity()

@@ -21,11 +21,10 @@ to be measured using NFS tracking techniques.
 
 import numpy as np
 from matplotlib import pyplot as plt
-from felpy.exp.NFS.cylinder_phase_mask import phase_gradient, phase
+from felpy.exp.NFS.cylinder_phase_mask import phase_gradient, phase, edge_diffraction_gradient
 from felpy.utils.opt_utils import ekev2wav
 import matplotlib as mpl
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-
 
 def fresnel_magnification(z1,z2):
     return (z1+z2)/z1
@@ -66,20 +65,26 @@ def plot_fullfield_image(r):
 
     ax1.annotate("$r$: {:2} mm".format(r*1e3), horizontalalignment = 'left',
              verticalalignment = 'bottom',
-             xy = (-200,+200),
+             xy = (-325,+325),
              c = 'black', fontsize = 10)
     
     
-def plot_detector_image(r):
-    theta = phase_gradient(x, r, k, delta, offset = r)
+    
+
+def plot_detector_image(r, edge_diffraction = True, displacement_field = True):
+    
+    if edge_diffraction:
+        theta_edge = edge_diffraction_gradient(x, r, k, z2)
+        
+    theta = phase_gradient(x*M, r, k, delta, offset = r)
     theta[np.isnan(theta)] = 0 
     y = np.ones([1,N])*theta
     
     fig, ax1 = plt.subplots()
     
     im1 = ax1.imshow(y*1e6,
-                    extent = [x.min()*M*1e3, x.max()*M*1e3,
-                              x.min()*M*1e3,x.max()*M*1e3],
+                    extent = [x.min()*1e3, x.max()*1e3,
+                              x.min()*1e3,x.max()*1e3],
                     aspect = 'auto', cmap = 'bone', vmax = 0)
     
     ax1.set_yticks([])
@@ -90,20 +95,40 @@ def plot_detector_image(r):
     cax1 = divider.append_axes('right', size='7.5%', pad=0.05)
     
     cbar1 = fig.colorbar(im1, cax=cax1, orientation='vertical')
-    cbar1.set_label("Phase Gradient (mrad)")
+    cbar1.set_label("Phase Gradient ($\mu$rad)")
  
     
     ax1.annotate("$r$: {:2} mm".format(r*1e3), horizontalalignment = 'left',
              verticalalignment = 'bottom',
-             xy = (-15,200),
+             xy = (-15,50),
              c = 'black', fontsize = 10)
     
-R = [1e-03, 5e-03, 10e-03, 25e-03, 50e-03, 75e-03]
+    
+    if displacement_field:
+        dz = 4.5
+        fig, ax2 = plt.subplots()
 
-
-### get fullfield images
-
-
+        im2 = ax2.imshow(np.arctan(y)*z2*1e6/(6.5),
+                extent = [x.min()*1e3, x.max()*1e3,
+                          x.min()*1e3,x.max()*1e3],
+                aspect = 'auto', cmap = 'brg', vmax = 0)
+    
+        ax2.set_yticks([])
+        ax2.set_xlim([-15, 15])
+        ax2.set_xlabel("x (mm)")
+    
+        divider = make_axes_locatable(ax2)
+        cax2 = divider.append_axes('right', size='7.5%', pad=0.05)
+        
+        cbar2 = fig.colorbar(im2, cax=cax2, orientation='vertical')
+        cbar2.set_label("Feature Displacement (pixels)")
+     
+        
+        ax2.annotate("$r$: {:2} mm".format(r*1e3), horizontalalignment = 'left',
+                 verticalalignment = 'bottom',
+                 xy = (-15,50),
+                 c = 'black', fontsize = 10)
+            
 def delta_phase_gradient(r1, r2):
     
     theta = abs(phase_gradient(x, r1, k, delta, offset = r1)-phase_gradient(x, r2, k, delta, offset = r2))
@@ -130,11 +155,11 @@ def delta_phase_gradient(r1, r2):
     
     ax1.annotate("$r_1$: {:2} mm".format(r1*1e3), horizontalalignment = 'left',
              verticalalignment = 'bottom',
-             xy = (-15,200),
+             xy = (-15,265),
              c = 'black', fontsize = 10)
     ax1.annotate("$r_2$: {:2} mm".format(r2*1e3), horizontalalignment = 'left',
          verticalalignment = 'bottom',
-         xy = (-15,160),
+         xy = (-15,225),
          c = 'w', fontsize = 10)
 
     
@@ -150,13 +175,12 @@ def plot_phase(r):
     fig, ax1 = plt.subplots()
     
     im1 = ax1.imshow(y,
-                    extent = [x.min()*M*1e3, x.max()*M*1e3,
-                              x.min()*M*1e3,x.max()*M*1e3],
+                   
                     aspect = 'auto', cmap = 'hsv', vmin = -np.pi, vmax = np.pi)
     
     
     ax1.set_yticks([])
-    ax1.set_xlim([-15, 15])
+    
     ax1.set_xlabel("x (mm)")
 
     divider = make_axes_locatable(ax1)
@@ -172,6 +196,38 @@ def plot_phase(r):
     
     return wrapped_phases
 
+def plot_intensity(r):
+        
+    phases = phase(x, r, k, delta, offset = r)
+    #phases[np.isnan(phases)] = 0 
+    print(phases.shape)
+    wfr = np.exp(phases*-1j)
+    phases = (np.pi * phases % (2 * np.pi) - np.pi)
+    
+    y = np.ones([N,N])*abs(np.exp(phases))**2
+    fig, ax1 = plt.subplots()
+    
+    im1 = ax1.imshow(y, aspect = 'auto', cmap = 'bone', vmin = 0.9, vmax = 1.1,extent = [x.min()*M*1e3, x.max()*M*1e3,
+                              x.min()*M*1e3,x.max()*M*1e3])
+    
+    
+    #ax1.set_yticks([])
+    #ax1.set_xlim([-15,15])
+    ax1.set_xlabel("x (mm)")
+
+    divider = make_axes_locatable(ax1)
+    cax1 = divider.append_axes('right', size='7.5%', pad=0.05)
+    
+    cbar1 = fig.colorbar(im1, cax=cax1, orientation='vertical')
+    cbar1.set_label("$\Delta\partial\phi$ ($\mu$rad)")
+    return y 
+# =============================================================================
+#     ax1.annotate("$r_1$: {:2} mm".format(r*1e3), horizontalalignment = 'left',
+#              verticalalignment = 'bottom',
+#              xy = (-15,200),
+#              c = 'black', fontsize = 10)
+#     
+# =============================================================================
 
 
 def plot_1d_phase_gradient(R):
@@ -184,10 +240,10 @@ def plot_1d_phase_gradient(R):
 
         ax1.plot(x*M*1e3, theta_r*1e6, label = "{} mm".format(r*1e3))
         
-    ax1.set_xlim([-2.5,15])
+    ax1.set_xlim([0,15])
     ax1.set_ylim([-30, 0])
     ax1.set_xlabel("x (mm)")
-    ax1.set_ylabel("Phase Gradient ($\mu rad$")
+    ax1.set_ylabel("Phase Gradient ($\mu rad)$")
     plt.legend()
 
 def plot_1d_phase_difference(dr):
@@ -199,14 +255,13 @@ def plot_1d_phase_difference(dr):
 
         ax1.plot(x*M*1e3, theta_r*1e6, label = "{} mm".format(r*1e3))
         
-    ax1.set_xlim([-2.5,15])
+    ax1.set_xlim([0,15])
     ax1.set_ylim([-30, 0])
     ax1.set_xlabel("x (mm)")
-    ax1.set_ylabel("Phase Gradient ($\mu rad$")
+    ax1.set_ylabel("Phase Gradient ($\mu rad$)")
     plt.legend()
 
-
-
+ 
 
 if __name__ == '__main__':
     delta = 4e-07 ### perspex
@@ -214,20 +269,18 @@ if __name__ == '__main__':
     wav = ekev2wav(ekev)
     
     k = (np.pi*2)/wav
-    N = 2000
+    N = 5000
     
     x = np.linspace(-5e-02,5e-02,N)
     
-    z1 = 2
-    z2 = 6
+    z1 = 1
+    z2 = 4.5
     
     print("Angular Sensitivity: {}".format(angular_sensitivity(6.5e-06, z2)))
     
     M = fresnel_magnification(z1, z2)
     
-    
-    R = [15e-03, 25e-03, 50e-03, 75e-03]
-    
+     
     plot_fullfield_image(r = 15e-03)
     plot_detector_image(r = 15e-03)
     
@@ -236,4 +289,7 @@ if __name__ == '__main__':
     plot_detector_image(r = 75e-03)
     
     delta_phase_gradient(r1 = 15e-03, r2 = 75e-03)
+    R = [15e-03, 75e-03]
     plot_1d_phase_gradient(R)
+
+ 

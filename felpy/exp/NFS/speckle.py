@@ -78,7 +78,7 @@ def define_speckle_mask(sample_directory, rx, ry, sample_thickness, sample_delta
            rx = rx, ry = ry,
            thickness = sample_thicc,
            delta = sample_delta,
-           atten_len = 100,
+           atten_len = 1,
            xc = xc, yc = yc,
            invert = True)
     

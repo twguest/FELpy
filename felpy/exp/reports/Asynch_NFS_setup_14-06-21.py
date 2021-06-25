@@ -80,6 +80,10 @@ def nfs_sampling(dz, feature_size, dx, wav):
     
     return S,F
 
+def angular_sensitivity(dx, dz):
+    return np.arctan(dx/dz)
+
+
 
 def plot_nfs_sampling(zrange, feature_size, dx, wav):
 
@@ -107,11 +111,11 @@ def plot_nfs_sampling(zrange, feature_size, dx, wav):
 
 def experiment_report_in_email():
     
-    for dx in [5e-06, 10e-06, 25e-06]:
+    for dx in [15e-06]:
         
-        for ekev in [5,7.5,9,12,15]:
-        
-            z = 1.5
+        for ekev in [25]:
+            dx = 6.5e-06
+            z = 4.5
             feature_sizes = np.linspace(1e-06, 25e-06, 50)
             ekevs = np.linspace(6e-06, 12e-06)
             
@@ -120,12 +124,12 @@ def experiment_report_in_email():
             
             fig, ax1 = plt.subplots()
             
-            ax1.plot(feature_sizes*1e6, S, 'red')
+            ax1.plot(feature_sizes*1e6, S, 'red', label = "Sampling Fraction")
             ax1.plot(feature_sizes*1e6, np.ones(feature_sizes.shape[0]), 'red')
-            
+            plt.legend()
             
             ax2 = ax1.twinx()
-            ax2.plot(feature_sizes*1e6, F, 'blue')
+            ax2.plot(feature_sizes*1e6, F, 'blue', label = "Fresnel Criterion")
             ax2.plot(feature_sizes*1e6,  np.ones(feature_sizes.shape[0]), color = 'b')
             
             ax2.spines["left"].set_color("red")
@@ -135,16 +139,16 @@ def experiment_report_in_email():
             ax1.set_ylabel("Sampling Fraction")
             ax2.set_ylabel("Fresnel Criterion")
             
-            ax2.set_title("E: {:2f} keV \nPixel Size {:2e} m".format(ekev, dx))
-            plt.legend(["a", "b"])
+            ax2.set_title("E: {:} keV \nPixel Size {:} m".format(ekev, dx))
+            plt.legend()
             #plt.savefig("/opt/admin/project_meetings/03-05-21/nfs_exp_report_{:.2f}kev_{:.2f}um.png".format(ekev, dx*1e6))
 
 if __name__ == '__main__':
     
     ### usage
-    z = 1 ### focus to sample distance
-    dz = 6 ### sample to detector distance
-    feature_size = 17.5e-06 ### mask feature size
+    z = 2 ### focus to sample distance
+    dz = 4.5 ### sample to detector distance
+    feature_size = 15e-06 ### mask feature size
     dx = 6.5e-06 ### detector pixel size
     ekev = 25.0 ### energy in keV
     
@@ -160,3 +164,4 @@ if __name__ == '__main__':
     print("Feature Size @ Detector: {} (should be > dx) m".format(M*feature_size))
     if M*feature_size>dx: print("good")
     else: print("bad")
+    print("Angular Sensitivity: {}".format(angular_sensitivity(6.5e-06, dz)))
