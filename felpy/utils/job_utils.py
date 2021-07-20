@@ -141,7 +141,6 @@ class JobScheduler:
         """
         
         jobFile = self.jobDir + "Test_{}.job".format(self.jobName)
-        print(jobFile)
         if self.VERBOSE:
             print("\nGenerating Python Script Test \n")
             print("Python Test Job: {}Test_{}".format(self.jobDir, jobFile))
@@ -191,6 +190,8 @@ class JobScheduler:
         """
         wrapper for jobscript data
         """
+
+        
         jobFile = os.path.join(self.jobDir,"{}.job".format(jobName))
         
         with open(jobFile, "w+") as fh:
@@ -209,11 +210,12 @@ class JobScheduler:
             
         
             if self.jobType == 'array' and arrItem != None:
-                fh.writelines("python {} {}".format(self.pycmd, arrItem))
+
+                fh.writelines("python3 {} {}".format(self.pycmd, arrItem))
             elif self.jobType == 'spawn' and arrItem != None:
-                fh.writelines("python {} {}".format(self.pycmd, arrItem))
+                fh.writelines("python3 {} {}".format(self.pycmd, arrItem))
             else:
-                fh.writelines("python {}".format(self.pycmd))
+                fh.writelines("python3 {}".format(self.pycmd))
             
             
             
@@ -235,7 +237,7 @@ class JobScheduler:
                 
                 seed = np.random.randint(1e05)
                  
-                
+                guestt
                 jName = self.jobName + "_" + randomString(8)
                 
                 self.jobScript(jName, arrItem = seed)
@@ -258,28 +260,22 @@ class JobScheduler:
             if type(self.jobArray) == str:
                 
                 for arrItem in os.listdir(self.jobArray):
-                    print(arrItem)
-                    jName = self.jobName + arrItem
-                    self.jobScript(jName, arrItem)
+                    jName = self.jobName + "_" + arrItem
+                    self.jobScript(jName, self.jobArray+arrItem)
                     
             if type(self.jobArray) == list:
-                
+
                 for arrItem in self.jobArray:
                     
                     if type(arrItem) == str:
-                        print(arrItem)
-                        jName = self.jobName + arrItem
+
+                        jName = self.jobName  + "_" + arrItem
                         self.jobScript(jName, arrItem)
                     else:
-                        print(arrItem)
+
                         jName = self.jobName + arrItem.__name__
                         self.jobScript(jName, arrItem.__name__)
-                
-            else:
-                
-                for arrItem in self.jobArray:
-                    jName = self.jobName + "_" + str(arrItem)
-                    self.jobScript(jName, arrItem)
+
                             
                 if self.VERBOSE:
                     print("Building Job File: {}.job".format(jName))              

@@ -13,6 +13,8 @@ __email__ = "twguest@students.latrobe.edu.au"
 __status__ = "Developement"
 """
 
+
+
 from felpy.model.beamlines.exfel_spb.exfel_spb import Instrument
 
  
@@ -56,10 +58,14 @@ def get_beamline_object(params = "", options = 'nano', ekev = 5.0,
     spb.mirror_profiles(toggle = surface, aperture = apertures, overwrite = False)
 
         
-    spb.build_elements(focus = 'nano')
-    spb.build_beamline(focus = 'nano')
+    spb.build_elements(focus = options)
+    spb.build_beamline(focus = options)
     
     if crop is not None:
+        
+        if len(crop)==1:
+            crop = [None, crop[0]]
+            
         spb.crop_beamline(crop[0], crop[1])
 
 

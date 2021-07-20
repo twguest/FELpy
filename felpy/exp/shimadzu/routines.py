@@ -24,6 +24,8 @@ from felpy.utils.job_utils import JobScheduler
 from felpy.exp.shimadzu.correlation_analysis import correlation_analysis
 from felpy.analysis.optics.scalar.enclosed_energy import get_enclosed_energy
 import sys
+
+
 def extract_whitefield_animation(ii, mesh, sdir, run, modes = ['all']):
        
     for m in modes:
@@ -87,7 +89,13 @@ def launch(methods):
                       jobArray = methods)
         
     js.run(test = False)
+
     
+class shimadzu_data:
+    
+    def __init__(self, 
+
+
     
 if __name__ == '__main__':
     method = globals()[sys.argv[1]]
