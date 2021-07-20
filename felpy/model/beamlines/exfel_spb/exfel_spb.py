@@ -95,11 +95,9 @@ class Instrument:
                 material = "B4C"
             else: 
                 material = "Ru"    
-
+        
             refl = get_refl(load_refl(material), ekev, new_ang)
-        else:
-            refl = mirror_refl 
-     
+       
         new_ang = new_ang + np.tan(self.params[mirror_name]["xc"]/self.params[self.params[mirror_name]['next_drift']]['distance'])
         self.params[mirror_name]["design angle"] = new_ang
         self.params[mirror_name]["incidence angle"] = new_ang
