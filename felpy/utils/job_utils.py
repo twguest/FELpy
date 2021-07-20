@@ -25,6 +25,46 @@ from felpy.utils.os_utils import mkdir_p
 import shutil
 
 
+
+def batch_launcher(python_command,
+                   input_directory,
+                   options = [],
+                   nodes = 2, 
+                   job_name = None,
+                   partition = 'exfel',
+                   log_directory = "",
+                   VERBOSE = True):
+    
+    """
+    A general batch launcher that calls on JobScheduler to submit batch jobs to slurm.
+    
+    The only functionality this adds from job_scheduler is that this should launch from w/in the file
+    w/ process running as __main__ (likely clumsy)
+    
+    Note: the outer level function/file that calls this method will need to take data
+    from sys.argv's: sys.argv[1] = wfr_directory, sys.argv[2:] = options[:]
+    
+    :param input_directory: input directory to loop over [str] - __file__ should load files
+    :param save_directory
+    :param options: script specific options
+    
+    
+    """
+
+    
+    if job_name is None:
+        
+        if type(python_command) == type(random_string):
+            job_name = python_command.__name__
+    
+    
+    js = JobScheduler(python_command, log_directory = log_directory,
+                      jobName = job_name, partition = 'exfel', nodes = 2, jobType = 'array',
+                      jobArray = input_directory, options = options)
+    
+    js.run(test = False)
+ 
+
 def random_string(length):
     """
     writes a random string with length characters
