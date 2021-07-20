@@ -17,6 +17,8 @@ from felpy.model.core.fresnel_propagator import frensel_propagator
 from felpy.utils.vis_utils import colorbar_plot
 from felpy.utils.np_utils import get_mesh
 from felpy.model.tools import radial_profile
+from datetime import datetime
+import os
 
 
 
@@ -482,8 +484,12 @@ class Wavefront(WPG_Wavefront):
         """
         
         print("Running Full Analysis")
-        print("")
-        
+        if DEBUG:
+            print("")
+            print("**********************************************")
+            print("Warning: Coherence Measurements are Disabled")
+            print("**********************************************")
+            print("")
         
         if DEBUG:
             VERBOSE = True
@@ -513,13 +519,13 @@ class Wavefront(WPG_Wavefront):
         self.get_com(VERBOSE = DEBUG)
 
         if VERBOSE: print("COHERENCE TIME")
-        self.get_coherence_time(VERBOSE = DEBUG, mpi = True)
+        ###self.get_coherence_time(VERBOSE = DEBUG, mpi = True)
 
         if VERBOSE: print("COHERENCE LENGTH")
-        self.get_coherence_len(VERBOSE = DEBUG)
+        ###self.get_coherence_len(VERBOSE = DEBUG)
 
         if VERBOSE: print("TDOC")
-        self.get_transverse_doc(VERBOSE = DEBUG)
+        ###self.get_transverse_doc(VERBOSE = DEBUG)
 
 
         if DEBUG:
@@ -535,11 +541,25 @@ class Wavefront(WPG_Wavefront):
     def get_values(self):
         return list(self.custom_fields.values())
     
- 
+    def log(self, bl = None, descriptor = None):
+        
+        self.custom_fields['user'] = os.getlogin()
+        self.custom_fields['run directory'] = os.getcwd()
+        self.custom_fields['datetime'] = datetime.now().__str__().split(".")[0]
+        
+        if bl is not None:
+            self.custom_fields['beamline'] = bl.__str__()
+            
+        if descriptor is not None:
+            self.custom_fields['function'] = descriptor[0]
+            self.custom_fields['filename'] = descriptor[1] 
+            self.custom_fields['summary'] = descriptor[2]
+        
 if __name__ == '__main__':
     
-    from felpy.model.src.coherent import construct_SA1_pulse
+    pass 
+    # from felpy.model.src.coherent import construct_SA1_pulse
    
-    wfr = construct_SA1_pulse(200,200,4,1,.1)
-    wfr.analysis()
+    # wfr = construct_SA1_pulse(200,200,4,1,.1)
+    # wfr.analysis()
  

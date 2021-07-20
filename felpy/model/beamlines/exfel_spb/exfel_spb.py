@@ -179,8 +179,8 @@ class Instrument:
         self.params['MVP']['mirror profile'] = "../../data/spb/mirror_surface/mvp_mir_{}.dat".format(mm)
         self.params['MHE_error']['mirror profile'] = "../../data/spb/mirror_surface/mhe_mir_{}.dat".format(mm)
         self.params['MVE_error']['mirror profile'] = "../../data/spb/mirror_surface/mve_mir_{}.dat".format(mm)
-        self.params['NHE_error']['mirror profile'] = "../../data/spb/mirror_surface/nhe_mir_{}.dat".format(mm)
-        self.params['NVE_error']['mirror profile'] = "../../data/spb/mirror_surface/nve_mir_{}.dat".format(mm)
+        self.params['NHE_error']['mirror profile'] = "../../data/spb/mirror_surface/nhe_mir_{}.dat".format(surface)
+        self.params['NVE_error']['mirror profile'] = "../../data/spb/mirror_surface/nve_mir_{}.dat".format(surface)
         
         
  
@@ -210,7 +210,33 @@ class Instrument:
         
         self.HOM2.name = self.params['HOM2']['name']
         
-        
+        if focus == "direct":
+                    
+            self.params["d3"]["distance"] = 656.424
+            self.params["d4"]["distance"] = 1.20
+            self.params["d5"]["distance"] = 1.00
+            self.params["df"]["distance"] = 2.2
+            
+            self.d3 =  Drift(self.params["d3"]['distance'])
+            self.d3.name = self.params["d3"]['name']
+            
+            self.d4 =  Drift(self.params["d4"]['distance'])
+            self.d4.name = self.params["d4"]['name']
+            
+            self.d5 =  Drift(self.params["d5"]['distance'])
+            self.d5.name = self.params["d5"]['name']
+            
+            self.df =  Drift(self.params["df"]['distance'])
+            self.df.name =  'df'
+            
+            self.NKB_pslit = Aperture(_shape=self.params["NKB_pslit"]['shape'],
+                                      _ap_or_ob=self.params["NKB_pslit"]['type'],
+                                      _Dx= self.params["NKB_pslit"]['dx'],
+                                      _Dy= self.params["NKB_pslit"]['dy'],
+                                      _x=self.params["NKB_pslit"]['xc'],
+                                      _y=self.params["NKB_pslit"]['yc'])
+            self.NKB_pslit.name = self.params["NKB_pslit"]['name']
+            
         if focus == "micron":
             self.d3 =  Drift(self.params["d3"]['distance'])
             self.d3.name = self.params["d3"]['name']
@@ -227,7 +253,7 @@ class Instrument:
             self.d4.name = self.params["d4"]['name']
             
 
-            self.MHP = MirPl(np.loadtxt(self.fpath + self.params['MHP']['mirror profile']),
+            self.MHP = MirPl(np.loadtxt(self.fpath + self.params['MHP']['mirror profile'].replace("../../","")),
                          _dim = self.params['MHP']['orientation'],
                          _ang = self.params['MHP']['incidence angle'], 
                          _refl = self.params['MHP']['transmission'],
@@ -237,7 +263,7 @@ class Instrument:
             self.d5 =  Drift(self.params["d5"]['distance'])
             self.d5.name = self.params["d5"]['name']
             
-            self.MHE_error = MirPl(np.loadtxt(self.fpath + self.params['MHE_error']['mirror profile']),
+            self.MHE_error = MirPl(np.loadtxt(self.fpath + self.params['MHE_error']['mirror profile'].replace("../../","")),
              _dim = self.params['MHE_error']['orientation'],
              _ang = self.params['MHE_error']['incidence angle'], 
              _refl = self.params['MHE_error']['transmission'],
@@ -246,7 +272,7 @@ class Instrument:
             self.MHE_error.name = self.params['MHE_error']['name']
             
 
-            self.MVE_error = MirPl(np.loadtxt(self.fpath + self.params['MVE_error']['mirror profile']),
+            self.MVE_error = MirPl(np.loadtxt(self.fpath + self.params['MVE_error']['mirror profile'].replace("../../","")),
              _dim = self.params['MVE_error']['orientation'],
              _ang = self.params['MVE_error']['incidence angle'], 
              _refl = self.params['MVE_error']['transmission'],
@@ -285,7 +311,7 @@ class Instrument:
             self.d8 =  Drift(self.params["d8"]['distance'])
             self.d8.name = self.params["d8"]['name']
             
-            self.MVP = MirPl(np.loadtxt(self.fpath + self.params['MVP']['mirror profile']),
+            self.MVP = MirPl(np.loadtxt(self.fpath + self.params['MVP']['mirror profile'].replace("../../","")),
                      _dim = self.params['MVP']['orientation'],
                      _ang = self.params['MVP']['incidence angle'], 
                      _refl = self.params['MVP']['transmission'],
@@ -372,6 +398,22 @@ class Instrument:
         
         self.bl = Beamline()
         
+        if focus == 'direct':
+            
+            self.bl.append(self.d1, propagation_parameters(1,1,1,1, mode = "quadratic"))
+    
+            self.bl.append(self.HOM1, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
+            self.bl.append(self.d2, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
+            self.bl.append(self.HOM2,  propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
+            self.bl.append(self.d3, propagation_parameters(2,1,2,1, mode = 'fraunhofer'))
+            
+            self.bl.append(self.NKB_pslit, propagation_parameters(1/10, 1, 1/10,  1, mode = 'fresnel'))
+            self.bl.append(self.d4, propagation_parameters(1, 1, 1, 1, mode = 'fraunhofer'))
+            self.bl.append(self.d5, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
+            self.bl.append(self.df, propagation_parameters(1,1,1,1, mode = 'quadratic'))
+
+            
+       
         if focus == "micron":
             
             
@@ -416,7 +458,7 @@ class Instrument:
             self.bl.append(self.NVE, propagation_parameters(1/3, 1, 1/3, 1, mode = 'fresnel'))
             
             
-            self.bl.append(self.df, propagation_parameters(1,1,1,1, mode = 'converge'))
+            self.bl.append(self.df, propagation_parameters(1/3,1,1/3,1, mode = 'converge'))
 
             
         self.bl.params = self.params
@@ -436,14 +478,14 @@ class Instrument:
         if element1 is not None:
             names = [el.name for el in self.bl.propagation_options[0]['optical_elements']]
             idx1 = names.index(element1)
-    
+        else: 
+            idx1 = 0
+            
         if element2 is not None:
             names = [el.name for el in self.bl.propagation_options[0]['optical_elements']]
             idx2 = names.index(element2)
             
-            
-        if element1 not in names:
-            pass 
+             
         elif element2 is not None:
             self.bl.propagation_options[0]['optical_elements'] = self.bl.propagation_options[0]['optical_elements'][idx1:idx2+1]
             self.bl.propagation_options[0]['propagation_parameters'] = self.bl.propagation_options[0]['propagation_parameters'][idx1:idx2+1]
