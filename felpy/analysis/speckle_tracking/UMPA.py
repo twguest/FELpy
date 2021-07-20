@@ -11,7 +11,7 @@ from scipy import signal as sig
 def match_speckles(Isample, Iref, Nw, step=1, max_shift=4, df=True, printout=True):
     """
     Compare speckle images with sample (Isample) and w/o sample
-    (Iref) using a given window.
+    (Iref) unp.sing a given window.
     max_shift can be set to the number of pixels for an "acceptable"
     speckle displacement.
     :param Isample: A list  of measurements, with the sample aligned but speckles shifted
@@ -23,16 +23,21 @@ def match_speckles(Isample, Iref, Nw, step=1, max_shift=4, df=True, printout=Tru
     Return T, dx, dy, df, f
     """
 
-    Ish = Isample[0].shape
-
+    Ish = Isample.shape
+    print(Ish)
     # Create the window
     w = np.multiply.outer(np.hamming(2*Nw+1), np.hamming(2*Nw+1))
     w /= w.sum()
-
+    print("window shape:", w.shape)
     NR = len(Isample)
-
-    S2 = sum(I**2 for I in Isample)
-    R2 = sum(I**2 for I in Iref)
+    print("NR", NR)
+    
+    S2 = Isample**2
+    print("S2", S2.shape)
+    R2 = Iref**2 
+    print("R2", R2.shape)
+    print(S2.ndim, w.ndim)
+    
     if df:
         S1 = sum(I for I in Isample)
         R1 = sum(I for I in Iref)
@@ -40,10 +45,13 @@ def match_speckles(Isample, Iref, Nw, step=1, max_shift=4, df=True, printout=Tru
 
     L1 = cc(S2, w)
     L3 = cc(R2, w)
+    print(w)
     if df:
         L2 = Im * Im * NR
         L4 = Im * cc(S1, w)
         L6 = Im * cc(R1, w)
+    
+    
     # (We need a loop for L5)
 
     # 2*Ns + 1 is the width of the window explored to find the best fit.
@@ -63,11 +71,15 @@ def match_speckles(Isample, Iref, Nw, step=1, max_shift=4, df=True, printout=Tru
     # Loop through all positions
     for xi, i in enumerate(ROIy):
         if printout:
-            print 'line %d, %d/%d' % (i, xi, sh[0])
+            print('line %d, %d/%d' % (i, xi, sh[0]))
         for xj, j in enumerate(ROIx):
             # Define local values of L1, L2, ...
             t1 = L1[i, j]
+    
             t3 = L3[(i-Ns):(i+Ns+1), (j-Ns):(j+Ns+1)]
+            
+            print(t3.shape)
+            
             if df:
                 t2 = L2
                 t4 = L4[i, j]
@@ -79,15 +91,16 @@ def match_speckles(Isample, Iref, Nw, step=1, max_shift=4, df=True, printout=Tru
 
             # Now we can compute t5 (local L5)
             t5 = np.zeros((2*Ns+1, 2*Ns+1))
-            for k in range(NR):
-                t5 += cc(Iref[k][(i-Nw-Ns):(i+Nw+Ns+1), (j-Nw-Ns):(j+Nw+Ns+1)],
-                         w * Isample[k][(i-Nw):(i+Nw+1), (j-Nw):(j+Nw+1)], mode='valid')
-
+       
+            t5 += cc(Iref[(i-Nw-Ns):(i+Nw+Ns+1), (j-Nw-Ns):(j+Nw+Ns+1)],
+                     w * Isample[(i-Nw):(i+Nw+1), (j-Nw):(j+Nw+1)], mode='valid')
+            print("t5",t5.shape)
             # Compute K and beta
             if df:
                 K = (t2*t5 - t4*t6)/(t2*t3 - t6**2)
                 beta = (t3*t4 - t5*t6)/(t2*t3 - t6**2)
             else:
+
                 K = t5/t3
                 beta = 0.
 
@@ -164,7 +177,7 @@ def quad_max(a):
     All entries are None upon failure. Failure occurs if :
     * A has a positive curvature (it then has a minimum, not a maximum).
     * A has a saddle point
-    * the hessian of the fit is singular, that is A is (nearly) flat.
+    * the hessian of the fit is np.singular, that is A is (nearly) flat.
     """
 
     c, x0, h = quad_fit(a)
@@ -218,7 +231,7 @@ def pshift(a, ctr):
 
 def sub_pix_min(a, width=1):
     """
-    Find the position of the minimum in 2D array a with subpixel precision (using a paraboloid fit).
+    Find the position of the minimum in 2D array a with subpixel precision (unp.sing a paraboloid fit).
     :param a:
     :param width: 2*width+1 is the size of the window to apply the fit.
     :return:
@@ -265,10 +278,10 @@ if __name__ == "__main__":
         z = z / pixsize
         l = l / pixsize
 
-        # Evaluate if aliasing could be a problem
+        # Evaluate if alianp.sing could be a problem
         if min(sh)/np.sqrt(2.) < z*l:
-            print "Warning: z > N/(sqrt(2)*lamda) = %.6g: this calculation could fail." % (min(sh)/(l*np.sqrt(2.))) 
-            print "(consider padding your array, or try a far field method)"  
+            print("Warning: z > N/(sqrt(2)*lamda) = %.6g: this calculation could fail." % (min(sh)/(l*np.sqrt(2.)))) 
+            print( "(consider padding your array, or try a far field method)"  )
 
         q2 = np.sum((np.fft.ifftshift(np.indices(sh).astype(float) - np.reshape(np.array(sh)//2,(len(sh),) + len(sh)*(1,)), range(1,len(sh)+1)) * np.array([1./sh[0], 1./sh[1]]).reshape((2,1,1)))**2, axis=0)
 
@@ -279,7 +292,7 @@ if __name__ == "__main__":
     ssize = 2.    # rough speckle size
     sphere_radius = 150
     lam = .5e-10  # wavelength
-    z = 5e-2      # propagation distance
+    z = 1.5    # propagation distance
     psize = 1e-6  # pixel size
 
     # Simulate speckle pattern
@@ -290,12 +303,15 @@ if __name__ == "__main__":
     sample = np.exp(-15*np.pi*2j*sphere/sphere_radius)
 
     # Measurement positions
-    #pos = np.array( [(0., 0.)] + [(np.round(15.*cos(pi*j/3)), np.round(15.*sin(pi*j/3))) for j in range(6)] )
-    pos = 4*np.indices((5, 5)).reshape((2, -1)).T
+    pos = np.array( [(0., 0.)] + [(np.round(15.*np.cos(np.pi*j/3)), np.round(15.*np.sin(np.pi*j/3))) for j in range(6)] )
+    pos = 4*np.indices((1, 1)).reshape((2, -1)).T
 
     # Simulate the measurements
     measurements = np.array([abs(free_nf(sample*pshift(speckle, p), lam, z, psize))**2 for p in pos])
     reference = abs(free_nf(speckle, lam, z, psize))**2
+    reference += np.random.rand(*reference.shape)*.005
     sref = [pshift(reference, p) for p in pos]
 
-    result = match_speckles(measurements, sref, Nw=1, step=2)
+    print(measurements.shape)
+    
+    result = match_speckles(measurements[0], sref[0], Nw=1, step=2, df = False)

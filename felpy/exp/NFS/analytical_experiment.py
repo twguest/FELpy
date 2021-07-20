@@ -78,8 +78,9 @@ def plot_detector_image(r, edge_diffraction = True, displacement_field = True):
         
     theta = phase_gradient(x*M, r, k, delta, offset = r)
     theta[np.isnan(theta)] = 0 
-    y = np.ones([1,N])*theta
     
+    y = np.ones([1,N])*theta
+    y = np.fliplr(y)
     fig, ax1 = plt.subplots()
     
     im1 = ax1.imshow(y*1e6,
@@ -235,16 +236,34 @@ def plot_1d_phase_gradient(R):
     fig, ax1 = plt.subplots()
     
     for r in R:
-        theta_r = phase_gradient(x, r, k, delta, offset = r)
+        theta_r = phase_gradient(x, r, k, delta, offset = -r)
         theta_r[np.isnan(theta_r)] = 0 
 
         ax1.plot(x*M*1e3, theta_r*1e6, label = "{} mm".format(r*1e3))
         
-    ax1.set_xlim([0,15])
-    ax1.set_ylim([-30, 0])
+    ax1.set_xlim([-15,15])
+    ax1.set_ylim([0,100])
     ax1.set_xlabel("x (mm)")
     ax1.set_ylabel("Phase Gradient ($\mu rad)$")
     plt.legend()
+
+def plot_1d_shift(R, z, dx):
+    
+    fig, ax1 = plt.subplots()
+    
+    for r in R:
+        theta_r = phase_gradient(x, r, k, delta, offset = -r)
+        theta_r[np.isnan(theta_r)] = 0 
+        shift = np.tan(theta_r)*z/dx
+        ax1.plot(x*M*1e3, shift, label = "{} mm".format(r*1e3))
+        
+    ax1.set_xlim([-15,15])
+    ax1.set_ylim([0,50])
+    ax1.set_xlabel("x (mm)")
+    ax1.set_ylabel("Shift (pixels.)")
+    plt.legend()
+    plt.show()
+
 
 def plot_1d_phase_difference(dr):
     
@@ -252,11 +271,10 @@ def plot_1d_phase_difference(dr):
      
     for r in dr:
         theta_r = phase_gradient(x, r, k, delta, offset = r)
-
-        ax1.plot(x*M*1e3, theta_r*1e6, label = "{} mm".format(r*1e3))
+        ax1.plot(x*M*1e3, theta_r, label = "{} mm".format(r*1e3))
         
     ax1.set_xlim([0,15])
-    ax1.set_ylim([-30, 0])
+
     ax1.set_xlabel("x (mm)")
     ax1.set_ylabel("Phase Gradient ($\mu rad$)")
     plt.legend()
@@ -269,27 +287,30 @@ if __name__ == '__main__':
     wav = ekev2wav(ekev)
     
     k = (np.pi*2)/wav
-    N = 5000
+    N =5000
     
     x = np.linspace(-5e-02,5e-02,N)
     
-    z1 = 1
-    z2 = 4.5
+    z1 = .1
+    z2 = 2
     
     print("Angular Sensitivity: {}".format(angular_sensitivity(6.5e-06, z2)))
     
     M = fresnel_magnification(z1, z2)
     
      
-    plot_fullfield_image(r = 15e-03)
-    plot_detector_image(r = 15e-03)
-    
-    
-    plot_fullfield_image(r = 75e-03)
+# =============================================================================
+#     plot_fullfield_image(r = 15e-03)
+#     plot_detector_image(r = 15e-03)
+#     
+#     
+#     plot_fullfield_image(r = 75e-03)
+# =============================================================================
     plot_detector_image(r = 75e-03)
     
-    delta_phase_gradient(r1 = 15e-03, r2 = 75e-03)
-    R = [15e-03, 75e-03]
+    plot_detector_image(75e-04,False)
+    R = [15e-03, 75e-03, 100e-03]
     plot_1d_phase_gradient(R)
-
+    plot_1d_shift(R, 4, 6.5e-06)
+    
  

@@ -140,7 +140,7 @@ def get_params():
                            "xc": 0,
                            "yc": 0}
 
-    params["d7"] = {'name': "d7",
+    params["d6"] = {'name': "d6",
                     "description": "Drift from MKB-SCR to MVE",
                     'distance': 1.680}
 
@@ -164,7 +164,7 @@ def get_params():
                      "reflectivity": 1,
                      "_ext_in": 0.5,
                      "_ext_out": 0.5,
-                     'next_drift' : 'd8',
+                     'next_drift' : 'd7',
                      'ang_min': -5.0e-03,
                      'ang_max': 5.0e-03}
     
@@ -179,7 +179,7 @@ def get_params():
                        "yc": 0}
 
     
-    params["d8"] = {'name': "d8",
+    params["d7"] = {'name': "d7",
                     "description": "Drift from MVE to MVP",
                     'distance': 1.050}
     

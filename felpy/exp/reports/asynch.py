@@ -109,18 +109,18 @@ if __name__ == '__main__':
     print()
     print("NANO")
     ### usage
-    z = .1 ### focus to sample distances
-    dz = 10 ### sample to detector distance
-    feature_size = 4e-06 ### mask feature size
-    dx = 25e-06 ### detector pixel size
-    ekev = 9 ### energy in keV
+    z = 2.1 ### focus to sample distances
+    dz = 4 ### sample to detector distance
+    feature_size = 12.5e-06 ### mask feature size
+    dx = 6.5e-06 ### detector pixel size
+    ekev = 25 ### energy in keV
     M = (z+dz)/z ### effective demagnification
     z_eff = (z*dz)/(z+dz) ### effective propagation distance via fresnel scaling
     print("Z effective: {}".format(z_eff))
-    sigma = 100e-06 ### estimated beam size @ sample
+    sigma = 6e-02 ### estimated beam size @ sample
     
     print("Estimated Beam Footprint: {}".format(sigma*M))
-
+    print("req distance: ", get_required_distance(feature_size, dx, ekev2wav(ekev)))
     S = get_required_distance(feature_size, dx, ekev2wav(ekev))-dz
     print("Sampling Criterion (req. > 1): {}".format(S))
 

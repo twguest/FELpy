@@ -35,7 +35,7 @@ def get_beamline_object(params = "", options = 'nano', ekev = 5.0,
     
     
     
-    mirrors = ['HOM1', 'HOM2', 'NHE', 'NVE']
+    mirrors = ['HOM1', 'HOM2', 'NHE', 'NVE', 'MHE', 'MHP', 'MVE', 'MVP']
     
     for mirror in mirrors:
     

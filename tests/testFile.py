@@ -8,6 +8,14 @@ Created on Fri Aug 14 15:34:07 2020
 import sys
 
 if __name__ == '__main__':
+# =============================================================================
+#     
+#     for arg in sys.argv:
+#         print(arg)
+#         
+# =============================================================================
+    print(__file__)
     
-    for arg in sys.argv:
-        print(arg)
+    
+def test(a):
+    print(a)
