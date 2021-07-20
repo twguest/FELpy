@@ -16,32 +16,16 @@ __status__ = "Developement"
     
 import string
 import random
- 
+import inspect
 import os
 
 import numpy as np 
 
-from .os_utils import mkdir_p
-
+from felpy.utils.os_utils import mkdir_p
 import shutil
-# =============================================================================
-# 
-# def timeUtils: 
-#         stime = time.time() ## start time for logging
-#     
-#         os.system("sbatch {}Test-{}".format(self.jobDir, self.jobName))
-#         
-#         ftime = time.time() ## finish time for logging
-#         
-#         tdiff = ftime-stime ## time difference (time per run)
-#         
-# =============================================================================
 
 
-
-
-
-def randomString(length):
+def random_string(length):
     """
     writes a random string with length characters
     """
@@ -58,11 +42,11 @@ class JobScheduler:
     A Python class for scheduling Slurm jobs
     """
     
-    def __init__(self, pycmd, jobName, logDir,
+    def __init__(self, python_command, job_name, log_directory,
                  partition = 'exfel', nodes = 1,
-                 jobType = 'single',
-                 jobArray = None,
-                 nSpawn = 1,
+                 job_type = 'single',
+                 job_array = None,
+                 n_spawns = 1,
                  VERBOSE = True,
                  runtime = "14-00:00:00",
                  email = "trey.guest@desy.de",
@@ -71,17 +55,22 @@ class JobScheduler:
                  rundir = None):
         """
         
-        :param jobType: options = spawn, array, single 
+        :param job_type: options = spawn, array, single 
         """
         
+        if type(python_command) == str:
+            self.command = "script"
+        elif type(python_command) == type(random_string):
+            self.command = "method"
         
-        self.pycmd = pycmd
-        self.jobName = jobName 
+        self.python_command = python_command
+        self.job_name = job_name 
         self.partition = partition
         self.nodes = nodes
-        self.jobType = jobType
-        self.jobArray = jobArray
-        self.nSpawn = nSpawn
+        self.job_type = job_type
+        self.job_array = job_array
+        self.n_spawns = n_spawns
+        
         self.VERBOSE = VERBOSE
         
         
@@ -91,11 +80,12 @@ class JobScheduler:
             self.rundir = rundir
         else:
             self.rundir = os.getcwd()
+            
         self.runTime = runtime
-        self.logDir = logDir + jobName + "/"
-        self.jobDir = logDir + "jobs/" + jobName + "/"
-        self.outDir = logDir + "out/" + jobName + "/"
-        self.errDir = logDir + "error/" + jobName + "/"
+        self.log_directory = log_directory + job_name + "/"
+        self.jobDir = log_directory + "jobs/" + job_name + "/"
+        self.outDir = log_directory + "out/" + job_name + "/"
+        self.errDir = log_directory + "error/" + job_name + "/"
         self.email = email
         self.mailtype = mailtype
         self.options = options
@@ -118,14 +108,14 @@ class JobScheduler:
     
     def __str__(self):
     
-        print("Python File: {}".format(self.pycmd))
-        print("Global Job Name: {}".format(self.jobName))
+        print("Python File: {}".format(self.python_command))
+        print("Global Job Name: {}".format(self.job_name))
         print("# Nodes: {}".format(self.nodes))
         print("Partition: {}".format(self.partition))
-        print("Job Type: {}".format(self.jobType))
+        print("Job Type: {}".format(self.job_type))
         print("Run Dir: {}".format(self.rundir))
         print("Job Dir: {}".format(self.jobDir))
-        print("Log Dir: {}".format(self.logDir))
+        print("Log Dir: {}".format(self.log_directory))
         print("Output Dir: {}".format(self.outDir))
         print("Error Dir: {}".format(self.errDir))
         print("Sending {} Diagnostics To: {}".format(self.mailtype, self.email))
@@ -140,20 +130,20 @@ class JobScheduler:
         execute a single instance of the python script
         """
         
-        jobFile = self.jobDir + "Test_{}.job".format(self.jobName)
+        jobFile = self.jobDir + "Test_{}.job".format(self.job_name)
         if self.VERBOSE:
             print("\nGenerating Python Script Test \n")
             print("Python Test Job: {}Test_{}".format(self.jobDir, jobFile))
             
-        if self.jobType == 'spawn':
-            arrItem = np.random.randint(1e5)
+        if self.job_type == 'spawn':
+            array_item = np.random.randint(1e5)
         
-        elif self.jobType == 'array':
-            if type(self.jobArray) == str:
-                arrItem = os.listdir(self.jobArray)[np.random.randint(len(os.listdir(self.jobArray)))]
+        elif self.job_type == 'array':
+            if type(self.job_array) == str:
+                array_item = os.listdir(self.job_array)[np.random.randint(len(os.listdir(self.job_array)))]
 
             else:
-                arrItem = self.jobArray[np.random.randint(len(self.jobArray))]
+                array_item = self.job_array[np.random.randint(len(self.job_array))]
         
         
         
@@ -162,20 +152,26 @@ class JobScheduler:
             fh.writelines("#!/bin/bash\n")
             fh.writelines("#SBATCH --partition={} \n".format(self.partition))
     
-            fh.writelines("#SBATCH --job-name=Test_{}.job\n".format(self.jobName))
+            fh.writelines("#SBATCH --job-name=Test_{}.job\n".format(self.job_name))
             fh.writelines("#SBATCH --chdir {} \n".format(self.rundir))
             fh.writelines("#SBATCH --nodes={}\n".format(self.nodes))
-            fh.writelines("#SBATCH --output={}Test_{}.out\n".format(self.outDir, self.jobName))
-            fh.writelines("#SBATCH --error={}Test_{}.err\n".format(self.errDir, self.jobName))
+            fh.writelines("#SBATCH --output={}Test_{}.out\n".format(self.outDir, self.job_name))
+            fh.writelines("#SBATCH --error={}Test_{}.err\n".format(self.errDir, self.job_name))
             fh.writelines("#SBATCH --time={}\n".format(self.runTime))
             fh.writelines("#SBATCH --mail-type={}\n".format(self.mailtype))
             fh.writelines("#SBATCH --mail-user={}\n".format(self.email))
             
         
-            if self.jobType == 'array' and arrItem != None:
-                fh.writelines("python {} {}".format(self.pycmd, arrItem))
+            if self.job_type == 'array' and array_item != None:
+                
+                if self.command == 'method':
+                    method_dir = inspect.getfile(self.python_command)
+                    run_directory, filename = method_dir.rsplit("/",)
+                    fh.writelines("cd {}; python3 -c 'from {} import {};{}({},{})'".format(run_directory,filename.split(".py")[0],self.python_command.__name__, array_item, *self.options))
+                elif self.command == 'script':
+                    fh.writelines("python3 {} {}".format(self.python_command, array_item))
             else:
-                fh.writelines("python {}".format(self.pycmd))
+                fh.writelines("python3 {}".format(self.python_command))
             
                         
             if self.options:
@@ -184,97 +180,99 @@ class JobScheduler:
         
         
         fh.close()
-        os.system("sbatch {}Test_{}.job".format(self.jobDir, self.jobName))
+        os.system("sbatch {}Test_{}.job".format(self.jobDir, self.job_name))
     
-    def jobScript(self, jobName, arrItem = None):
+    
+    def write_jobs(self, job_name, array_item = None):
         """
-        wrapper for jobscript data
+        wrapper for write_jobs data
         """
 
         
-        jobFile = os.path.join(self.jobDir,"{}.job".format(jobName))
+        jobFile = os.path.join(self.jobDir,"{}.job".format(job_name))
         
         with open(jobFile, "w+") as fh:
         
             fh.writelines("#!/bin/bash\n")
             fh.writelines("#SBATCH --partition={} \n".format(self.partition))
     
-            fh.writelines("#SBATCH --job-name={}.job\n".format(jobName))
+            fh.writelines("#SBATCH --job-name={}.job\n".format(job_name))
             fh.writelines("#SBATCH --chdir {} \n".format(self.rundir))
             fh.writelines("#SBATCH --nodes={}\n".format(self.nodes))
-            fh.writelines("#SBATCH --output={}{}.out\n".format(self.outDir, jobName))
-            fh.writelines("#SBATCH --error={}{}.err\n".format(self.errDir, jobName))
+            fh.writelines("#SBATCH --output={}{}.out\n".format(self.outDir, job_name))
+            fh.writelines("#SBATCH --error={}{}.err\n".format(self.errDir, job_name))
             fh.writelines("#SBATCH --time={}\n".format(self.runTime))
             fh.writelines("#SBATCH --mail-type={}\n".format(self.mailtype))
             fh.writelines("#SBATCH --mail-user={}\n".format(self.email))
             
         
-            if self.jobType == 'array' and arrItem != None:
-
-                fh.writelines("python3 {} {}".format(self.pycmd, arrItem))
-            elif self.jobType == 'spawn' and arrItem != None:
-                fh.writelines("python3 {} {}".format(self.pycmd, arrItem))
+            if self.job_type == 'array' and array_item != None:
+                if self.command == 'method':
+                    method_dir = inspect.getfile(self.python_command)
+                    run_directory, filename = method_dir.rsplit("/",1)
+                    fh.writelines("cd {}; python3 -c 'from {} import {};{}({},'{}')'".format(run_directory,filename.split(".py")[0],self.python_command.__name__,self.python_command.__name__, array_item, self.options))
+                elif self.command == 'script':
+                    fh.writelines("python3 {} {}".format(self.python_command, array_item))
+            elif self.job_type == 'spawn' and array_item != None:
+                fh.writelines("python3 {} {}".format(self.python_command, array_item))
             else:
-                fh.writelines("python3 {}".format(self.pycmd))
-            
-            
-            
-            if self.options:
-                for o in self.options:
-                    fh.writelines(" {}".format(str(o)))
+                fh.writelines("python3 {}".format(self.python_command))
+
+                if self.options:
+                    for o in self.options:
+                        fh.writelines(" {}".format(str(o)))
         
         fh.close()
      
             
-    def buildScripts(self):
+    def build_scripts(self):
         
         if self.VERBOSE: 
-            print("\nGenerating {} Scripts".format(self.jobType))
+            print("\nGenerating {} Scripts".format(self.job_type))
             
-        if self.jobType == 'spawn':
+        if self.job_type == 'spawn':
             
-            for itr in range(self.nSpawn):
+            for itr in range(self.n_spawns):
                 
                 seed = np.random.randint(1e05)
-                 
-                guestt
-                jName = self.jobName + "_" + randomString(8)
+ 
+                jName = self.job_name + "_" + random_string(8)
                 
-                self.jobScript(jName, arrItem = seed)
+                self.write_jobs(jName, array_item = seed)
 
                 if self.VERBOSE:
                     print("Building Job File: {}.job".format(jName))              
             
-        elif self.jobType == 'single':
+        elif self.job_type == 'single':
             
-            jName = self.jobName
-            self.jobScript(jName)
+            jName = self.job_name
+            self.write_jobs(jName)
             
             
             if self.VERBOSE:
                 print("Building Job File: {}.job".format(jName))              
         
             
-        elif self.jobType == 'array':
+        elif self.job_type == 'array':
             
-            if type(self.jobArray) == str:
+            if type(self.job_array) == str:
                 
-                for arrItem in os.listdir(self.jobArray):
-                    jName = self.jobName + "_" + arrItem
-                    self.jobScript(jName, self.jobArray+arrItem)
+                for array_item in os.listdir(self.job_array):
+                    jName = self.job_name + "_" + array_item
+                    self.write_jobs(jName, self.job_array+array_item)
                     
-            if type(self.jobArray) == list:
+            if type(self.job_array) == list:
 
-                for arrItem in self.jobArray:
+                for array_item in self.job_array:
                     
-                    if type(arrItem) == str:
+                    if type(array_item) == str:
 
-                        jName = self.jobName  + "_" + arrItem
-                        self.jobScript(jName, arrItem)
+                        jName = self.job_name  + "_" + array_item
+                        self.write_jobs(jName, array_item)
                     else:
 
-                        jName = self.jobName + arrItem.__name__
-                        self.jobScript(jName, arrItem.__name__)
+                        jName = self.job_name + array_item.__name__
+                        self.write_jobs(jName, array_item.__name__)
 
                             
                 if self.VERBOSE:
@@ -293,7 +291,7 @@ class JobScheduler:
         if test:
             self.test()
             
-        self.buildScripts()
+        self.build_scripts()
         self.runScripts()
 
         
@@ -302,30 +300,30 @@ def moduleTest():
     print("Testing Job Scheduler Module\n")
     
     print("Testing Job Scheduler Single Mode\n")
-    js = JobScheduler(pycmd = "../tests/testFile.py",
-                      jobName = "SingleScheduleTest",
-                      logDir = "../logs/",
-                      jobType = "single",
+    js = JobScheduler(python_command = "../tests/testFile.py",
+                      job_name = "SingleScheduleTest",
+                      log_directory = "../logs/",
+                      job_type = "single",
                       options = ["a", 2, 4, [1,2,3]])
     js.run(test = False)
   
     
     print("Testing Job Scheduler Spawn Mode\n")
-    js = JobScheduler(pycmd = "../tests/testFile.py",
-                      jobName = "SpawnScheduleTest",
-                      logDir = "../logs/",
-                      jobType = "spawn",
-                      nSpawn = 20,
+    js = JobScheduler(python_command = "../tests/testFile.py",
+                      job_name = "SpawnScheduleTest",
+                      log_directory = "../logs/",
+                      job_type = "spawn",
+                      n_spawns = 20,
                       options = ["a", 2, 4, [1,2,3]])
     js.run(test = False)
      
         
     print("Testing Job Scheduler Array Mode\n")
-    js = JobScheduler(pycmd = "../tests/testFile.py",
-                      jobName = "ArrayScheduleTest",
-                      logDir = "../logs/",
-                      jobType = "array",
-                      jobArray = [1,2,3,4,5],
+    js = JobScheduler(python_command = "../tests/testFile.py",
+                      job_name = "ArrayScheduleTest",
+                      log_directory = "../logs/",
+                      job_type = "array",
+                      job_array = [1,2,3,4,5],
                       options = ["a", 2, 4, [1,2,3]])
     js.run(test = False)
   
