@@ -59,8 +59,8 @@ def batch_launcher(python_command,
     
     
     js = JobScheduler(python_command, log_directory = log_directory,
-                      jobName = job_name, partition = 'exfel', nodes = 2, jobType = 'array',
-                      jobArray = input_directory, options = options)
+                      job_name = job_name, partition = 'exfel', nodes = nodes, job_type = 'array',
+                      job_array = input_directory, options = options)
     
     js.run(test = False)
  
@@ -207,7 +207,7 @@ class JobScheduler:
                 if self.command == 'method':
                     method_dir = inspect.getfile(self.python_command)
                     run_directory, filename = method_dir.rsplit("/",)
-                    fh.writelines("cd {}; python3 -c 'from {} import {};{}({},{})'".format(run_directory,filename.split(".py")[0],self.python_command.__name__, array_item, *self.options))
+                    fh.writelines("cd {}; python3 -c 'from {} import {};{}({})'".format(run_directory,filename.split(".py")[0],self.python_command.__name__, array_item))
                 elif self.command == 'script':
                     fh.writelines("python3 {} {}".format(self.python_command, array_item))
             else:
@@ -235,8 +235,6 @@ class JobScheduler:
         
             fh.writelines("#!/bin/bash\n")
             fh.writelines("#SBATCH --partition={} \n".format(self.partition))
-    
-            fh.writelines("#SBATCH --job-name={}.job\n".format(job_name))
             fh.writelines("#SBATCH --chdir {} \n".format(self.rundir))
             fh.writelines("#SBATCH --nodes={}\n".format(self.nodes))
             fh.writelines("#SBATCH --output={}{}.out\n".format(self.outDir, job_name))
@@ -245,13 +243,15 @@ class JobScheduler:
             fh.writelines("#SBATCH --mail-type={}\n".format(self.mailtype))
             fh.writelines("#SBATCH --mail-user={}\n".format(self.email))
             
-        
+            
             if self.job_type == 'array' and array_item != None:
                 if self.command == 'method':
                     method_dir = inspect.getfile(self.python_command)
+                    print(method_dir)
                     run_directory, filename = method_dir.rsplit("/",1)
-                    fh.writelines("cd {}; python3 -c 'from {} import {};{}({},'{}')'".format(run_directory,filename.split(".py")[0],self.python_command.__name__,self.python_command.__name__, array_item, self.options))
-                elif self.command == 'script':
+                    fh.writelines("cd {}; python3 -c 'from {} import {};{}()' {}".format(run_directory,filename.split(".py")[0],self.python_command.__name__,
+                                                                                           self.python_command.__name__,array_item))
+                elif self.command == 'script':  
                     fh.writelines("python3 {} {}".format(self.python_command, array_item))
             elif self.job_type == 'spawn' and array_item != None:
                 fh.writelines("python3 {} {}".format(self.python_command, array_item))
@@ -263,7 +263,7 @@ class JobScheduler:
                         fh.writelines(" {}".format(str(o)))
         
         fh.close()
-     
+    
             
     def build_scripts(self):
         
