@@ -30,7 +30,7 @@ from copy import copy
 from felpy.utils.daq_utils import load_data, shimadzu_reshape
 
 
-def shimadzu_test_data(nx, ny, npulses, ntrains, weight = 0.1,
+def shimadzu_test_data(nx, ny, npulses, ntrains, weight = 0.01,
                        processed = False):
     """
     generate data matching the structure of 'treated' shimadzu test data
@@ -44,11 +44,11 @@ def shimadzu_test_data(nx, ny, npulses, ntrains, weight = 0.1,
     :returns data: numpy array of shape [nx, ny, npulses, ntrains]
     """
     
-    data = np.zeros([nx,ny,npulses,ntrains])
+    data = np.zeros([nx,ny,npulses,ntrains]).astype('complex64')
     
     for train in range(ntrains):
         for pulse in range(npulses):
-            data[:,:,pulse,train] = gaussian_2d(nx,ny) + np.random.rand(nx, ny)*weight
+            data[:,:,pulse,train] = gaussian_2d(nx,ny, sigma = nx/10) + np.random.rand(nx, ny)*weight
     
     return data
 

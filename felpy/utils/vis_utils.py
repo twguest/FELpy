@@ -26,31 +26,168 @@ from felpy.utils.os_utils import mkdir_p
 from felpy.analysis.statistics.univariate import mean_intensity
 from mpl_toolkits.mplot3d import Axes3D
 from felpy.utils.np_utils import extent_from_mesh
+import matplotlib 
+import matplotlib.pyplot as plt
+#!python numbers=disable
+fig_width_pt = 400.0  # Get this from LaTeX using \showthe\columnwidth
+inches_per_pt = 1.0/72.27               # Convert pt to inches
+golden_mean = (np.sqrt(5)-1.0)/2.0         # Aesthetic ratio
+fig_width = fig_width_pt*inches_per_pt  # width in inches
+fig_height =fig_width*golden_mean       # height in inches
+fig_size = [fig_width,fig_height]
 
-def triple(ii, title = None, xlabel = None, ylabel = None, clabel = None,
+plt.style.use(['science','ieee'])
+mpl.rcParams['axes.linewidth'] = 1 #set the value globally
+
+def colorbar_plot(dataset,
+                  mesh = None,
+                  label = None,
+                  title = None,
+                  xlabel = None,
+                  ylabel = None,
+                  clabel = "",
+                  context = 'paper',
+                  cmap = 'bone',
+                  normalise = True,
+                  scale = 1,
+                  aspect = 'auto',
+                  sdir = None, 
+                  lognorm = False):
+    
+    """ 
+    plot a 2D datasetay with a colorbar (x,y)
+    
+    :param corr: 2D correlation datasetay (via get_correlation)
+    :param mesh: coordinate mesh [np datasetay]
+    :param sdir: save directory for output .png
+    :param label: figure label
+    :param title: figure title
+    :param cmap: figure color map
+    """
+    
+    sns.set_context(context)
+    
+    if normalise:
+        dataset = norm(dataset)
+        vmin, vmax = 0,1
+    else: 
+        vmin, vmax = np.min(dataset), np.max(dataset)
+    
+    if mesh is not None:
+        extent = [np.min(mesh[1])*scale, np.max(mesh[1])*scale,
+                  np.min(mesh[0])*scale, np.max(mesh[0])*scale]
+    else:
+        extent = None
+    
+    if lognorm == True:
+        lognorm = matplotlib.colors.LogNorm()
+        vmin += 1e-100
+    else: 
+        lognorm = None
+        
+    fig, ax1 = plt.subplots(figsize = fig_size)
+    
+    img = ax1.imshow(dataset,
+                     cmap = cmap,
+                     extent = extent,
+                     vmin = vmin, vmax = vmax,
+                     aspect = aspect, 
+                     norm = lognorm)
+    
+
+    divider = make_axes_locatable(ax1)
+    cax = divider.append_axes('right', size='7.5%', pad=0.05)
+
+    cbar = fig.colorbar(img, cax)
+
+    ax1.set_title(title)
+    ax1.set_xlabel(xlabel)
+    ax1.set_ylabel(ylabel)
+
+    cbar.set_label(clabel)
+    ax1.annotate(label, horizontalalignment = 'left',   
+                    verticalalignment = 'bottom',
+                    xy = (0,1),
+                    c = 'white')
+   
+    if sdir is None:
+        fig.show()
+    else:
+        fig.savefig(sdir + ".png")
+
+    plt.show()
+
+
+
+
+def double_colorbar(ii, title = None, xlabel = None, ylabel = None, clabel = None,
            extent = None, cmap = 'hot', vmin = None, vmax = None, savedir = None,
            cticks = None, clabels = None, resolution = 100):
     
     
     
-    fig, axes = plt.subplots(nrows=1, ncols=3, figsize = [12, 8], dpi = resolution)
+    fig, axes = plt.subplots(nrows=1, ncols=2, figsize = fig_size, dpi = resolution, sharex = True, sharey = True)
     
     for itr in range(ii.shape[-1]):
         
         
         im = axes[itr].imshow(ii[:,:,itr], cmap = cmap, vmin = vmin, vmax = vmax)
-        
-        axes[itr].set_xticks([])
-        axes[itr].set_yticks([])
-    
+
         axes[itr].set_xlabel(xlabel)
         axes[itr].set_xlabel(ylabel)
-
+        axes[itr].set_aspect(1.5)
+    
+    fig.text(.048, 0.5, 'common Y', va='center', rotation='vertical', fontsize= 12)
+    fig.text(0.525, -0.05, 'common X', ha='center', fontsize = 12)
+    
     fig.subplots_adjust(right=0.75)
     fig.suptitle(title)    
+    fig.tight_layout()
+    
+    cbar_ax = fig.add_axes([.92, 0.048, 0.04, 0.917])
+    
+    cbar = fig.colorbar(im, cax=cbar_ax)
+    cbar.set_label(clabel, fontsize = 16)
+    
+    plt.subplots_adjust(wspace=-.25, hspace=0)
+    if cticks != None and clabels != None:
+        cbar.set_ticks(cticks)
+        cbar.set_ticklabels(clabels)
+     
+    if savedir is not None:
+        fig.savefig(savedir)
+    else:
+        plt.show()
+        
+
+def triple_colorbar(ii, title = None, xlabel = None, ylabel = None, clabel = None,
+           extent = None, cmap = 'hot', vmin = None, vmax = None, savedir = None,
+           cticks = None, clabels = None, resolution = 100):
+    
+    #sns.set_style('dark')
+    sns.set_context('paper')
+    
+ 
+    
+    fig, axes = plt.subplots(nrows=1, ncols=3, figsize = fig_size, dpi = resolution, sharex = True, sharey = True)
+    
+    for itr in range(ii.shape[-1]):
+        
+        
+        im = axes[itr].imshow(ii[:,:,itr], cmap = cmap, vmin = vmin, vmax = vmax)
+
+        axes[itr].set_xlabel(xlabel)
+        axes[itr].set_xlabel(ylabel)
+        axes[itr].set_aspect(1.5)
     
     
-    cbar_ax = fig.add_axes([0.78, 0.365, 0.05, 0.277])
+    fig.text(-0.015, 0.5, 'common Y', va='center', rotation='vertical', fontsize= 12)
+    fig.text(0.55, 0.06, 'common X', ha='center', fontsize = 12)
+    fig.subplots_adjust(right=0.75)
+    fig.suptitle(title)    
+    fig.tight_layout()
+    
+    cbar_ax = fig.add_axes([.99, 0.158, 0.04, 0.687])
     cbar = fig.colorbar(im, cax=cbar_ax)
     cbar.set_label(clabel, fontsize = 16)
     
@@ -62,14 +199,53 @@ def triple(ii, title = None, xlabel = None, ylabel = None, clabel = None,
         fig.savefig(savedir)
     else:
         plt.show()
-        
 
-def arr2gif(fname, array, fps=10, scale=1.0):
+def small_colorbar_grid(ii, title = None, xlabel = None, ylabel = None, clabel = None,
+           extent = None, cmap = 'hot', vmin = None, vmax = None, savedir = None,
+           cticks = None, clabels = None, resolution = 100):
+    
+    #sns.set_style('dark')
+    sns.set_context('paper')
+    
+ 
+    
+    fig, axes = plt.subplots(nrows=2, ncols=2, figsize = fig_size, dpi = resolution, sharex = True, sharey = True)
+    
+    for itr in range(ii.shape[-1]):
+        
+        print(axes.shape)
+        im = axes[itr].imshow(ii[:,:,itr], cmap = cmap, vmin = vmin, vmax = vmax)
+
+        axes[itr].set_xlabel(xlabel)
+        axes[itr].set_xlabel(ylabel)
+        axes[itr].set_aspect(1.5)
+    
+    
+    fig.text(-0.015, 0.5, 'common Y', va='center', rotation='vertical', fontsize= 12)
+    fig.text(0.55, 0.06, 'common X', ha='center', fontsize = 12)
+    fig.subplots_adjust(right=0.75)
+    fig.suptitle(title)    
+    fig.tight_layout()
+    
+    cbar_ax = fig.add_axes([.99, 0.158, 0.04, 0.687])
+    cbar = fig.colorbar(im, cax=cbar_ax)
+    cbar.set_label(clabel, fontsize = 16)
+    
+    if cticks != None and clabels != None:
+        cbar.set_ticks(cticks)
+        cbar.set_ticklabels(clabels)
+    
+    if savedir is not None:
+        fig.savefig(savedir)
+    else:
+        plt.show()
+
+def dataset2gif(fname, datasetay, fps=10, scale=1.0):
     """Creates a gif given a stack of images using moviepy
     see: https://gist.github.com/nirum/d4224ad3cd0d71bfef6eba8f3d6ffd59
     
     :params fname: save directory (str)
-    :params array: array to be made into gif (along -1 axis)
+    :params datasetay: datasetay to be made into gif (along -1 axis)
     :params fps: frames per second (int)
     :params scale: rescaling factor of image
     """
@@ -79,15 +255,15 @@ def arr2gif(fname, array, fps=10, scale=1.0):
     filename = fname + '.gif'
 
     # normalise 
-    for itr in range(array.shape[-1]):
-        array[:,:,itr] = norm(array[:,:,itr]*255)    
+    for itr in range(datasetay.shape[-1]):
+        datasetay[:,:,itr] = norm(datasetay[:,:,itr]*255)    
 
     # copy into the color dimension if the images are black and white
-    if array.ndim == 3:
-        array = array[..., np.newaxis] * np.ones(3)
+    if datasetay.ndim == 3:
+        datasetay = datasetay[..., np.newaxis] * np.ones(3)
         
     # make the moviepy clip
-    clip = ImageSequenceClip(list(array), fps=fps).resize(scale)
+    clip = ImageSequenceClip(list(datasetay), fps=fps).resize(scale)
     clip.write_gif(filename, fps=fps)
     print("gif saved @: {}".format(fname))
     
@@ -137,10 +313,10 @@ def basic_plot(ii, mesh, sdir = None,
                context = 'notebook'):
     
     """ 
-    a simple plot of some two-dimensional intensity array
+    a simple plot of some two-dimensional intensity datasetay
     
-    :param ii: 2D intensity array
-    :param mesh: coordinate mesh [np array]
+    :param ii: 2D intensity datasetay
+    :param mesh: coordinate mesh [np datasetay]
     """
     
     if scale == 1e6:
@@ -368,79 +544,6 @@ def simple_line_plot(x, y = None,
         plt.show()
     
     
-def colorbar_plot(arr,
-                  mesh = None,
-                  label = None,
-                  title = None,
-                  xlabel = None,
-                  ylabel = None,
-                  clabel = "",
-                  context = None,
-                  sdir = None,
-                  cmap = 'bone',
-                  normalise = True,
-                  vmin = 0, vmax = None,
-                  scale = 1,
-                  aspect = 'auto',
-                  grid = True,
-                  return_axes = False):
-    
-    """ 
-    plot a 2D array with a colorbar (x,y)
-    
-    :param corr: 2D correlation array (via get_correlation)
-    :param mesh: coordinate mesh [np array]
-    :param sdir: save directory for output .png
-    :param label: figure label
-    :param title: figure title
-    :param cmap: figure color map
-    """
-    
-    if normalise:
-        arr = norm(arr)
-        
-    
-    plt.style.use(['science','ieee'])
-
-    
-    fig, ax1 = plt.subplots()
-    
-    img = ax1.imshow(arr, cmap = cmap,
-                     extent = [np.min(mesh[1])*scale, np.max(mesh[1])*scale,
-                               np.min(mesh[0])*scale, np.max(mesh[0])*scale],
-                     vmin = vmin, vmax = vmax,
-                     aspect = aspect)
-    
-    ax1.set_title(title)
-
-    divider = make_axes_locatable(ax1)
-    cax = divider.append_axes('right', size='7.5%', pad=0.05)
-
-    cbar = fig.colorbar(img, cax)
-    cbar.set_label(clabel)
-    
-    ax1.set_xlabel(xlabel)
-    ax1.set_ylabel(ylabel)
-    
-    ax1.annotate(label, horizontalalignment = 'left',   
-                    verticalalignment = 'bottom',
-                    xy = (0,1),
-                    c = 'white')
-    
-    if context is not None:
-        sns.set_context(context)
-    
-    if return_axes:
-        return ax1
-    
-    else:
-        if sdir is None:
-            fig.show()
-        else:
-            fig.savefig(sdir + ".png")
-    
-            plt.show()
-    
 
         
 def signal_plot(xdata, ydata,
@@ -505,7 +608,7 @@ def scatter_plot(xdata, ydata = None,
     else:
         plt.show()
         
-def double_colorbar_plot(arr1, arr2,
+def double_colorbar_plot(dataset1, dataset2,
                          extent1 = None,
                          extent2 = None,
                          xlabel1 = "",
@@ -532,7 +635,7 @@ def double_colorbar_plot(arr1, arr2,
     fig = plt.figure()
     ax1 = fig.add_subplot(121)
     
-    im1 = ax1.imshow(arr1, interpolation='None', extent = extent1,
+    im1 = ax1.imshow(dataset1, interpolation='None', extent = extent1,
                      cmap = cmap1, vmin = vmin1, vmax = vmax1)
     
     ax1.set_xlabel(xlabel1)
@@ -546,7 +649,7 @@ def double_colorbar_plot(arr1, arr2,
     cbar1.set_label(clabel1)
 
     ax2 = fig.add_subplot(122)
-    im2 = ax2.imshow(arr2, interpolation='None', extent = extent2,
+    im2 = ax2.imshow(dataset2, interpolation='None', extent = extent2,
                      cmap = cmap2, vmin = vmin2, vmax = vmax2)
     ax2.set_xlabel(xlabel2)
     ax2.set_ylabel(ylabel2)
@@ -595,4 +698,17 @@ def contour_plot(x,y,z,
     
     if return_axes:
         return ax1
+
+
+if __name__ == '__main__':
     
+    #matplotlib.rcParams.update({'font.size': 22})
+    ii = np.random.rand(250,250,3)
+    triple_colorbar(ii)
+    
+    ii = np.random.rand(250,250,2)
+    double_colorbar(ii)
+
+    
+    ii = np.random.rand(250,250,4)
+    small_colorbar_grid(ii)

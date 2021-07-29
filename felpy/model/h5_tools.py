@@ -25,7 +25,7 @@ class obj:
         pass
 
 
-def object2h5(fname, obj):
+def write_h5(fname, obj):
     """ 
     write a python object to hdf5 file
     
@@ -38,7 +38,7 @@ def object2h5(fname, obj):
             f.create_dataset(item[0], data = item[1])
     
 
-def h52object(fname):
+def laod_h5(fname):
     """
     read a hdf5 file to a python object
     
