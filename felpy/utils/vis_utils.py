@@ -28,16 +28,92 @@ from mpl_toolkits.mplot3d import Axes3D
 from felpy.utils.np_utils import extent_from_mesh
 import matplotlib 
 import matplotlib.pyplot as plt
+
+from matplotlib.colors import Normalize
+import matplotlib.cm as cm
+
 #!python numbers=disable
 fig_width_pt = 400.0  # Get this from LaTeX using \showthe\columnwidth
 inches_per_pt = 1.0/72.27               # Convert pt to inches
 golden_mean = (np.sqrt(5)-1.0)/2.0         # Aesthetic ratio
 fig_width = fig_width_pt*inches_per_pt  # width in inches
 fig_height =fig_width*golden_mean       # height in inches
-fig_size = [fig_width,fig_height]
+fig_size = [fig_width,fig_width/2]
 
 plt.style.use(['science','ieee'])
 mpl.rcParams['axes.linewidth'] = 1 #set the value globally
+
+
+ 
+
+
+class Grids:
+    
+    def __init__(self, fig_width = 400., global_aspect = 1, scale = 1, context = 'paper'):
+        
+        sns.set_context(context)
+        
+        fig_width_pt = 400.0 * scale  # Get this from LaTeX using \showthe\columnwidth
+        inches_per_pt = 1.0/72.27               # Convert pt to inches
+        fig_width = fig_width_pt*inches_per_pt  # width in inches
+        self.fig_size = [fig_width,fig_width/global_aspect]
+
+
+    def label(axis):
+        pass
+
+    def add_global_colorbar(self, clabel, cmap = 'bone', tick_values = None, tick_labels = None, fontsize = 12):
+                
+        cmap=cm.get_cmap(cmap)
+        normalizer=Normalize(np.min(ii),np.max(ii))
+        im=cm.ScalarMappable(norm=normalizer, cmap = cmap)
+        
+        if self.n*self.m > 1:
+            cbar = self.fig.colorbar(im, ax=self.axes.ravel().tolist(), pad = 0.025)
+        else:
+            cbar = self.fig.colorbar(im, ax=self.axes, pad = 0.025)
+
+        cbar.set_label(clabel, fontsize = fontsize)
+        
+        if tick_values != None and tick_labels != None:
+            cbar.set_ticks(tick_values)
+            cbar.set_ticklabels(tick_labels)
+            
+        
+    def create_grid(self, n = 1, m = 1, title = None, xlabel = None, ylabel = None,
+                            resolution = 100, fontsize = 12, sharex = True, sharey = True):
+    
+        self.n = n
+        self.m = m
+        
+        fig, axes = plt.subplots(nrows=n, ncols=m,
+                                 figsize = self.fig_size,
+                                 dpi = resolution,
+                                 sharex = sharex, sharey = sharey,  gridspec_kw={'width_ratios': np.ones(m)})
+ 
+        
+        if n*m > 1:
+            
+            for itr, axis in enumerate(axes.ravel()):
+                                
+
+                axis.set_aspect('auto')
+        else:                            
+                axes.set_aspect('auto')
+                
+ 
+        
+        
+        fig.text(-0.015, 0.5, ylabel, va='center', rotation='vertical', fontsize= fontsize)
+        fig.text(0.475, 0, xlabel, ha='center', fontsize = fontsize)
+       
+        fig.subplots_adjust(right=0.5)
+        
+        fig.suptitle(title)    
+        fig.tight_layout()
+
+        self.fig = fig
+        self.axes = axes
 
 def colorbar_plot(dataset,
                   mesh = None,
@@ -120,45 +196,7 @@ def colorbar_plot(dataset,
 
 
 
-def double_colorbar(ii, title = None, xlabel = None, ylabel = None, clabel = None,
-           extent = None, cmap = 'hot', vmin = None, vmax = None, savedir = None,
-           cticks = None, clabels = None, resolution = 100):
-    
-    
-    
-    fig, axes = plt.subplots(nrows=1, ncols=2, figsize = fig_size, dpi = resolution, sharex = True, sharey = True)
-    
-    for itr in range(ii.shape[-1]):
-        
-        
-        im = axes[itr].imshow(ii[:,:,itr], cmap = cmap, vmin = vmin, vmax = vmax)
-
-        axes[itr].set_xlabel(xlabel)
-        axes[itr].set_xlabel(ylabel)
-        axes[itr].set_aspect(1.5)
-    
-    fig.text(.048, 0.5, 'common Y', va='center', rotation='vertical', fontsize= 12)
-    fig.text(0.525, -0.05, 'common X', ha='center', fontsize = 12)
-    
-    fig.subplots_adjust(right=0.75)
-    fig.suptitle(title)    
-    fig.tight_layout()
-    
-    cbar_ax = fig.add_axes([.92, 0.048, 0.04, 0.917])
-    
-    cbar = fig.colorbar(im, cax=cbar_ax)
-    cbar.set_label(clabel, fontsize = 16)
-    
-    plt.subplots_adjust(wspace=-.25, hspace=0)
-    if cticks != None and clabels != None:
-        cbar.set_ticks(cticks)
-        cbar.set_ticklabels(clabels)
-     
-    if savedir is not None:
-        fig.savefig(savedir)
-    else:
-        plt.show()
-        
+       
 
 def triple_colorbar(ii, title = None, xlabel = None, ylabel = None, clabel = None,
            extent = None, cmap = 'hot', vmin = None, vmax = None, savedir = None,
@@ -213,7 +251,7 @@ def small_colorbar_grid(ii, title = None, xlabel = None, ylabel = None, clabel =
     
     for itr in range(ii.shape[-1]):
         
-        print(axes.shape)
+        
         im = axes[itr].imshow(ii[:,:,itr], cmap = cmap, vmin = vmin, vmax = vmax)
 
         axes[itr].set_xlabel(xlabel)
@@ -702,13 +740,40 @@ def contour_plot(x,y,z,
 
 if __name__ == '__main__':
     
+    from scipy.ndimage import gaussian_filter
     #matplotlib.rcParams.update({'font.size': 22})
-    ii = np.random.rand(250,250,3)
-    triple_colorbar(ii)
+# =============================================================================
+#     ii = gaussian_filter(np.random.rand(250,250,3),8)
+#     triple_colorbar(ii, cmap = 'bone')
+#     
+#     ii = np.random.rand(250,250,2)
+#     double_colorbar(ii)
+# 
+#     
+#     ii = np.random.rand(250,250,4)
+#     small_colorbar_grid(ii)
+# =============================================================================
+    CMAP = 'hsv'
+    ii = gaussian_filter(np.random.rand(2000,780,3),8)
+    plots = Grids(fig_width = 400, global_aspect = 1.5)
+    plots.create_grid(n = 1, m = 3, xlabel = "x", ylabel = "y")
+    plots.axes[0].imshow(ii[:,:,0], cmap = CMAP)
+    plots.axes[1].imshow(ii[:,:,1], cmap = CMAP)
+    plots.axes[2].imshow(ii[:,:,2], cmap = CMAP)
     
-    ii = np.random.rand(250,250,2)
-    double_colorbar(ii)
-
+    plots.add_global_colorbar("treys colorbar", cmap = CMAP)
     
-    ii = np.random.rand(250,250,4)
-    small_colorbar_grid(ii)
+    
+    n = 2
+    m = 2
+    
+    CMAP = 'hsv'
+    plots = Grids(fig_width = 400, global_aspect = 1.5)
+    plots.create_grid(n = n, m = m, xlabel = "x", ylabel = "y",)
+    
+    idx = np.unravel_index(np.arange(n*m), [n,m])
+    
+    plots.axes[idx[0][0], idx[0][1]].plot(np.arange(20))
+    
+    plots.axes[idx[0][0], idx[0][1]].set_xlabel("trey")
+    
