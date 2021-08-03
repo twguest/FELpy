@@ -61,6 +61,9 @@ class Grids:
 
     def label(axis):
         pass
+    
+    def pad(self, pad):
+        self.fig.tight_layout(pad = pad)
 
     def add_global_colorbar(self, clabel, cmap = 'bone', tick_values = None, tick_labels = None, fontsize = 12):
                 
@@ -776,4 +779,5 @@ if __name__ == '__main__':
     plots.axes[idx[0][0], idx[0][1]].plot(np.arange(20))
     
     plots.axes[idx[0][0], idx[0][1]].set_xlabel("trey")
+    plots.pad(3)
     
