@@ -62,11 +62,10 @@ def get_beamline_object(params = "", options = 'nano', ekev = 5.0,
     spb.build_beamline(focus = options)
     
     if crop is not None:
-        
-        if len(crop)==1:
-            crop = [None, crop[0]]
-            
-        spb.crop_beamline(crop[0], crop[1])
+        if type(crop) == list:
+            spb.crop_beamline(*crop)
+        else:
+            spb.crop_beamline(crop)
 
 
     return spb.get_beamline()

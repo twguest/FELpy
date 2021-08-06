@@ -17,7 +17,7 @@ import os
 import numpy as np
 from copy import copy
 
-
+from PIL import Image
 
 def get_mesh(ii, dx, dy):
     """
@@ -191,6 +191,11 @@ def crop_to(arr1, arr2):
 
     return arr1, arr2
 
+def load_tif(directory):
+    """
+    load a tif file as an np array
+    """
+    return (np.asarray(Image.open(directory)))
 
 
 if __name__ == '__main__':

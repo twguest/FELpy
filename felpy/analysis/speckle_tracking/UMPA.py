@@ -258,8 +258,8 @@ def sub_pix_min(a, width=1):
 
     return r
 
-
-if __name__ == "__main__":
+def get_measurements():
+    
     import numpy as np
     from scipy import ndimage as ndi
     import scipy
@@ -289,10 +289,10 @@ if __name__ == "__main__":
     
     # Simulation of a sphere
     sh = (512, 512)
-    ssize = 2.    # rough speckle size
+    ssize = 5.    # rough speckle size
     sphere_radius = 150
     lam = .5e-10  # wavelength
-    z = 1.5    # propagation distance
+    z = 2.15    # propagation distance
     psize = 1e-6  # pixel size
 
     # Simulate speckle pattern
@@ -305,13 +305,16 @@ if __name__ == "__main__":
     # Measurement positions
     pos = np.array( [(0., 0.)] + [(np.round(15.*np.cos(np.pi*j/3)), np.round(15.*np.sin(np.pi*j/3))) for j in range(6)] )
     pos = 4*np.indices((1, 1)).reshape((2, -1)).T
-
+    
+    pos = [(0,0), (1,-2), (-1,-4)]
     # Simulate the measurements
     measurements = np.array([abs(free_nf(sample*pshift(speckle, p), lam, z, psize))**2 for p in pos])
     reference = abs(free_nf(speckle, lam, z, psize))**2
     reference += np.random.rand(*reference.shape)*.005
     sref = [pshift(reference, p) for p in pos]
 
-    print(measurements.shape)
-    
-    result = match_speckles(measurements[0], sref[0], Nw=1, step=2, df = False)
+    return sref[0], measurements
+
+if __name__ == "__main__":
+    pass
+   
