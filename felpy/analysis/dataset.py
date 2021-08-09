@@ -29,7 +29,7 @@ def create_random_h5_file(folder, index):
 
 class Dataset:
     
-    def __init__(self, dataset, data_dim, set_dim, enable_analysis = False, fdir = None):
+    def __init__(self, **kwargs):
         """
         
         :param dataset: the data for analysis/storage. 
@@ -44,20 +44,12 @@ class Dataset:
                     an array of shape [nx,ny,a,b] would have a data_depth
                     [a,b]
         """
-        self.created = str(datetime.datetime.now())
-        self.dataset = dataset
+        
+        for key in kwargs:
+            self.key = kwargs[key]
+        
+        
 
-        self.data_dim = data_dim
-        self.set_dim = set_dim
-        
-        self.warnings()
-        
-        if enable_analysis:
-            pass
-        
-        if fdir is not None:
-            self.write_h5(self.fdir)
-        
     @staticmethod
     def load_dataset(fdir):
         """
@@ -74,6 +66,8 @@ class Dataset:
                 exec(f'ds.{k} = f[k][()]')
         
         return ds 
+    
+    
     
     @staticmethod
     def create_virtual_dataset(fdir, files, key):
@@ -95,7 +89,18 @@ class Dataset:
             
             f.create_virtual_dataset(key, layout, fillvalue=0)
             f.close()
+            
+            
     
+    def create_group(self, group_name):
+        """
+        add a subset dataset to this dataset 
+        """
+        self.f.create_group(group_name)
+    
+    def create_subgroup(self, group_name, sub_group):
+        self.f[group_name].create_group(sub_group)
+         
     def label_dataset(self, data_labels, set_labels):
         """
         add dataset labels for plotting purposes etc
@@ -121,9 +126,12 @@ class Dataset:
         with h5py.File(fdir, 'w') as f:
               
             for item in self.__dict__:
+                    print(item)
                     f.create_dataset(item, data = self.__dict__[item])
         
-   
+        self.f = h5py.File(name=self.fdir, mode='w') 
+
+        
     def warnings(self):
         assert self.data_dim + self.set_dim == self.dataset.shape, "The dimensions of the data and its containing set should be representative of the data shape. i.e. data order + data depth = data shape.\n\nSee Dataset docstring for more info"
 
@@ -169,8 +177,8 @@ class Shimadzu(Dataset):
  
 if __name__ == '__main__':
     
-    fdir = "../data/tmp/dataset_test.h5"
-    fdir = "../data/tmp/dataset_test.h5"
+    fdir = "../data/tmp/dataset_tester.h5"
+
     
     from felpy.analysis.dataset import Dataset
     from felpy.exp.shimadzu.preprocess import shimadzu_test_data
@@ -178,7 +186,7 @@ if __name__ == '__main__':
     
     data = shimadzu_test_data(512, 512, 5, 10)
     
-    ds = Dataset(data, data_dim = (512,512), set_dim = (5,10))
+    ds = Dataset()
     
     import numpy as np
     import h5py

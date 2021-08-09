@@ -122,7 +122,7 @@ def modify_beam_divergence(wfr, sig, dtheta):
 
     tl = thinLens(f,f)
     bl = Beamline()
-    bl.append(tl, [0,0,1,0,0,1,1,1,1,0,0,0])
+    bl.append(tl, [0,0,0,0,0,1,1,1,1,0,0,0])
     bl.append(Drift(2*f), [0,0,1,0,0,1,1,1,1,0,0,0])
     bl.propagate(wfr)
 
