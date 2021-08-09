@@ -47,24 +47,32 @@ class Dataset:
         
         for key in kwargs:
             self.key = kwargs[key]
-        
-        
-
+ 
+    
     @staticmethod
-    def load_dataset(fdir):
+    def load_dataset(fdir, overwrite = True):
         """
         load a h5 dataset to python object struture w/ methods etc
         
         :param fdir: directory of h5 file
         """
+        
+ 
+        
         ds = loaded_dataset()
         
+        if overwrite:
+            ds.fdir = fdir
+            ds.write_h5(fdir)
+
         with h5py.File(fdir, 'r') as f:
             
             for k in f.keys():
                 
                 exec(f'ds.{k} = f[k][()]')
+       
         
+
         return ds 
     
     
@@ -90,7 +98,8 @@ class Dataset:
             f.create_virtual_dataset(key, layout, fillvalue=0)
             f.close()
             
-            
+    def add_virtual_dataset(self, files, key = None):
+        pass
     
     def create_group(self, group_name):
         """
@@ -100,6 +109,7 @@ class Dataset:
     
     def create_subgroup(self, group_name, sub_group):
         self.f[group_name].create_group(sub_group)
+        
          
     def label_dataset(self, data_labels, set_labels):
         """
@@ -126,11 +136,14 @@ class Dataset:
         with h5py.File(fdir, 'w') as f:
               
             for item in self.__dict__:
-                    print(item)
+
                     f.create_dataset(item, data = self.__dict__[item])
         
         self.f = h5py.File(name=self.fdir, mode='w') 
 
+    def close(self):
+        self.f.close()
+        
         
     def warnings(self):
         assert self.data_dim + self.set_dim == self.dataset.shape, "The dimensions of the data and its containing set should be representative of the data shape. i.e. data order + data depth = data shape.\n\nSee Dataset docstring for more info"
@@ -146,7 +159,7 @@ class Dataset:
     
     def set_mesh(self, px,py):
         self.mesh = get_mesh(self.dataset, px, py)
-        
+    
         
 class loaded_dataset(Dataset):
     """ 
@@ -183,19 +196,21 @@ if __name__ == '__main__':
     from felpy.analysis.dataset import Dataset
     from felpy.exp.shimadzu.preprocess import shimadzu_test_data
  
-    
-    data = shimadzu_test_data(512, 512, 5, 10)
-    
-    ds = Dataset()
-    
-    import numpy as np
-    import h5py
-    
-    ### write dataset object to h5 file.
-    ds.write_h5(fdir)
-    
-    ### read dataset object from h5 file.
-    dr = Dataset.load_dataset(fdir)
-    
-    sh = Shimadzu(data)
- 
+# =============================================================================
+#     
+#     data = shimadzu_test_data(512, 512, 5, 10)
+#     
+#     ds = Dataset()
+#     
+#     import numpy as np
+#     import h5py
+#     
+#     ### write dataset object to h5 file.
+#     ds.write_h5(fdir)
+#     
+#     ### read dataset object from h5 file.
+#     dr = Dataset.load_dataset(fdir)
+#     
+#     sh = Shimadzu(data)
+#  
+# =============================================================================
