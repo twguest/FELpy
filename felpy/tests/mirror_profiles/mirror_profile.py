@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from felpy.model.beamlines.exfel_spb.exfel_spb import Instrument
-import numpy as np
+ import numpy as np
 spb = Instrument()
 
 surfaces = []

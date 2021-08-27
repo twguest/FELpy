@@ -114,7 +114,7 @@ if __name__ == '__main__':
     
     options = load_options()
 
-    for idx in range(options.shape[0]):
+    for idx in range()options.shape[0]):
         input_folder = options['Pulse Name'][idx]
         time_end = options['End Time'][idx]
         z_output_point = options['Start Point'][idx]

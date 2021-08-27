@@ -184,6 +184,8 @@ def construct_SA1_wavefront(nx, ny, ekev, q, xoff = 0, yoff = 0, mx = 0, my = 0,
 
     wfr = Wavefront(gsnBm)
     wfr.params.wavelength = wavelength
+    srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
+
     modify_beam_divergence(wfr,analytical_pulse_width(ekev),analytical_pulse_divergence(q,ekev))
 
 
