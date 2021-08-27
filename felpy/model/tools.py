@@ -86,6 +86,7 @@ def radial_profile(data, center):
     return radialprofile, r
 
  
+  
 def scale(wfr, nx = 512, ny = 512):
     """
     narrow functionality for scaling a wavefront (ie the number of pixels)
@@ -101,14 +102,16 @@ def scale(wfr, nx = 512, ny = 512):
     ix, iy = wfr.params.Mesh.nx, wfr.params.Mesh.ny
     dx, dy = wfr.params.Mesh.xMax-wfr.params.Mesh.xMin, wfr.params.Mesh.yMax-wfr.params.Mesh.yMin
     
+    print(dx, dy)
+    print(nx/ix)
 
     scbl = Beamline()
-    #scbl.append(Drift(0), propagation_parameters(fx/dx, nx/ix, fy/dy, ny/iy))
-    scbl.append(Aperture('r','a', 800e-06, 800e-06), propagation_parameters(800e-06/dy, nx/ix, 800e-06/dx, ny/iy))
+    scbl.append(Aperture('r','a', 800e-06, 800e-06), propagation_parameters(800e-06/dx, nx/ix, 800e-06/dx, ny/iy))
 
     scbl.propagate(wfr)
 
     return wfr
+
 
 def getCoord(arr, mode = 'centre'):
     
@@ -184,27 +187,4 @@ def concatenate_pulses(wfrs):
     
     return ensemble
 
-    
-def scale(wfr, iscx = 1024, iscy = 1024):
-    """
-    DEPR.
-    narrow functionality for scaling a wavefront (ie the number of pixels)
-    in the source plane
-
-    :param wfr: wpg wfr strucutre
-    :param isc: ideal scale
-    :param ifov: ideal field of view
-
-    :returns wfr: scaled wpg wfr structure
-    """
-
-    nx, ny = wfr.params.Mesh.nx, wfr.params.Mesh.ny
-    dx, dy = wfr.params.Mesh.xMax-wfr.params.Mesh.xMin, wfr.params.Mesh.yMax-wfr.params.Mesh.yMin
-
-
-
-    scbl = Beamline()
-    scbl.append(Drift(0), propagation_parameters(1, iscx/nx, 1, iscy/ny))
-    scbl.propagate(wfr)
-
-    return wfr
+ 

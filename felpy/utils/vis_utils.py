@@ -28,9 +28,15 @@ from mpl_toolkits.mplot3d import Axes3D
 from felpy.utils.np_utils import extent_from_mesh
 import matplotlib 
 import matplotlib.pyplot as plt
-
+from PIL import ImageColor
 from matplotlib.colors import Normalize
 import matplotlib.cm as cm
+from matplotlib.colors import ListedColormap,LinearSegmentedColormap
+
+exfel_c1 = [i/256 for i in ImageColor.getrgb("#0D1546")]
+exfel_c2 = [i/256 for i in ImageColor.getrgb("#F39200")]
+exfel_c3 = [i/256 for i in ImageColor.getrgb("#559DBB")]
+exfel_c4 = [i/256 for i in ImageColor.getrgb("#B2B2B2")]
 
 #!python numbers=disable
 fig_width_pt = 400.0  # Get this from LaTeX using \showthe\columnwidth
@@ -44,8 +50,31 @@ plt.style.use(['science','ieee'])
 mpl.rcParams['axes.linewidth'] = 1 #set the value globally
 
 
- 
+def exfel_cmap():
 
+    N = 256
+    c1 = np.ones([N, 4])
+
+    c1[:, 0] = np.linspace(exfel_c1[0], 1, N)  
+    c1[:, 1] = np.linspace(exfel_c1[1], 1, N)  
+    c1[:, 2] = np.linspace(exfel_c1[2], 1, N)  
+
+    cmap_1 = ListedColormap(c1)
+
+    c2 = np.ones([N, 4])
+
+    c2[:, 0] = np.linspace(exfel_c2[0], 1, N)  
+    c2[:, 1] = np.linspace(exfel_c2[1], 1, N)  
+    c2[:, 2] = np.linspace(exfel_c2[2], 1, N)  
+
+    cmap_2 = ListedColormap(c2)
+
+    newcolors2 = np.vstack((cmap_1(np.linspace(0, 1, 128)),
+                            cmap_2(np.linspace(1, 0, 128))))
+
+    cmap = ListedColormap(newcolors2, name='exfel')
+
+    return cmap  
 
 class Grids:
     

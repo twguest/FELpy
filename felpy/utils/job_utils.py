@@ -249,14 +249,14 @@ class JobScheduler:
                     method_dir = inspect.getfile(self.python_command)
                     print(method_dir)
                     run_directory, filename = method_dir.rsplit("/",1)
-                    fh.writelines("cd {}; python3 -c 'from {} import {};{}()' {}".format(run_directory,filename.split(".py")[0],self.python_command.__name__,
+                    fh.writelines("cd {}; python -c 'from {} import {};{}()' {}".format(run_directory,filename.split(".py")[0],self.python_command.__name__,
                                                                                            self.python_command.__name__,array_item))
                 elif self.command == 'script':  
-                    fh.writelines("python3 {} {}".format(self.python_command, array_item))
+                    fh.writelines("python {} {}".format(self.python_command, array_item))
             elif self.job_type == 'spawn' and array_item != None:
-                fh.writelines("python3 {} {}".format(self.python_command, array_item))
+                fh.writelines("python {} {}".format(self.python_command, array_item))
             else:
-                fh.writelines("python3 {}".format(self.python_command))
+                fh.writelines("python {}".format(self.python_command))
 
                 if self.options:
                     for o in self.options:

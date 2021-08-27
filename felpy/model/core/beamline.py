@@ -11,7 +11,7 @@ class Beamline(WPG_Beamline):
         super().__init__(_srwl_wf)
         
 
-    def propagate_sequential(self, wfr, outdir = None):
+    def propagate_sequential(self, wfr, outdir = None, return_intensity = False, return_mesh = False):
         """
         Propagate sequentially through each optical element in beamline.
 
@@ -33,6 +33,11 @@ class Beamline(WPG_Beamline):
         if outdir is not None:
             wfr.write(outdir + "initialSource")
             wfr.view()
+        
+        if return_intensity:
+            intensity = []
+        if return_mesh:
+            mesh = []
             
         for itr in range(len(self.propagation_options[0]['optical_elements'])):
             oe = self.propagation_options[0]['optical_elements'][itr]
@@ -47,11 +52,26 @@ class Beamline(WPG_Beamline):
                 
             srwl.PropagElecField(wfr._srwl_wf, bl)
             
+            if return_intensity:
+                intensity.append(wfr.get_intensity().sum(-1))
+            if return_mesh:
+                mesh.append(wfr.get_mesh())
+                    
  
             if outdir is None:
-                plot_intensity_map(wfr)
+                if return_intensity:
+                    pass
+                else:
+                    plot_intensity_map(wfr)
 
-
+        if return_intensity:
+            
+            if return_mesh:
+                return intensity, mesh
+            else:
+                return intensity
+            
+            
 if __name__ == '__main__':
 
     from felpy.model.src.coherent import construct_SA1_pulse

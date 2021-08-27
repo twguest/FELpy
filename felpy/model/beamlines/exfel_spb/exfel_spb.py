@@ -422,7 +422,6 @@ class Instrument:
             self.bl.append(self.HOM2,  propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
             self.bl.append(self.d3, propagation_parameters(1,1,1,1, mode = 'fraunhofer'))
             
-            self.bl.append(self.MKB_pslit, propagation_parameters(1/10, 1, 1/5, 1, mode = 'fresnel'))
             self.bl.append(self.d4, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
             self.bl.append(self.MHP, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
             self.bl.append(self.d5, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
@@ -456,8 +455,7 @@ class Instrument:
             self.bl.append(self.NVE, propagation_parameters(1/3, 1, 1/3, 1, mode = 'fresnel'))
             
             
-            self.bl.append(self.df, propagation_parameters(1/3,1,1/3,1, mode = 'converge'))
-
+            #self.bl.append(self.df, propagation_parameters(1,1,1,1, mode = 'converge'))
             
         self.bl.params = self.params
         
