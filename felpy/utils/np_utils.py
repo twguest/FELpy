@@ -133,7 +133,7 @@ def equate_mesh(mesh1, mesh2):
     
     xmin, xmax = np.min(mesh1[0,]), np.max(mesh1[0,])
     ymin, ymax = np.min(mesh1[1,]), np.max(mesh1[1,])
-    
+    print(xmin, xmax, ymin,ymax)
 
     mesh3 = mesh2[1,
                   find_nearest_above(mesh2[1,0,], xmin): find_nearest_above(mesh2[1,0,], xmax),

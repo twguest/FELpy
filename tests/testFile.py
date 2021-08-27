@@ -19,3 +19,4 @@ if __name__ == '__main__':
     
 def test(a):
     print(a)
+    print(sys.argv[1])
