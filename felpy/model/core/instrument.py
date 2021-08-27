@@ -478,7 +478,7 @@ class Instrument:
         if toggle == "off":
             self.define_mirror_profiles(overwrite = overwrite, aperture = aperture, surface = 'flat')
             
-    def plot_mirror_profiles(self, mirror_name, context = 'talk', sdir = None):
+    def get_mirror_profiles(self, mirror_name, context = 'talk', sdir = None):
         
         sns.set()
         
@@ -490,19 +490,8 @@ class Instrument:
         surface = surface[1:,1:]
         
         mesh = get_mesh(surface, abs(x[1]-x[0]), abs(y[1]-y[0]))
-        colorbar_plot(surface,
-                      mesh,
-                      title = mirror_name,
-                      xlabel = "x (mm)",
-                      ylabel = "y (mm)",
-                      scale = 1e3,
-                      context = context,
-                      clabel = "Surface Height Error (nm)",
-                      vmin = np.min(surface),
-                      vmax = np.max(surface),
-                      sdir = sdir,
-                      cmap = 'afmhot')
-                      
+
+        return surface, mesh
  
  
  

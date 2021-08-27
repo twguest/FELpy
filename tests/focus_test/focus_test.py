@@ -69,7 +69,7 @@ def sliceFocus(wfr, ekev, focus = 'nano', nslices = 500, axisName = 'x', outdir 
         print("Slice {}/{}".format(n+1, nslices))
         
         bl = Beamline()
-        bl.append(SRWLOptD(slice_interval), propagation_parameters(1,1,1,1, mode = 'fresnel'))
+        bl.append(SRWLOptD(slice_interval), propagation_parameters(1,1,1,1, mode = 'quadratic'))
         bl.propagate(wfr)
         plotIntensity(wfr)
         data_focslice[-n-1, :] = wfr.get_intensity()[:,:,0].sum(-1)

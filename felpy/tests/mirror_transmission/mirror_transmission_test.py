@@ -58,8 +58,15 @@ if __name__ == '__main__':
     
     from labwork.about import dCache
     from felpy.utils.os_utils import mkdir_p
-    SDIR = dCache + "/mirror_reflectivity/"
-    mkdir_p(SDIR)
+    
+    try:
+        SDIR =   "./mirror_reflectivity/"
+        mkdir_p(SDIR)
+
+    except(FileNotFoundError):
+        SDIR = input("Save Directory: ")
+        mkdir_p(SDIR)
+
     
     #ii = no_mirror()
     
@@ -69,13 +76,17 @@ if __name__ == '__main__':
     noap = memory_map(SDIR + "mirror_refl_no_aperture", shape = (len(energies), len(angles),2))
     ap = memory_map(SDIR + "mirror_refl_aperture", shape = (len(energies), len(angles),2))
     
+    cpus = mpi.cpu_count()//2
+    print("Distributing to {} cpus".format(cpus))
     
-    for a in range(len(energies)):
-        pool = mpi.Pool(processes = mpi.cpu_count()//2)
+    for a in tqdm(range(len(energies))):
+        
+        pool = mpi.Pool(processes = cpus)
+        
         #ii = no_mirror(energy)
         func_a = partial(no_aperture, ekev = energies[a])
       
-        res = pool.map(func_a, tqdm(angles))
+        res = pool.map(func_a, angles)
         noap[a, :, :] = np.array([angles, res]).T
         
         func_b = partial(aperture, ekev = energies[a])

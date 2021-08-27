@@ -126,7 +126,7 @@ class Dataset:
         self.set_labels = set_labels
         
         
-    def write_h5(self, fdir):
+    def write_h5(self):
         """
         :param fdir: location + filename of the h5 file
         """
