@@ -19,6 +19,28 @@ from matplotlib import pyplot as plt
 
 from felpy.utils.job_utils import JobScheduler
 
+def generate_mirror_surface(nx,ny,dx,dy,savedir,mode,mirror_name):
+    """
+    Generate a plane mirror surface
+    
+    :param nx: number of horizontal pixels [int]
+    :param ny: number of vertical pixels [int]
+    :param mirDim: list of mirror dimensions [dx,dy] [m]
+    :param outdir: save directory
+    :param mode: type of mirror surface to be generated
+    """
+    
+    if mode == 'flat':
+        surface = np.zeros([nx,ny])
+    elif mode == 'random':
+        surface = np.ones([nx,ny])
+        surface = gaussian_filter(surface, 30)*1e-09
+        
+    surface[0,1:] = np.linspace(-dx/2, dy/2, nx-1)
+    surface[1:,0] = np.linspace(-dy/2, dx/2, ny-1)
+   
+    np.savetxt(savedir+"mir_"+mode +".dat", surface, delimiter='\t')
+    
 def genMirrorSurface(nx, ny, mirDim, outdir, mode = 'Flat', plot = False, mirrorName = None):
     """
     Generate a plane mirror surface

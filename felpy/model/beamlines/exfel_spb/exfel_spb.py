@@ -22,7 +22,7 @@ import json
 import numpy as np
 import sys
 from matplotlib import pyplot as plt
-
+import os
 from felpy.model.core.beamline import Beamline
 from wpg import srwlib
 from wpg.srwlib import SRWLOptD as Drift
@@ -31,7 +31,7 @@ from wpg.srwlib import SRWLOptT
 from wpg.optical_elements import Mirror_elliptical as MirEl
 
 from felpy.utils.os_utils import add_path, felpy_path
-from felpy.model.materials.mirror_surface import genMirrorSurface
+from felpy.model.materials.mirror_surface import genMirrorSurface, generate_mirror_surface
 from felpy.model.materials.load_refl import get_refl, load_refl
 from felpy.model.src.coherent import construct_SA1_wavefront
 from wpg.optical_elements import calculateOPD
@@ -60,6 +60,7 @@ class Instrument:
         self.load_params()
         self.fpath = felpy_path() ### felpy path (for dev. purposes)
         
+        self.mirrors = ["HOM1", "HOM2", "MHE", "MVE", "MHP", "MVP", "NVE", "NHE"]
         add_path()
         
     def load_params(self, fromFile = False):
@@ -104,83 +105,41 @@ class Instrument:
         self.params[mirror_name]['reflectivity'] = refl
 
 
-    def define_mirror_profiles(self, overwrite = False, surface = 'flat', plot = False, aperture = True):
-        """
-        Define the plane mirror profiles by loading from /data/. 
-        If mirror profiles not defined (unlikely), generate profiles via genMirrorSurface
+
+    def load_mirror_profiles(self, surface = "flat", aperture = True):
         
-        :param overwrite: bool to overwrite current file.
-        :param surface: surface type (flat, random or real)
-        """
-    
-        
-        if surface == 'real':
+        for mirror in self.mirrors:
             
-            mm = 'random' ### fix for no 'real' surface MHE, MVE, MVP surfaces etc.
+            fdir = "../../data/spb/mirror_surface/{}_mir_{}.dat".format(mirror,aperture)
             
-            if overwrite == True:
+
+            if aperture:
                 
-                if aperture == True:
-                    genMirrorSurface(500, 500, [self.params["MHP"]['dx'],self.params["MHP"]['dy']], "../../data/spb/mirror_surface/mhp_", mode = mm, plot = plot, mirrorName = "MHP") 
-                    genMirrorSurface(500, 500, [self.params["MVP"]['dx'],self.params["MVP"]['dy']], "../../data/spb/mirror_surface/mvp_", mode = mm, plot = plot, mirrorName = "MVP")  
-                    genMirrorSurface(500, 500, [self.params["MHE"]['dx'],self.params["MHE"]['dy']], "../../data/spb/mirror_surface/mhe_", mode = mm, plot = plot, mirrorName = "MHE")
-                    genMirrorSurface(500, 500, [self.params["MVE"]['dx'],self.params["MVE"]['dy']], "../../data/spb/mirror_surface/mve_", mode = mm, plot = plot, mirrorName = "MVE")  
-                    genMirrorSurface(500, 500, [self.params["NHE"]['dx'],self.params["NHE"]['dy']], "../../data/spb/mirror_surface/nhe_", mode = surface, plot = plot, mirrorName = "NHE")
-                    genMirrorSurface(500, 500, [self.params["NVE"]['dx'],self.params["NVE"]['dy']], "../../data/spb/mirror_surface/nve_", mode = surface, plot = plot, mirrorName = "NVE")  
+                if os.exists(fdir):
+                    self.params[mirror]['mirror profile'] = fdir 
+                else:
+                    generate_mirror_surface(512, 512,
+                                           dx = self.params[mirror]['dx'],
+                                           dy = self.params[mirror]['dy'],
+                                           savedir = "../../data/spb/mirror_surface/",
+                                           mode = surface,
+                                           mirror_name = mirror)
+
                     
-                elif aperture == False:
-                    genMirrorSurface(500, 500, [100,100], "data/spb/mirror_surface/hom1_", mode = mm, plot = plot, mirrorName = "HOM1") 
-                    genMirrorSurface(500, 500, [100,100], "data/spb/mirror_surface/hom2_", mode = mm, plot = plot, mirrorName = "HOM2")  
-                    genMirrorSurface(500, 500, [100,100], "data/spb/mirror_surface/mhp_", mode = mm, plot = plot, mirrorName = "MHP") 
-                    genMirrorSurface(500, 500, [100,100], "data/spb/mirror_surface/mvp_", mode = mm, plot = plot, mirrorName = "MVP")  
-                    genMirrorSurface(500, 500, [100,100], "data/spb/mirror_surface/mhe_", mode = mm, plot = plot, mirrorName = "MHE")
-                    genMirrorSurface(500, 500, [100,100], "../../data/spb/mirror_surface/mve_", mode = mm, plot = plot, mirrorName = "MVE")  
-                    genMirrorSurface(500, 500, [100,100], "../../data/spb/mirror_surface/nhe_", mode = mm, plot = plot, mirrorName = "NHE")
-                    genMirrorSurface(500, 500, [100,100], "../../data/spb/mirror_surface/nve_", mode = mm, plot = plot, mirrorName = "NVE")  
-                    
-        
-        elif surface == 'flat':
-            
-            mm = 'flat'
-        
-            if overwrite == True:
+            elif aperture is False:
                 
-                if aperture == True:
-                    genMirrorSurface(500, 500, [self.params["MHP"]['dx'],self.params["MHP"]['dy']], "../../data/spb/mirror_surface/mhp_", mode = surface, plot = plot, mirrorName = "MHP") 
-                    genMirrorSurface(500, 500, [self.params["MVP"]['dx'],self.params["MVP"]['dy']], "../../data/spb/mirror_surface/mvp_", mode = surface, plot = plot, mirrorName = "MVP")  
-                    genMirrorSurface(500, 500, [self.params["MHE"]['dx'],self.params["MHE"]['dy']], "../../data/spb/mirror_surface/mhe_", mode = surface, plot = plot, mirrorName = "MHE")
-                    genMirrorSurface(500, 500, [self.params["MVE"]['dx'],self.params["MVE"]['dy']], "../../data/spb/mirror_surface/mve_", mode = surface, plot = plot, mirrorName = "MVE")  
-                    genMirrorSurface(500, 500, [self.params["NHE"]['dx'],self.params["NHE"]['dy']], "../../data/spb/mirror_surface/nhe_", mode = surface, plot = plot, mirrorName = "NHE")
-                    genMirrorSurface(500, 500, [self.params["NVE"]['dx'],self.params["NVE"]['dy']], "../../data/spb/mirror_surface/nve_", mode = surface, plot = plot, mirrorName = "NVE")  
+                if os.exists(fdir):
+                    self.params[mirror]['mirror profile'] = fdir 
+                else:
+                    generate_mirror_surface(512, 512,
+                                           dx = 100,
+                                           dy = 100,
+                                           savedir = "../../data/spb/mirror_surface/",
+                                           mode = surface,
+                                           mirror_name = mirror)
+
                 
-                if aperture == False:
-                    genMirrorSurface(500, 500, [100,100], "../../data/spb/mirror_surface/hom1_", mode = surface, plot = plot, mirrorName = "HOM1") 
-                    genMirrorSurface(500, 500, [100,100], "../../data/spb/mirror_surface/hom2_", mode = surface, plot = plot, mirrorName = "HOM2")   
-                    genMirrorSurface(500, 500, [100,100], "../../data/spb/mirror_surface/mhp_", mode = surface, plot = plot, mirrorName = "MHP") 
-                    genMirrorSurface(500, 500, [100,100], "../../data/spb/mirror_surface/mvp_", mode = surface, plot = plot, mirrorName = "MVP")  
-                    genMirrorSurface(500, 500, [1000,1000], "../../data/spb/mirror_surface/mhe_", mode = surface, plot = plot, mirrorName = "MHE")
-                    genMirrorSurface(500, 500, [1000,1000], "../../data/spb/mirror_surface/mve_", mode = surface, plot = plot, mirrorName = "MVE")  
-                    genMirrorSurface(500, 500, [100,100], "../../data/spb/mirror_surface/nhe_", mode = surface, plot = plot, mirrorName = "NHE")
-                    genMirrorSurface(500, 500, [100,100], "../../data/spb/mirror_surface/nve_", mode = surface, plot = plot, mirrorName = "NVE")  
-                
-                
-            if aperture == True:
-                self.params['HOM1']['mirror profile'] = "../../data/spb/mirror_surface/hom1_mir_{}.dat".format(surface)
-                self.params['HOM2']['mirror profile'] = "../../data/spb/mirror_surface/hom2_mir_{}.dat".format(surface)
-            else:
-                self.params['HOM1']['mirror profile'] = "../../data/spb/mirror_surface/hom1_mir_{}.dat".format(mm)
-                self.params['HOM2']['mirror profile'] = "../../data/spb/mirror_surface/hom2_mir_{}.dat".format(mm)
-                self.params['MHE']["length"] = 10
-                self.params['MVE']["length"] = 10
-            
-        self.params['MHP']['mirror profile'] = "../../data/spb/mirror_surface/mhp_mir_{}.dat".format(mm)
-        self.params['MVP']['mirror profile'] = "../../data/spb/mirror_surface/mvp_mir_{}.dat".format(mm)
-        
-        self.params['MHE_error']['mirror profile'] = "../../data/spb/mirror_surface/mhe_mir_{}.dat".format(mm)
-        self.params['MVE_error']['mirror profile'] = "../../data/spb/mirror_surface/mve_mir_{}.dat".format(mm)
-        self.params['NHE_error']['mirror profile'] = "../../data/spb/mirror_surface/nhe_mir_{}.dat".format(surface)
-        self.params['NVE_error']['mirror profile'] = "../../data/spb/mirror_surface/nve_mir_{}.dat".format(surface)
-        
+ 
         
  
     def build_elements(self, focus = "nano"):
@@ -507,25 +466,20 @@ class Instrument:
             drift2screen.name = screenName
         self.bl.append(Drift(distance), propagation_parameters(1, 1, 1, 1, m = 'quadratic'))
     
-    def mirror_profiles(self, toggle = "on", aperture = True, overwrite = True):
+    def mirror_profiles(self, surface, aperture, overwrite = True):
         """
         toggle for mirror surfaces
-        """
-        if toggle == "on":
-            self.define_mirror_profiles(overwrite = overwrite, aperture = aperture, surface = 'real')
-        if toggle == "off":
-            self.define_mirror_profiles(overwrite = overwrite, aperture = aperture, surface = 'flat')
+        """ 
+        self.load_mirror_profiles(aperture = aperture, surface = surface)
             
+        
     def get_mirror_profile(self, mirror_name, sdir = None):
         
         
-        
         surface = np.loadtxt(self.params[mirror_name]['mirror profile'])
-        
-        
+                
         x = surface[1:, 0]*1e3
         y = surface[0, 1:]*1e3
-        
         
         surface = surface[1:,1:]*1e9
         

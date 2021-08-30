@@ -19,7 +19,7 @@ from felpy.model.beamlines.exfel_spb.exfel_spb import Instrument
 
  
 def get_beamline_object(params = "", options = 'nano', ekev = 5.0,
-                        apertures = True, surface = True, crop = None,
+                        apertures = True, surface = 'real', crop = None,
                         theta_HOM = 2.3e-03, theta_KB = 3.5e-03):
     
     """ 
@@ -49,13 +49,10 @@ def get_beamline_object(params = "", options = 'nano', ekev = 5.0,
             spb.adjust_mirror(mirror,
                               ekev,
                               theta_KB)
-    ## bad python / quick fix
-    if surface == True: 
-        surface = "on"
-    else: 
-        surface = "off"
+
+    
         
-    spb.mirror_profiles(toggle = surface, aperture = apertures, overwrite = False)
+    spb.mirror_profiles(surface = surface, aperture = apertures)
 
         
     spb.build_elements(focus = options)
