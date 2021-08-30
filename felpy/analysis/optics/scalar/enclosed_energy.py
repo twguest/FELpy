@@ -30,17 +30,21 @@ fwhm_area = norm.cdf(np.sqrt(2*np.log(2))) - norm.cdf(-np.sqrt(2*np.log(2)))
 from felpy.model.tools import radial_profile
 
     
-def plotEnclosed(ii, r, c, label = None, outdir = None):
+def plot_enclosed_energy(ii, r, c, label = None, outdir = None):
     
     
     fig = plt.figure()
     ax1 = fig.add_subplot()
     
-    ax1.imshow(ii, cmap = 'jet')
+    ax1.imshow(ii, cmap = 'afmhot')
+    
     circle = plt.Circle(c, r, color='w', fill=False)
     ax1.add_artist(circle)
+    
     plt.axis("off")
+    
     ax1.plot(c[0],c[1], marker = 'x', color = 'k')
+    
     if label is not None:
         ax1.text(15, ii.shape[1]-15, label, c = 'w')
         
@@ -59,17 +63,7 @@ def get_enclosed_energy(ii, dx, dy, efraction = fwhm_area, sdir = None, plot = F
     
     profile = radial_profile(ii, c)[0] ### get radial profile
     
-    
-# =============================================================================
-#     r = []
-#     
-#     for n in range(int(nx//np.sqrt(2))): 
-#         
-#         r.append(sum(profile[:n])/sum(profile)) ### cumulative sum over profile
-#         
-#     r = np.array(r)
-# =============================================================================
-    
+ 
     r = np.cumsum(profile)/sum(profile)
     
     dr = np.gradient(r) ### get gradient for sub-pixel estimate
@@ -83,7 +77,7 @@ def get_enclosed_energy(ii, dx, dy, efraction = fwhm_area, sdir = None, plot = F
  
     if plot:
 
-        plotEnclosed(ii, idx, c)
+        plot_enclosed_energy(ii, idx, c)
     
     return results, np.max(err)
     

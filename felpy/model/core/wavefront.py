@@ -477,7 +477,12 @@ class Wavefront(WPG_Wavefront):
         
         return clen
 
-
+    def get_extent(self):
+        """
+        returns matplotlib plt.imshow extent for plotting purposes.
+        """
+        return [self.params.Mesh.xMin, self.params.Mesh.xMax, self.params.Mesh.yMin, self.params.Mesh.yMax]
+        
     def analysis(self, VERBOSE = False, DEBUG = False):
         """
         run a full analysis of the non-plotting utils and write to h5 file        
