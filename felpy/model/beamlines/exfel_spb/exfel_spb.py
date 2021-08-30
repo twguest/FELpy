@@ -163,18 +163,19 @@ class Instrument:
                     genMirrorSurface(500, 500, [100,100], "../../data/spb/mirror_surface/nhe_", mode = surface, plot = plot, mirrorName = "NHE")
                     genMirrorSurface(500, 500, [100,100], "../../data/spb/mirror_surface/nve_", mode = surface, plot = plot, mirrorName = "NVE")  
                 
-        
-        if aperture == True:
-            self.params['HOM1']['mirror profile'] = "../../data/spb/mirror_surface/hom1_mir_{}.dat".format(surface)
-            self.params['HOM2']['mirror profile'] = "../../data/spb/mirror_surface/hom2_mir_{}.dat".format(surface)
-        else:
-            self.params['HOM1']['mirror profile'] = "../../data/spb/mirror_surface/hom1_mir_{}.dat".format(mm)
-            self.params['HOM2']['mirror profile'] = "../../data/spb/mirror_surface/hom2_mir_{}.dat".format(mm)
-            self.params['MHE']["length"] = 10
-            self.params['MVE']["length"] = 10
+                
+            if aperture == True:
+                self.params['HOM1']['mirror profile'] = "../../data/spb/mirror_surface/hom1_mir_{}.dat".format(surface)
+                self.params['HOM2']['mirror profile'] = "../../data/spb/mirror_surface/hom2_mir_{}.dat".format(surface)
+            else:
+                self.params['HOM1']['mirror profile'] = "../../data/spb/mirror_surface/hom1_mir_{}.dat".format(mm)
+                self.params['HOM2']['mirror profile'] = "../../data/spb/mirror_surface/hom2_mir_{}.dat".format(mm)
+                self.params['MHE']["length"] = 10
+                self.params['MVE']["length"] = 10
             
         self.params['MHP']['mirror profile'] = "../../data/spb/mirror_surface/mhp_mir_{}.dat".format(mm)
         self.params['MVP']['mirror profile'] = "../../data/spb/mirror_surface/mvp_mir_{}.dat".format(mm)
+        
         self.params['MHE_error']['mirror profile'] = "../../data/spb/mirror_surface/mhe_mir_{}.dat".format(mm)
         self.params['MVE_error']['mirror profile'] = "../../data/spb/mirror_surface/mve_mir_{}.dat".format(mm)
         self.params['NHE_error']['mirror profile'] = "../../data/spb/mirror_surface/nhe_mir_{}.dat".format(surface)
@@ -506,7 +507,7 @@ class Instrument:
             drift2screen.name = screenName
         self.bl.append(Drift(distance), propagation_parameters(1, 1, 1, 1, m = 'quadratic'))
     
-    def mirror_profiles(self, toggle = "on", aperture = True, overwrite = False):
+    def mirror_profiles(self, toggle = "on", aperture = True, overwrite = True):
         """
         toggle for mirror surfaces
         """
