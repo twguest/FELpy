@@ -13,6 +13,10 @@ __version__ = "1.0.1"
 __maintainer__ = "Trey Guest"
 __email__ = "twguest@students.latrobe.edu.au"
 __status__ = "Developement"
+
+
+### TO-DO: Add a smart front-end that reads elements into the Instrument and saves names/properties etc
+### TO-DO: each optical element should be an object with properties describing how to build it etc.
 """
 
 
@@ -61,6 +65,7 @@ class Instrument:
         self.fpath = felpy_path() ### felpy path (for dev. purposes)
         
         self.mirrors = ["HOM1", "HOM2", "MHE", "MVE", "MHP", "MVP", "NVE", "NHE"]
+        self.focus = ["MHE", "MVE", "NVE", "NHE"]
         add_path()
         
     def load_params(self, fromFile = False):
@@ -100,6 +105,7 @@ class Instrument:
             refl = get_refl(load_refl(material), ekev, new_ang)
        
         new_ang = new_ang + np.tan(self.params[mirror_name]["xc"]/self.params[self.params[mirror_name]['next_drift']]['distance'])
+       
         self.params[mirror_name]["design angle"] = new_ang
         self.params[mirror_name]["incidence angle"] = new_ang
         self.params[mirror_name]['reflectivity'] = refl
@@ -108,15 +114,23 @@ class Instrument:
 
     def load_mirror_profiles(self, surface = "flat", aperture = True):
         
+        
         for mirror in self.mirrors:
             
-            fdir = "../../data/spb/mirror_surface/{}_mir_{}.dat".format(mirror,aperture)
-            
+            if mirror in ["MHE", "MVP","MVE","MHP"]:
+                surface = 'flat'
+                
+            fdir = "../../data/spb/mirror_surface/{}_mir_{}.dat".format(mirror,surface)
 
+            
             if aperture:
                 
-                if os.exists(fdir):
-                    self.params[mirror]['mirror profile'] = fdir 
+                if os.path.exists(fdir):
+                    if mirror in self.focus:
+                        self.params[mirror+"_error"]['mirror profile'] = fdir 
+                    else:
+                        self.params[mirror]['mirror profile'] = fdir 
+
                 else:
                     generate_mirror_surface(512, 512,
                                            dx = self.params[mirror]['dx'],
@@ -125,11 +139,17 @@ class Instrument:
                                            mode = surface,
                                            mirror_name = mirror)
 
-                    
-            elif aperture is False:
-                
-                if os.exists(fdir):
                     self.params[mirror]['mirror profile'] = fdir 
+                    
+            elif aperture == False:
+                
+                ## ask liuba "RuntimeError: Failed to determine optical axis after reflection from mirror." for large el-mirror lengths
+
+                if os.path.exists(fdir):
+                    if mirror in self.focus:
+                        self.params[mirror+"_error"]['mirror profile'] = fdir 
+                    else:
+                        self.params[mirror]['mirror profile'] = fdir 
                 else:
                     generate_mirror_surface(512, 512,
                                            dx = 100,
@@ -140,7 +160,7 @@ class Instrument:
 
                 
  
-        
+                    self.params[mirror]['mirror profile'] = fdir 
  
     def build_elements(self, focus = "nano"):
         
@@ -187,13 +207,13 @@ class Instrument:
             self.df =  Drift(self.params["df"]['distance'])
             self.df.name =  'df'
             
-            self.NKB_pslit = Aperture(_shape=self.params["NKB_pslit"]['shape'],
-                                      _ap_or_ob=self.params["NKB_pslit"]['type'],
-                                      _Dx= self.params["NKB_pslit"]['dx'],
-                                      _Dy= self.params["NKB_pslit"]['dy'],
-                                      _x=self.params["NKB_pslit"]['xc'],
-                                      _y=self.params["NKB_pslit"]['yc'])
-            self.NKB_pslit.name = self.params["NKB_pslit"]['name']
+            self.NKB_PSlit = Aperture(_shape=self.params["NKB_PSlit"]['shape'],
+                                      _ap_or_ob=self.params["NKB_PSlit"]['type'],
+                                      _Dx= self.params["NKB_PSlit"]['dx'],
+                                      _Dy= self.params["NKB_PSlit"]['dy'],
+                                      _x=self.params["NKB_PSlit"]['xc'],
+                                      _y=self.params["NKB_PSlit"]['yc'])
+            self.NKB_PSlit.name = self.params["NKB_PSlit"]['name']
             
         if focus == "micron":
             self.d3 =  Drift(self.params["d3"]['distance'])
@@ -281,13 +301,13 @@ class Instrument:
         
         elif focus == "nano":
             
-            self.NKB_pslit = Aperture(_shape=self.params["NKB_pslit"]['shape'],
-                                      _ap_or_ob=self.params["NKB_pslit"]['type'],
-                                      _Dx= self.params["NKB_pslit"]['dx'],
-                                      _Dy= self.params["NKB_pslit"]['dy'],
-                                      _x=self.params["NKB_pslit"]['xc'],
-                                      _y=self.params["NKB_pslit"]['yc'])
-            self.NKB_pslit.name = self.params["NKB_pslit"]['name']
+            self.NKB_PSlit = Aperture(_shape=self.params["NKB_PSlit"]['shape'],
+                                      _ap_or_ob=self.params["NKB_PSlit"]['type'],
+                                      _Dx= self.params["NKB_PSlit"]['dx'],
+                                      _Dy= self.params["NKB_PSlit"]['dy'],
+                                      _x=self.params["NKB_PSlit"]['xc'],
+                                      _y=self.params["NKB_PSlit"]['yc'])
+            self.NKB_PSlit.name = self.params["NKB_PSlit"]['name']
             
             
             self.NHE = MirEl(orient = self.params['NHE']["orientation"], p = self.params['NHE']["distance from source"], q = self.params['NHE']["distance to focus"],
@@ -316,7 +336,7 @@ class Instrument:
             
             self.NVE_error = MirPl(np.loadtxt(self.fpath + self.params['NVE_error']['mirror profile'].replace("../../","")),
                             _dim = self.params['NVE_error']['orientation'],
-                            _ang = self.params['NVE_error']['incidence angle']+self.params['NVE']['incidence angle'], 
+                            _ang = self.params['NVE_error']['incidence angle'], ### + self.params['NVE']['incidence angle'], 
                             _refl = self.params['NVE_error']['transmission'],
                             _x = self.params['NVE_error']['xc'], _y = self.params['NVE_error']['yc']) 
             
@@ -324,7 +344,7 @@ class Instrument:
             
             self.NHE_error = MirPl(np.loadtxt(self.fpath + self.params['NHE_error']['mirror profile'].replace("../../","")),
                 _dim = self.params['NHE_error']['orientation'],
-                _ang = self.params['NHE_error']['incidence angle']+self.params['NHE']['incidence angle'], 
+                _ang = self.params['NHE_error']['incidence angle'], ###+self.params['NHE']['incidence angle'], 
                 _refl = self.params['NHE_error']['transmission'],
                 _x = self.params['NHE_error']['xc'], _y = self.params['NHE_error']['yc']) 
 
@@ -365,7 +385,7 @@ class Instrument:
             self.bl.append(self.HOM2,  propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
             self.bl.append(self.d3, propagation_parameters(2,1,2,1, mode = 'fraunhofer'))
             
-            self.bl.append(self.NKB_pslit, propagation_parameters(1/10, 1, 1/10,  1, mode = 'fresnel'))
+            self.bl.append(self.NKB_PSlit, propagation_parameters(1/10, 1, 1/10,  1, mode = 'fresnel'))
             self.bl.append(self.d4, propagation_parameters(1, 1, 1, 1, mode = 'fraunhofer'))
             self.bl.append(self.d5, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
             self.bl.append(self.df, propagation_parameters(1,1,1,1, mode = 'quadratic'))
@@ -404,7 +424,7 @@ class Instrument:
             self.bl.append(self.HOM2,  propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
             self.bl.append(self.d3, propagation_parameters(2,1,2,1, mode = 'fraunhofer'))
             
-            self.bl.append(self.NKB_pslit, propagation_parameters(1/10, 1, 1/10,  1, mode = 'fresnel'))
+            self.bl.append(self.NKB_PSlit, propagation_parameters(1/10, 1, 1/10,  1, mode = 'fresnel'))
             self.bl.append(self.d4, propagation_parameters(1, 1, 1, 1, mode = 'fraunhofer'))
             self.bl.append(self.NHE_error, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
             self.bl.append(self.NHE, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
@@ -485,4 +505,39 @@ class Instrument:
         
         return surface, x, y
     
+    def list_elements(self):
+        return [el.name for el in self.bl.propagation_options[0]['optical_elements']]
+        
+    def get_index(self, element_name):
+        """
+        get the index of an element in a beamline by name
+        """
+        ### get index
+        names = self.list_elements()
     
+        if self.VERBOSE:
+            print("List of Elements: {}".format(names))
+        try:
+            index = names.index(element_name)
+        except(ValueError):
+            print("Beamline does not contain optical element: {}".format(element_name))
+
+        return index
+        
+    def remove_element(self, element_name):
+        """ 
+        remove an element from the beamline by name
+        """
+        
+        index = self.get_index(element_name)
+
+        del self.bl.propagation_options[0]['optical_elements'][index]
+        del self.bl.propagation_options[0]['propagation_parameters'][index]
+
+    def edit_propagation_parameters(self, element_name, new_parameters):
+        """
+        edit the propagation parameters of an element by name
+        """
+        self.bl.propagation_options[0]['propagation_parameters'][self.get_index(element_name)] = new_parameters
+
+        

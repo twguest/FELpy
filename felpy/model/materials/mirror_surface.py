@@ -39,7 +39,7 @@ def generate_mirror_surface(nx,ny,dx,dy,savedir,mode,mirror_name):
     surface[0,1:] = np.linspace(-dx/2, dy/2, nx-1)
     surface[1:,0] = np.linspace(-dy/2, dx/2, ny-1)
    
-    np.savetxt(savedir+"mir_"+mode +".dat", surface, delimiter='\t')
+    np.savetxt(savedir+ mirror_name + "_mir_" + mode +".dat", surface, delimiter='\t')
     
 def genMirrorSurface(nx, ny, mirDim, outdir, mode = 'Flat', plot = False, mirrorName = None):
     """
