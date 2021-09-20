@@ -15,10 +15,12 @@ from setuptools import find_packages
 
 
 class MyInstall(DistutilsInstall):
+  
     def run(self):
 
         DistutilsInstall.run(self)
-	print("Installing FELpy")
+	
+    print("Installing FELpy")
 	print("****************")
 
 setup(name='FELpy',
@@ -36,7 +38,7 @@ setup(name='FELpy',
                          'pandas>=1.0.3',
                          'pillow>=7.0.0',
                          'pip>=20.0.2',
-		         'seaborn',
+		                 'seaborn',
                          'scikit-learn>=0.22.1',
                          'scipy>=1.4.1',
                          'tqdm>=4.46.0',
