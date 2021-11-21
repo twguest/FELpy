@@ -21,7 +21,7 @@ class MyInstall(DistutilsInstall):
         DistutilsInstall.run(self)
 	
     print("Installing FELpy")
-	print("****************")
+    print("****************")
 
 setup(name='FELpy',
       version='0.1.1',

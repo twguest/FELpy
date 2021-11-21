@@ -178,7 +178,7 @@ def setup_spb(params = "", options = 'nano', ekev = 5.0,
 
     
 def unit_test():
-    get_beamline_object()
+    setup_spb()
 
 if __name__ == '__main__':
     unit_test()

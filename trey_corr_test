@@ -1,0 +1,92 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Nov 10 11:44:32 2021
+
+@author: twguest
+"""
+
+import numpy as np
+from scipy.signal import correlate, correlate2d 
+from matplotlib import pyplot as plt
+from felpy.utils.vis_utils import Grids
+from scipy.ndimage import gaussian_filter
+
+def get_correlation(I1,I2,window_size, scan_size = 11):
+    
+
+    
+    sh = I1.shape
+    
+    I1 = np.pad(I1, window_size)
+    I2 = np.pad(I2, window_size)
+    
+    output = np.zeros_like(I1)
+
+    ix = [window_size+window_size//2, sh[0]-window_size]
+    iy = [window_size+window_size//2, sh[1]-window_size]
+    
+# =============================================================================
+#     for xx in range(ix[0]+15, ix[1]):
+#         for yy in range(iy[0]+15, iy[1]):
+# =============================================================================
+    yy = 150
+    xshift = np.zeros([300])
+    for k,xx in enumerate(range(200,500)):
+        ROI_2 = I2[yy-window_size//2:yy+window_size//2,xx-window_size//2:xx+window_size//2]
+        
+    
+        plots = Grids()
+        plots.create_grid(n = 1, m = 3, sharex = False, sharey = False)
+        ax1,ax2,ax3 = plots.axes
+    
+        shift_y = 0 ## nominal shift for debug
+        shift_x = 0
+        COI_1 = I1[shift_y+yy-window_size//2:shift_y+yy+window_size//2,shift_x+xx-window_size//2:shift_x+xx+window_size//2]
+        
+        ax1.imshow(ROI_2, extent = [-window_size//2, 2*window_size//2,-2*window_size//2, 2*window_size//2,])
+        ax2.imshow(COI_1, extent = [-window_size//2, 2*window_size//2,-2*window_size//2, 2*window_size//2,])
+        
+        cmap = correlate(COI_1, ROI_2, mode = 'same')
+        ax3.imshow(cmap, extent = [-cmap.shape[0]//2, cmap.shape[0]//2,-cmap.shape[1]//2, cmap.shape[1]//2])
+        plt.show()
+        cmap = gaussian_filter(cmap, 3)
+        print("yshift", np.where(cmap == np.max(cmap))[0][0]-cmap.shape[1]//2)
+        print("xshift", np.where(cmap == np.max(cmap))[1][0]-cmap.shape[0]//2)     
+        xshift[k] = np.where(cmap == np.max(cmap))[1][0]-cmap.shape[1]//2
+   
+    return cmap, xshift
+
+if __name__ == "__main__":
+    from matplotlib import pyplot as plt
+    from felpy.utils.data_utils import load_tif
+    from sklearn.preprocessing import minmax_scale
+    I1 = load_tif("/media/twguest/Cache/imbl_data/phase_calibration/proc/static/320grit_150mmcyl_1500ms/nocyl/320_grit_nocyl_1500ms0000.tif")#[215:415,425:625]
+    I2 = load_tif("/media/twguest/Cache/imbl_data/phase_calibration/proc/static/320grit_150mmcyl_1500ms/320grit_150cyl_1500ms/320grit_cyl_1500ms0000.tif")#[215:415,425:625]
+
+
+    I1 = np.clip(I1, 0, 1.25)
+    I2 = np.clip(I2, 0, 1.25)
+    I1 = I1-np.mean(I1)
+    I2 = I2-np.mean(I2)
+    
+    #I1 = gaussian_filter(I1, .3)    
+    #I2 = gaussian_filter(I2, .3) 
+
+    I1 = I1/np.sum(I1)
+
+    I2 = I2/np.sum(I2)
+    
+    
+    from scipy.ndimage import gaussian_filter, gaussian_filter1d
+    plots = Grids()
+    plots.create_grid(n = 2, m = 1 )
+    ax1,ax2 = plots.axes
+    
+    ax1.imshow(I1, vmin = np.min(I1), vmax = np.max(I1))
+    ax2.imshow(I2, vmin = np.min(I2), vmax = np.max(I2))
+
+    cmap, xshift = get_correlation(I1,I2,25)
+
+    print("yshift", np.where(cmap == np.max(cmap))[0][0]-cmap.shape[1]//2)
+    print("xshift", np.where(cmap == np.max(cmap))[1][0]-cmap.shape[0]//2)
