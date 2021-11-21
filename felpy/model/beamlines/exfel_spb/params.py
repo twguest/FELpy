@@ -47,7 +47,9 @@ def get_params():
                       "reflectivity": 1,
                       'next_drift' : 'd2',
                       'ang_min': 1.1e-03,
-                      'ang_max': 3.6e-03}
+                      'ang_max': 3.6e-03,
+                      'dx': 0.525,
+                      'dy': 0.010}
     
     params["d2"] = {'name': "d2",
                     "description": "Drift from HOM1 to HOM2",
@@ -64,7 +66,9 @@ def get_params():
                       "yc": 0,
                       'next_drift' : 'd3',
                       'ang_min': 1.1e-03,
-                      'ang_max': 3.6e-03}
+                      'ang_max': 3.6e-03,
+                      'dx': 0.525,
+                      'dy': 0.010}
     
     params["d3"] = {'name': "d3",
                     "description": "Drift from HOM2 to Effective Tunnel Entrance",
