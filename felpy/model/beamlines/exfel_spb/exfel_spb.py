@@ -55,14 +55,14 @@ class Instrument:
     """
     
     
-    def __init__(self, VERBOSE = True):
+    def __init__(self, parameter_file = None, VERBOSE = True):
         
         self.VERBOSE = VERBOSE
         
         if VERBOSE:
             print("Initialising Single Particle Beamline")
         
-        self.load_params()
+        self.load_params(file = parameter_file)
         self.fpath = felpy_path() ### felpy path (for dev. purposes)
         
         self.mirrors = ["HOM1", "HOM2", "MHE", "MVE", "MHP", "MVP", "NVE", "NHE"]
@@ -70,13 +70,13 @@ class Instrument:
         self.focus = ["MHE", "MVE", "NVE", "NHE"]
         add_path()
         
-    def load_params(self, fromFile = False):
+    def load_params(self, file = None):
         """
         load beamline parameters from /data/spb/
         """
         
-        if fromFile:
-            with open("../../data/params/exfel_spb.json", "r") as read_file:
+        if file is not None:
+            with open("../../data/params/{}.json", "r") as read_file:
                 self.params = json.load(read_file)
         else:
             self.params = get_params()
@@ -129,13 +129,13 @@ class Instrument:
                 if os.path.exists(fdir):
                     if mirror in self.focus:
                         self.params[mirror+"_error"]['mirror profile'] = fdir 
-                        print(fdir)
 
                     else:
                         self.params[mirror]['mirror profile'] = fdir 
 
                 else:
-                    print("fdir could not be found")
+                    print("The mirror path could not be found")
+                    print("Generating Random Mirror File")
                     generate_mirror_surface(512, 512,
                                            dx = self.params[mirror]['dx'],
                                            dy = self.params[mirror]['dy'],
@@ -421,22 +421,22 @@ class Instrument:
        
         elif focus == "nano":
             
-            self.bl.append(self.d1, propagation_parameters(1,2.5,1,2.5, mode = "quadratic"))
+            self.bl.append(self.d1, propagation_parameters(*self.params['d1']['pp']))
     
-            self.bl.append(self.HOM1, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
-            self.bl.append(self.d2, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
-            self.bl.append(self.HOM2,  propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
-            self.bl.append(self.d3, propagation_parameters(2,1,2,1, mode = 'fraunhofer'))
+            self.bl.append(self.HOM1, propagation_parameters(*self.params['HOM1']['pp']))
+            self.bl.append(self.d2, propagation_parameters(*self.params['d2']['pp']))
+            self.bl.append(self.HOM2,  propagation_parameters(*self.params['HOM2']['pp']))
+            self.bl.append(self.d3, propagation_parameters(*self.params['d3']['pp']))
             
-            self.bl.append(self.NKB_PSlit, propagation_parameters(1/15, 2, 1/15, 2, mode = 'fresnel'))
-            self.bl.append(self.d4, propagation_parameters(1, 1, 1, 1, mode = 'fraunhofer'))
-            self.bl.append(self.NHE_error, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
-            self.bl.append(self.NHE, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
+            self.bl.append(self.NKB_PSlit, propagation_parameters(*self.params['NKB_PSlit']['pp']))
+            self.bl.append(self.d4, propagation_parameters(*self.params['d4']['pp']))
+            self.bl.append(self.NHE_error, propagation_parameters(*self.params['NHE_error']['pp']))
+            self.bl.append(self.NHE, propagation_parameters(*self.params['NHE']['pp']))
             
             
-            self.bl.append(self.d5, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
-            self.bl.append(self.NVE_error, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
-            self.bl.append(self.NVE, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
+            self.bl.append(self.d5, propagation_parameters(*self.params['d5']['pp']))
+            self.bl.append(self.NVE_error, propagation_parameters(*self.params['NVE_error']['pp']))
+            self.bl.append(self.NVE, propagation_parameters(*self.params['NVE']['pp']))
             
             #self.bl.append(self.df, propagation_parameters(1,1,1,1, mode = 'converge'))
             #self.bl.append(self.df, propagation_parameters(15,1,15,1, mode = 'converge')) ### perfect mirrors

@@ -33,7 +33,7 @@ def get_beamline_object(params = "", options = 'nano', ekev = 5.0,
     """
  
 
-    spb = Instrument()
+    spb = Instrument(parameter_file = "spb-sfx_nkb_FAST")
     params = spb.params
     
     if apertures == False:
@@ -100,7 +100,7 @@ def get_beamline_object(params = "", options = 'nano', ekev = 5.0,
 def setup_spb(params = "", options = 'nano', ekev = 5.0,
               apertures = True, surface = 'real', crop = None,
               theta_HOM = 2.3e-03, theta_KB = 3.5e-03,
-              save_params = True):
+              save_params = False):
 
     """ 
     return desired beamline
@@ -117,7 +117,6 @@ def setup_spb(params = "", options = 'nano', ekev = 5.0,
 
     if apertures == False:
         theta_HOM = theta_KB = np.pi/2 ### is true. no aperture / mirror edges == 
-
 
     mirrors = spb.mirrors
 
@@ -177,8 +176,13 @@ def setup_spb(params = "", options = 'nano', ekev = 5.0,
     return spb
 
     
-def unit_test():
-    get_beamline_object()
 
 if __name__ == '__main__':
-    unit_test()
+    from wpg.wpg_uti_wf import plot_intensity_map
+    from felpy.model.src.coherent import construct_SA1_wavefront
+
+    spb = setup_spb()
+    bl = spb.bl
+    wfr = construct_SA1_wavefront(512,512, 5, 0.25)
+    bl.propagate_sequential(wfr)
+    plot_intensity_map(wfr)
