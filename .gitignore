@@ -146,7 +146,7 @@ dmypy.json
 
 *.h5
 .pyre/
-*.ipynb
+
 *.zip
 
 
