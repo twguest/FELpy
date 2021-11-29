@@ -8,6 +8,7 @@ Currently, FELpy is packaged for development only using 'conda-develop'.
 If you wish to create a unique environment for FELpy, run:
 ```
 conda create -n felpy python=3.6
+conda activate felpy
 ```
 
 Otherwise, you can install in dev-mode by running:
