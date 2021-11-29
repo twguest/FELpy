@@ -22,5 +22,5 @@ core:
 	#echo "$(CURDIR)/WPG/" > "$SITEDIR/wpg.pth"
 	#echo "$(CURDIR)/WPG/srw/" > "$SITEDIR/srw.pth"
 	conda develop .
-	conda develop /WPG
-	conda develop /WPG/wpg/
+	conda develop WPG
+	conda develop WPG/wpg/
