@@ -21,6 +21,6 @@ core:
 	#echo "$(CURDIR)/" > "$SITEDIR/felpy.pth"
 	#echo "$(CURDIR)/WPG/" > "$SITEDIR/wpg.pth"
 	#echo "$(CURDIR)/WPG/srw/" > "$SITEDIR/srw.pth"
-	conda develop FELpy/
-	conda develop FELpy/WPG
-	conda develop FELPY/WPG/wpg/
+	conda develop .
+	conda develop WPG
+	conda develop WPG/wpg/
