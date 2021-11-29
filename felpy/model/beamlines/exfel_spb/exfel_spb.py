@@ -76,7 +76,7 @@ class Instrument:
         """
         
         if file is not None:
-            with open("../../data/params/{}.json", "r") as read_file:
+            with open(file, "r") as read_file:
                 self.params = json.load(read_file)
         else:
             self.params = get_params()
@@ -545,3 +545,6 @@ class Instrument:
         self.bl.propagation_options[0]['propagation_parameters'][self.get_index(element_name)] = new_parameters
 
         
+    def rebuild(self, focus = 'nano'):
+        self.build_elements(focus)
+        self.build_beamline(focus)

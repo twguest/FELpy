@@ -97,23 +97,17 @@ def get_beamline_object(params = "", options = 'nano', ekev = 5.0,
     return spb.get_beamline()
     
 
-def setup_spb(params = "", options = 'nano', ekev = 5.0,
+def setup_spb(parameter_file = "spb-sfx_nkb_FAST", options = 'nano', ekev = 5.0,
               apertures = True, surface = 'real', crop = None,
               theta_HOM = 2.3e-03, theta_KB = 3.5e-03,
               save_params = False):
 
     """ 
     return desired beamline
-
-    note, params var currently has no use, at later date, it would be nice to
-    be able to build the beamline from this file.
-
-    this may or may not be worth the time, for now it is almost certainly not.
     """
 
 
-    spb = Instrument()
-    params = spb.params
+    spb = Instrument(parameter_file = parameter_file)
 
     if apertures == False:
         theta_HOM = theta_KB = np.pi/2 ### is true. no aperture / mirror edges == 
