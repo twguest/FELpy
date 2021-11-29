@@ -1,6 +1,6 @@
 ## FELpy: A Python Library for Free Electron Lasers 
 
-# Installation Guide:
+### Installation Guide:
 Currently, FELpy is packaged for development only using 'conda-develop'.
 
 - [] https://github.com/twguest/FELpy/issues/2
