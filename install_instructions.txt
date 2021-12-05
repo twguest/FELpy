@@ -1,0 +1,8 @@
+(optional) - If you want to begin with a fresh conda environment, run:
+conda create -n felpy python=3.6
+
+In the desired directory, run:
+
+git clone https://github.com/twguest/FELpy.git
+cd FELpy/
+make

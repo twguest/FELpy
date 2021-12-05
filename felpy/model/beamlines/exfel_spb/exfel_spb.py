@@ -43,8 +43,9 @@ from felpy.model.beamlines.exfel_spb.params import get_params
 from felpy.model.tools import propagation_parameters
 from wpg.srwlib import srwl_opt_setup_surf_height_2d as MirPl
 
-
-
+import os
+import sys
+ 
 import seaborn as sns
 
 class Instrument:
@@ -54,27 +55,28 @@ class Instrument:
     """
     
     
-    def __init__(self, VERBOSE = True):
+    def __init__(self, parameter_file = None, VERBOSE = True):
         
         self.VERBOSE = VERBOSE
         
         if VERBOSE:
             print("Initialising Single Particle Beamline")
         
-        self.load_params()
+        self.load_params(file = parameter_file)
         self.fpath = felpy_path() ### felpy path (for dev. purposes)
         
         self.mirrors = ["HOM1", "HOM2", "MHE", "MVE", "MHP", "MVP", "NVE", "NHE"]
+        self.nano = ["HOM1", "HOM2", "NVE", "NHE"]
         self.focus = ["MHE", "MVE", "NVE", "NHE"]
         add_path()
         
-    def load_params(self, fromFile = False):
+    def load_params(self, file = None):
         """
         load beamline parameters from /data/spb/
         """
         
-        if fromFile:
-            with open("../../data/params/exfel_spb.json", "r") as read_file:
+        if file is not None:
+            with open(file, "r") as read_file:
                 self.params = json.load(read_file)
         else:
             self.params = get_params()
@@ -86,7 +88,7 @@ class Instrument:
         :param sdir: save directory
         """
         if sdir is None:
-            with open('../../data/spb/parameters.json', 'w') as f:
+            with open(self.fpath + '/data/spb/parameters.json', 'w') as f:
                 json.dump(self.params, f)
         else:
             with open(sdir + 'parameters.json', 'w') as f:
@@ -108,30 +110,32 @@ class Instrument:
        
         self.params[mirror_name]["design angle"] = new_ang
         self.params[mirror_name]["incidence angle"] = new_ang
-        self.params[mirror_name]['reflectivity'] = refl
+        self.params[mirror_name]['reflectivity'] = (1-refl)#**2 ### note, this maps to an absorption parameter (hence 1-refl)
 
 
 
     def load_mirror_profiles(self, surface = "flat", aperture = True):
         
         
-        for mirror in self.mirrors:
+        for mirror in self.nano:
             
             if mirror in ["MHE", "MVP","MVE","MHP"]:
-                surface = 'flat'
+                fdir =  self.fpath + "/data/spb/mirror_surface/{}_mir_{}.dat".format(mirror,surface)
+            else:
+                fdir =  self.fpath + "/data/spb/mirror_surface/{}_mir_real.dat".format(mirror)
                 
-            fdir = "../../data/spb/mirror_surface/{}_mir_{}.dat".format(mirror,surface)
-
-            
             if aperture:
                 
                 if os.path.exists(fdir):
                     if mirror in self.focus:
                         self.params[mirror+"_error"]['mirror profile'] = fdir 
+
                     else:
                         self.params[mirror]['mirror profile'] = fdir 
 
                 else:
+                    print("The mirror path could not be found")
+                    print("Generating Random Mirror File")
                     generate_mirror_surface(512, 512,
                                            dx = self.params[mirror]['dx'],
                                            dy = self.params[mirror]['dy'],
@@ -167,7 +171,7 @@ class Instrument:
         self.d1 =  Drift(self.params["HOM1"]['distance from source'])
         self.d1.name = self.params["d1"]['name']
         
-        self.HOM1 = MirPl(np.loadtxt(self.fpath + self.params['HOM1']['mirror profile'].replace("../../","")),
+        self.HOM1 = MirPl(np.loadtxt(self.params['HOM1']['mirror profile'].replace("../../","")),
                      _dim = self.params['HOM1']['orientation'],
                      _ang = self.params['HOM1']['incidence angle'], 
                      _amp_coef = 1,
@@ -179,7 +183,7 @@ class Instrument:
         self.d2 =  Drift(self.params["HOM2"]['distance from source']-self.params["HOM1"]['distance from source'])
         self.d2.name = self.params["d2"]['name']
         
-        self.HOM2 = MirPl(np.loadtxt(self.fpath + self.params['HOM2']['mirror profile'].replace("../../","")),
+        self.HOM2 = MirPl(np.loadtxt(self.params['HOM2']['mirror profile'].replace("../../","")),
                      _dim = self.params['HOM2']['orientation'],
                      _ang = self.params['HOM2']['incidence angle'], 
                      _amp_coef = 1,
@@ -231,7 +235,7 @@ class Instrument:
             self.d4.name = self.params["d4"]['name']
             
 
-            self.MHP = MirPl(np.loadtxt(self.fpath + self.params['MHP']['mirror profile'].replace("../../","")),
+            self.MHP = MirPl(np.loadtxt(self.params['MHP']['mirror profile'].replace("../../","")),
                          _dim = self.params['MHP']['orientation'],
                          _ang = self.params['MHP']['incidence angle'], 
                          _refl = self.params['MHP']['transmission'],
@@ -241,7 +245,7 @@ class Instrument:
             self.d5 =  Drift(self.params["d5"]['distance'])
             self.d5.name = self.params["d5"]['name']
             
-            self.MHE_error = MirPl(np.loadtxt(self.fpath + self.params['MHE_error']['mirror profile'].replace("../../","")),
+            self.MHE_error = MirPl(np.loadtxt(self.params['MHE_error']['mirror profile'].replace("../../","")),
              _dim = self.params['MHE_error']['orientation'],
              _ang = self.params['MHE_error']['incidence angle'], 
              _refl = self.params['MHE_error']['transmission'],
@@ -250,7 +254,7 @@ class Instrument:
             self.MHE_error.name = self.params['MHE_error']['name']
             
 
-            self.MVE_error = MirPl(np.loadtxt(self.fpath + self.params['MVE_error']['mirror profile'].replace("../../","")),
+            self.MVE_error = MirPl(np.loadtxt(self.params['MVE_error']['mirror profile'].replace("../../","")),
              _dim = self.params['MVE_error']['orientation'],
              _ang = self.params['MVE_error']['incidence angle'], 
              _refl = self.params['MVE_error']['transmission'],
@@ -289,7 +293,7 @@ class Instrument:
             self.d8 =  Drift(self.params["d8"]['distance'])
             self.d8.name = self.params["d8"]['name']
             
-            self.MVP = MirPl(np.loadtxt(self.fpath + self.params['MVP']['mirror profile'].replace("../../","")),
+            self.MVP = MirPl(np.loadtxt(self.params['MVP']['mirror profile'].replace("../../","")),
                      _dim = self.params['MVP']['orientation'],
                      _ang = self.params['MVP']['incidence angle'], 
                      _refl = self.params['MVP']['transmission'],
@@ -334,7 +338,7 @@ class Instrument:
             
             self.NVE.name = self.params["NVE"]["name"]
             
-            self.NVE_error = MirPl(np.loadtxt(self.fpath + self.params['NVE_error']['mirror profile'].replace("../../","")),
+            self.NVE_error = MirPl(np.loadtxt(self.params['NVE_error']['mirror profile'].replace("../../","")),
                             _dim = self.params['NVE_error']['orientation'],
                             _ang = self.params['NVE_error']['incidence angle'], ### + self.params['NVE']['incidence angle'], 
                             _refl = self.params['NVE_error']['transmission'],
@@ -342,12 +346,14 @@ class Instrument:
             
             self.NVE_error.name = self.params['NVE_error']['name']
             
-            self.NHE_error = MirPl(np.loadtxt(self.fpath + self.params['NHE_error']['mirror profile'].replace("../../","")),
+            self.NHE_error = MirPl(np.loadtxt(self.params['NHE_error']['mirror profile'].replace("../../","")),
                 _dim = self.params['NHE_error']['orientation'],
                 _ang = self.params['NHE_error']['incidence angle'], ###+self.params['NHE']['incidence angle'], 
                 _refl = self.params['NHE_error']['transmission'],
                 _x = self.params['NHE_error']['xc'], _y = self.params['NHE_error']['yc']) 
 
+            
+                  
             self.NHE_error.name = self.params['NHE_error']['name']
             
             self.params["d3"]["distance"] = 656.424
@@ -417,25 +423,25 @@ class Instrument:
        
         elif focus == "nano":
             
-            self.bl.append(self.d1, propagation_parameters(1,1,1,1, mode = "quadratic"))
+            self.bl.append(self.d1, propagation_parameters(*self.params['d1']['pp']))
     
-            self.bl.append(self.HOM1, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
-            self.bl.append(self.d2, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
-            self.bl.append(self.HOM2,  propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
-            self.bl.append(self.d3, propagation_parameters(2,1,2,1, mode = 'fraunhofer'))
+            self.bl.append(self.HOM1, propagation_parameters(*self.params['HOM1']['pp']))
+            self.bl.append(self.d2, propagation_parameters(*self.params['d2']['pp']))
+            self.bl.append(self.HOM2,  propagation_parameters(*self.params['HOM2']['pp']))
+            self.bl.append(self.d3, propagation_parameters(*self.params['d3']['pp']))
             
-            self.bl.append(self.NKB_PSlit, propagation_parameters(1/10, 1, 1/10,  1, mode = 'fresnel'))
-            self.bl.append(self.d4, propagation_parameters(1, 1, 1, 1, mode = 'fraunhofer'))
-            self.bl.append(self.NHE_error, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
-            self.bl.append(self.NHE, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
+            self.bl.append(self.NKB_PSlit, propagation_parameters(*self.params['NKB_PSlit']['pp']))
+            self.bl.append(self.d4, propagation_parameters(*self.params['d4']['pp']))
+            self.bl.append(self.NHE_error, propagation_parameters(*self.params['NHE_error']['pp']))
+            self.bl.append(self.NHE, propagation_parameters(*self.params['NHE']['pp']))
             
             
-            self.bl.append(self.d5, propagation_parameters(1, 1, 1, 1, mode = 'quadratic'))
-            self.bl.append(self.NVE_error, propagation_parameters(1, 1, 1, 1, mode = 'fresnel'))
-            self.bl.append(self.NVE, propagation_parameters(1/3, 1, 1/3, 1, mode = 'fresnel'))
-            
+            self.bl.append(self.d5, propagation_parameters(*self.params['d5']['pp']))
+            self.bl.append(self.NVE_error, propagation_parameters(*self.params['NVE_error']['pp']))
+            self.bl.append(self.NVE, propagation_parameters(*self.params['NVE']['pp']))
             
             #self.bl.append(self.df, propagation_parameters(1,1,1,1, mode = 'converge'))
+            #self.bl.append(self.df, propagation_parameters(15,1,15,1, mode = 'converge')) ### perfect mirrors
             
         self.bl.params = self.params
         
@@ -541,3 +547,6 @@ class Instrument:
         self.bl.propagation_options[0]['propagation_parameters'][self.get_index(element_name)] = new_parameters
 
         
+    def rebuild(self, focus = 'nano'):
+        self.build_elements(focus)
+        self.build_beamline(focus)

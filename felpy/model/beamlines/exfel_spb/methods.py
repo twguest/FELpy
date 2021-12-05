@@ -13,12 +13,16 @@ __email__ = "twguest@students.latrobe.edu.au"
 __status__ = "Developement"
 """
 
-import numpy as np ### interesting, first numpy import as applied in [A]
-
-from felpy.model.beamlines.exfel_spb.exfel_spb import Instrument
-
+import numpy as np 
  
-def get_beamline_object(params = "", options = 'nano', ekev = 5.0,
+from felpy.model.beamlines.exfel_spb.exfel_spb import Instrument
+from felpy.model.materials.mirror_surface import generate_infinite_mirror
+
+from felpy.model.materials.load_refl import load_refl, get_refl 
+
+
+
+def get_beamline_object(parameter_file = "", options = 'nano', ekev = 5.0,
                         apertures = True, surface = 'real', crop = None,
                         theta_HOM = 2.3e-03, theta_KB = 3.5e-03,
                         save_params = True):
@@ -33,7 +37,7 @@ def get_beamline_object(params = "", options = 'nano', ekev = 5.0,
     """
  
 
-    spb = Instrument()
+    spb = Instrument(parameter_file = parameter_file)
     params = spb.params
     
     if apertures == False:
@@ -61,10 +65,10 @@ def get_beamline_object(params = "", options = 'nano', ekev = 5.0,
     if apertures == False: ## aperture claus
        
         for mirror in mirrors:
-            spb.params[mirror]["design angle"] = np.pi/3 ### [A]s
-            spb.params[mirror]["incidence angle"] = np.pi/3
+ 
+            spb.params[mirror]["dx"] = 5
+            spb.params[mirror]["dy"] = 5
             
-
     if apertures == False:
         
         for focus in spb.focus:
@@ -97,27 +101,19 @@ def get_beamline_object(params = "", options = 'nano', ekev = 5.0,
     return spb.get_beamline()
     
 
-def setup_spb(params = "", options = 'nano', ekev = 5.0,
+def setup_spb(parameter_file = "spb-sfx_nkb_FAST", options = 'nano', ekev = 5.0,
               apertures = True, surface = 'real', crop = None,
               theta_HOM = 2.3e-03, theta_KB = 3.5e-03,
-              save_params = True):
+              save_params = False):
 
     """ 
     return desired beamline
-
-    note, params var currently has no use, at later date, it would be nice to
-    be able to build the beamline from this file.
-
-    this may or may not be worth the time, for now it is almost certainly not.
     """
 
 
-    spb = Instrument()
-    params = spb.params
+    spb = Instrument(parameter_file = parameter_file)
 
-    if apertures == False:
-        theta_HOM = theta_KB = np.pi/2 ### is true. no aperture / mirror edges == 
-
+    
 
     mirrors = spb.mirrors
 
@@ -136,19 +132,27 @@ def setup_spb(params = "", options = 'nano', ekev = 5.0,
             theta_HOM)
 
 
+    if ekev >= 7.5:
+        material = "B4C"
+    else: 
+        material = "Ru"    
 
     if apertures == False: ## aperture claus
 
         for mirror in mirrors:
-            spb.params[mirror]["design angle"] = np.pi/3 ### [A]s
-            spb.params[mirror]["incidence angle"] = np.pi/3
 
+            spb.params[mirror]["dx"] = 5
+            spb.params[mirror]["dy"] = 5
+            spb.params[mirror]["mirror profile"] = generate_infinite_mirror()
+        
+            if mirror in spb.focus:
+                spb.params[mirror]['reflectivity'] = get_refl(load_refl(), ekev, theta_KB)
+            else:
+                spb.params[mirror]['reflectivity'] = get_refl(load_refl(), ekev, theta_HOM)
 
     ### TO-DO: make a choice as to wether edits to the beamline will be via params or via beamline object 
     ### TO-DO: eventually, exfel_spb should be a sub-class of the Instrument class (formally)
     ### TO-DO: a front-end script to load and label mirrors that ships to a json file would be useful.
-
-    if apertures == False:
 
         for focus in spb.focus:
 
@@ -177,8 +181,13 @@ def setup_spb(params = "", options = 'nano', ekev = 5.0,
     return spb
 
     
-def unit_test():
-    get_beamline_object()
 
 if __name__ == '__main__':
-    unit_test()
+    from wpg.wpg_uti_wf import plot_intensity_map
+    from felpy.model.src.coherent import construct_SA1_wavefront
+
+    spb = setup_spb()
+    bl = spb.bl
+    wfr = construct_SA1_wavefront(512,512, 5, 0.25)
+    bl.propagate_sequential(wfr)
+    plot_intensity_map(wfr)

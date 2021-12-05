@@ -21,8 +21,8 @@ import datetime
 
 import numpy as np
 
-def export(params):
-    with open('../../../data/params/exfel_spb.json', 'w') as f:
+def export(params, filename):
+    with open('../../../data/params/{}.json'.format(filename), 'w') as f:
         json.dump(params, f)
 
 def get_params():
@@ -34,7 +34,8 @@ def get_params():
     
     params["d1"] = {'name': "d1",
                     "description": "Drift from Source to HOM1",
-                    'distance': 246.5}
+                    'distance': 246.5,
+                    'pp': [1,2.5,1,2.5, "quadratic"]}
     
     params["HOM1"] = {"name": "HOM1",
                       "distance from source": 246.5,
@@ -47,11 +48,15 @@ def get_params():
                       "reflectivity": 1,
                       'next_drift' : 'd2',
                       'ang_min': 1.1e-03,
-                      'ang_max': 3.6e-03}
+                      'ang_max': 3.6e-03,
+                      'dx': 0.525,
+                      'dy': 0.010,
+                      'pp': [1, 1, 1, 1,'fresnel']}
     
     params["d2"] = {'name': "d2",
                     "description": "Drift from HOM1 to HOM2",
-                    'distance': 11.36}
+                    'distance': 11.36,
+                    'pp': [1, 1, 1, 1,'quadratic']}
     
     params["HOM2"] = {"name": "HOM2",
                       "description": "Second Horizontal Offset Mirror",
@@ -64,11 +69,15 @@ def get_params():
                       "yc": 0,
                       'next_drift' : 'd3',
                       'ang_min': 1.1e-03,
-                      'ang_max': 3.6e-03}
+                      'ang_max': 3.6e-03,
+                      'dx': 0.525,
+                      'dy': 0.010,
+                      'pp': [1, 1, 1, 1,'fresnel']}
     
     params["d3"] = {'name': "d3",
                     "description": "Drift from HOM2 to Effective Tunnel Entrance",
-                    'distance': 634.669}
+                    'distance': 634.669,
+                      'pp': [2, 1, 2, 1,'fraunhofer']}
 
     params["MKB_pslit"] = {"name": "MKB-Pslit",
                   "description": "Power Slit Aperture Prior to MKB",
@@ -79,11 +88,13 @@ def get_params():
                   "dy": 0.0038,
                   "xc": 0,
                   "yc": 0,
-                  'next_drift': 'd4'}
+                  'next_drift': 'd4',
+                      'pp': [1, 1, 1, 1,'fresnel']}
 
     params["d4"] = {'name': "d4",
                 "description": "Drift MKB-PSLIT to MHP",
-                'distance': 1.200}
+                'distance': 1.200,
+                      'pp': [1, 1, 1, 1,'fraunhofer']}
     
     
     
@@ -99,11 +110,13 @@ def get_params():
                      "yc": 0,
                      'next_drift': 'd5',
                       'ang_min': -0.5e-03,
-                      'ang_max': 5.5e-03}
+                      'ang_max': 5.5e-03,
+                      'pp': [1, 1, 1, 1,'fresnel']}
     
     params["d5"] = {'name': "d5",
                     "description": "Drift from MHP to MHE",
-                    'distance': 1.050}
+                    'distance': 1.050,
+                      'pp': [1, 1, 1, 1,'quadratic']}
     
 
 
@@ -129,7 +142,8 @@ def get_params():
                      "_ext_out": 0.5,
                      'next_drift' : 'd6',
                      'ang_min': -0.5e-03,
-                     'ang_max': 5.5e-03}
+                     'ang_max': 5.5e-03,
+                      'pp': [1, 1, 1, 1,'fresnel']}
     
     params["MHE_error"] = {"name": "MHE_error",
                            "orientation": 'x',
@@ -138,11 +152,13 @@ def get_params():
                            "incidence angle": np.pi/2,
                            "transmission": 1,
                            "xc": 0,
-                           "yc": 0}
+                           "yc": 0,
+                      'pp': [1, 1, 1, 1,'fresnel']}
 
     params["d6"] = {'name': "d6",
                     "description": "Drift from MKB-SCR to MVE",
-                    'distance': 1.680}
+                    'distance': 1.680,
+                      'pp': [1, 1, 1, 1,'fresnel']}
 
 
     
@@ -166,7 +182,8 @@ def get_params():
                      "_ext_out": 0.5,
                      'next_drift' : 'd7',
                      'ang_min': -5.0e-03,
-                     'ang_max': 5.0e-03}
+                     'ang_max': 5.0e-03,
+                      'pp': [1, 1, 1, 1,'fresnel']}
     
         
     params["MVE_error"] = {"name": "MVE_error",
@@ -176,12 +193,14 @@ def get_params():
                        "incidence angle": np.pi/2,
                        "transmission": 1,
                        "xc": 0,
-                       "yc": 0}
+                       "yc": 0,
+                      'pp': [1, 1, 1, 1,'fresnel']}
 
     
     params["d7"] = {'name': "d7",
                     "description": "Drift from MVE to MVP",
-                    'distance': 1.050}
+                    'distance': 1.050,
+                      'pp': [1, 1, 1, 1,'fresnel']}
     
     params["MVP"] = {"name": "MVP",
                      "description": "Vertical Plane Mirror of MKB",
@@ -196,12 +215,14 @@ def get_params():
                      "yc": 0,
                      'next_drift': 'df',
                      'ang_min': -2.0e-03,
-                     'ang_max': -2.0e-03}
+                     'ang_max': -2.0e-03,
+                      'pp': [1, 1, 1, 1,'fresnel']}
 
     params["df"] = {'name': "focus",
                     "description": "Drift to Focus",
                     "distance from source": 918.684,
-                    'distance': 21.175}
+                    'distance': 21.175,
+                      'pp': [1, 1, 1, 1,'fresnel']}
     
     params["NHE"] = {"name": "NHE",
                      "orientation": 'x',
@@ -223,7 +244,8 @@ def get_params():
                      "_ext_out": 0.5,
                      'next_drift': 'd5',
                      'ang_min': 0.5e-03,
-                     'ang_max': 5.5e-03}
+                     'ang_max': 5.5e-03,
+                      'pp': [1, 1, 1, 1,'fresnel']}
     
     
 
@@ -235,7 +257,8 @@ def get_params():
                        "incidence angle": np.pi/2,
                        "transmission": 1,
                        "xc": 0,
-                       "yc": 0}
+                       "yc": 0,
+                      'pp': [1, 1, 1, 1,'fresnel']}
 
     params["NVE"] = {"name": "NVE",
                      "orientation": 'y',
@@ -258,7 +281,8 @@ def get_params():
                      "_ext_out": 0.5,
                      'next_drift': 'df',
                      'ang_min': 0.5e-03,
-                     'ang_max': 5.0e-03}
+                     'ang_max': 5.0e-03,
+                      'pp': [1, 1, 1, 1,'fresnel']}
     
     
     params["NVE_error"] = {"name": "NVE_error",
@@ -269,7 +293,8 @@ def get_params():
                        "incidence angle": np.pi/2,
                        "transmission": 1,
                        "xc": 0,
-                       "yc": 0}
+                       "yc": 0,
+                      'pp': [1, 1, 1, 1,'fresnel']}
 
     
     params["NKB_PSlit"] = {"name": "NKB_PSlit",
@@ -281,13 +306,14 @@ def get_params():
                            "dy": 0.0038,
                            "xc": 0,
                            "yc": 0,
-                           'next_drift': 'd4'}
+                           'next_drift': 'd4',
+                      'pp': [1/15, 2, 1/15, 2,'fresnel']}
 
     return params
                  
 if __name__ == "__main__":
     params = get_params()
-    export(params)
+    export(params, filename = "spb-sfx_nkb_FAST")
     
         
     
