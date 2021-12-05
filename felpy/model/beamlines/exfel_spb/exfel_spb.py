@@ -110,7 +110,7 @@ class Instrument:
        
         self.params[mirror_name]["design angle"] = new_ang
         self.params[mirror_name]["incidence angle"] = new_ang
-        self.params[mirror_name]['reflectivity'] = (1-refl)**2 ### note, this maps to an absorption parameter (hence 1-refl)
+        self.params[mirror_name]['reflectivity'] = (1-refl)#**2 ### note, this maps to an absorption parameter (hence 1-refl)
 
 
 
@@ -352,6 +352,8 @@ class Instrument:
                 _refl = self.params['NHE_error']['transmission'],
                 _x = self.params['NHE_error']['xc'], _y = self.params['NHE_error']['yc']) 
 
+            
+                  
             self.NHE_error.name = self.params['NHE_error']['name']
             
             self.params["d3"]["distance"] = 656.424

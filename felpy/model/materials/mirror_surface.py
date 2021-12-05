@@ -16,6 +16,7 @@ __status__ = "Developement"
 import numpy as np
 from scipy.ndimage import gaussian_filter
 from matplotlib import pyplot as plt 
+from felpy.utils.os_utils import felpy_path
 
 from felpy.utils.job_utils import JobScheduler
 
@@ -168,9 +169,23 @@ def setupNVEsurface():
     surface[1:,0] = xpos[1:]
     
     np.savetxt("../../data/spb/mirror_surface/nve_mir_real.dat", surface)
-    
-  
 
+
+def generate_infinite_mirror():
+    
+    fpath = felpy_path()
+    
+    generate_mirror_surface(512, 512,
+                           dx = 10,
+                           dy = 10,
+                           savedir = fpath + "/data/spb/tmp/",
+                           mode = 'flat',
+                           mirror_name = "infinite")
+
+    fdir = fpath + "/data/spb/tmp/infinite_mir_flat.dat"
+    return fdir
+        
+    
 if __name__ == '__main__':
     #s = genMirrorSurface(100, 100, [10e-06, 50e-06], "../../tmp/", mode = 'random', plot = True)
     
