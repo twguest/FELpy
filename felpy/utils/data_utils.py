@@ -25,7 +25,7 @@ sys.path.append("../") # LOCAL PATH
 ###############################################################################
 ###############################################################################
 
-
+from os import listdir
 from PIL import Image
 
 import numpy as np
@@ -34,34 +34,39 @@ from matplotlib import pyplot as plt
 
 
 
-def load_image_as_array(imdir, bPlot = False):
+def load_tif(imdir):
     """
     load a greyscale image as an array (for use as a phase or intenisty mask)
     
-    :param imdir: directory of the input image
+    :param imdir: location of the input image
     
     :returns arr: array representation of surface height
     """
-    
-    arr = np.asarray(Image.open(imdir))
-    
-    if bPlot:
-        plt.imshow(arr)
         
-    return arr
+    return np.asarray(Image.open(imdir))
 
-def test():
-    arr = load_image_as_array("../data/samples/AAO.png", bPlot = True)
+
+def load_stack(imdir):
+    """
+    load a set of greyscale images as a 3 dimensional array
     
-    from wpg.srwl_uti_smp import srwl_opt_setup_transm_from_file as Sample
+    :param imdir: directory containing input images
     
-    #s = Sample(filepath, rx, ry, thickness, delta, atten_len, xc, yc, shift_x, shift_y)
+    :returns arr: x*y*n array of images
+    """
+    file_list = [file for file in listdir(imdir) if ".tif" in file]
+    n = len(file_list)
     
     
+    x,y = load_tif(imdir + listdir(imdir)[0]).shape
+    
+    stack = np.zeros([x,y,n])
+
+    for itr in range(n):
+        stack[:,:,itr] = load_tif(imdir + listdir(imdir)[itr])
+
+    return stack
 
 
 if __name__ == '__main__':
-    
-
-    
-    test()
+    load_stack("/media/twguest/Cache/imbl_data/sample_optimisation/proc/sic/1200grit_nocyl_1500ms/")
