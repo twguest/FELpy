@@ -94,16 +94,16 @@ class Grids:
     def pad(self, pad):
         self.fig.tight_layout(pad = pad)
 
-    def add_global_colorbar(self, clabel, vmin = 0, vmax = 1, cmap = 'bone', tick_values = None, tick_labels = None, fontsize = 12):
+    def add_global_colorbar(self, clabel, vmin = 0, vmax = 1, cmap = 'bone', tick_values = None, tick_labels = None, fontsize = 12, orientation = 'vertical', pad = 0.025):
                 
         cmap=cm.get_cmap(cmap)
         normalizer=Normalize(vmin, vmax)
         im=cm.ScalarMappable(norm=normalizer, cmap = cmap)
         
         if self.n*self.m > 1:
-            cbar = self.fig.colorbar(im, ax=self.axes.ravel().tolist(), pad = 0.025)
+            cbar = self.fig.colorbar(im, ax=self.axes.ravel().tolist(), pad = pad, orientation = orientation)
         else:
-            cbar = self.fig.colorbar(im, ax=self.axes, pad = 0.025)
+            cbar = self.fig.colorbar(im, ax=self.axes, pad = pad, orientation = orientation)
 
         cbar.set_label(clabel, fontsize = fontsize)
         

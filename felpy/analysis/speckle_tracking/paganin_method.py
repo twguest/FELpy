@@ -42,4 +42,4 @@ if __name__ == '__main__':
     plt.show()
     
     plt.imshow(object_phase.real, cmap = 'bone')
-    plt.show()
+    plt.show() 
