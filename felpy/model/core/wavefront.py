@@ -146,6 +146,8 @@ class Wavefront(WPG_Wavefront):
     def view(self):
         
         """
+        useless - should be deprecated, just use wpg utils
+        
         a simple method for viewing the intensity and phase of a wavefront
         if a deeper analysis is required. try wpg.wpg_uti_wf.plot_intensity_map()
         """
@@ -321,13 +323,13 @@ class Wavefront(WPG_Wavefront):
         return [px*idx[1], py*idx[0]]
     
         
-    def get_profile_1d(self):
+    def get_profile_1d(self, method = sum):
         """
         return 1d profiles along the center of each transverse axis.
         """
         
         
-        ii = self.get_intensity().sum(-1)
+        ii = self.get_intensity().method(-1)
         
         idx = self.params.Mesh.nx//2
         idy = self.params.Mesh.ny//2
