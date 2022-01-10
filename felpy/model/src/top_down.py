@@ -149,7 +149,7 @@ def wavefront_to_wavefield(spatial_wfr, temporal_profile):
                          dy = dy,
                          dz = dz,
                          ekev = spatial_wfr.params.photonEnergy/1000)
-
+    return wfr
 
 if __name__ == '__main__':
     
