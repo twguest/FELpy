@@ -55,10 +55,10 @@ def temporal_sampling_requirements(pulse_time, S = 10, VERBOSE = True):
         print("Temporal Sampling Interval: {:.2e} s".format(temporal_sampling))
         print("Number of Req. Samples: {}".format(n))
 
-    return n, temporal_sampling
+    return int(n), temporal_sampling
 
 
-def generate_temporal_SASE_pulse(pulse_time, n_samples = 100, VERBOSE = True):
+def generate_temporal_SASE_pulse(pulse_time, n_samples = 100, sigma = 4, VERBOSE = True):
     """
     generate a single SASE pulse
 
@@ -75,18 +75,20 @@ def generate_temporal_SASE_pulse(pulse_time, n_samples = 100, VERBOSE = True):
     :param pulse_time: expectation value of the SASE pulse time
     :param VERBOSE: [bool] enables printing and plotting
     """
+    
+    t = np.linspace(-pulse_time*sigma, pulse_time*sigma, n_samples)
 
-    t = np.arange(-pulse_time*4, pulse_time*4, pulse_time/n_samples)
     temporal_envelope = (1/np.sqrt(2*np.pi))*gaussian_envelope(t, 0, pulse_time)
-
+        
     spectral_bw = 1/pulse_time
     w = 1/t
     spectral_envelope = gaussian_envelope(w, 0, spectral_bw)
-
+    
     random_phases = np.random.uniform(-np.pi, np.pi, temporal_envelope.shape)
 
     E_t = fft.fft(spectral_envelope*np.exp(1j*random_phases))*temporal_envelope
 
+    
     if VERBOSE:
         signal_plot(t, abs(E_t)**2,
                    xlabel = "Time (s)",
@@ -97,7 +99,7 @@ def generate_temporal_SASE_pulse(pulse_time, n_samples = 100, VERBOSE = True):
     return E_t
 
 
-def wavefront_from_array(cfr,nx,ny,nz,dx,dy,dz,ekev):
+def wavefront_from_array(cfr,nx,ny,nz,dx,dy,dz,ekev, pulse_duration = 40e-15):
 
 
     # Initialize empty wavefront.
@@ -115,10 +117,9 @@ def wavefront_from_array(cfr,nx,ny,nz,dx,dy,dz,ekev):
     wfr.params.Mesh.ny = ny
 
 
-    pulse_length = (nz - 1) * dz / (c)
-
-    wfr.params.Mesh.sliceMin = -pulse_length / 2.
-    wfr.params.Mesh.sliceMax = pulse_length / 2.
+    
+    wfr.params.Mesh.sliceMin = -pulse_duration / 2.
+    wfr.params.Mesh.sliceMax = pulse_duration / 2.
 
     range_x = dx*nx
     range_y = dy*ny
@@ -129,42 +130,69 @@ def wavefront_from_array(cfr,nx,ny,nz,dx,dy,dz,ekev):
     wfr.params.Mesh.yMax = range_y / 2.
 
 
-
-    wfr.data.arrEhor = cfr
+    wfr.data.arrEhor = complex_to_wpg(cfr)
+    
+    #wfr.set_electric_field_representation('f')
+        
     return wfr
 
 def wavefront_to_wavefield(spatial_wfr, temporal_profile):
-
+    
     new_wfr = spatial_wfr.as_complex_array()[:,:,:]*temporal_profile
 
 
     dx, dy = spatial_wfr.get_spatial_resolution()
     dz = spatial_wfr.get_temporal_resolution()
+    
 
     wfr = wavefront_from_array(new_wfr,
-                         nx = spatial_wfr.params.Mesh.nx,
-                         ny = spatial_wfr.params.Mesh.ny,
-                         nz = spatial_wfr.params.Mesh.nSlices,
-                         dx = dx,
-                         dy = dy,
-                         dz = dz,
-                         ekev = spatial_wfr.params.photonEnergy/1000)
+                             nx = spatial_wfr.params.Mesh.nx,
+                             ny = spatial_wfr.params.Mesh.ny,
+                             nz = len(temporal_profile),
+                             dx = dx,
+                             dy = dy,
+                             dz = dz,
+                             ekev = spatial_wfr.params.photonEnergy/1000)
     return wfr
+
+
+def complex_to_wpg(arr): ### converter
+    new_arr = np.zeros([arr.shape[0], arr.shape[1], arr.shape[2], 2])
+    new_arr[:,:,:,0] = arr.real
+    new_arr[:,:,:,1] = arr.imag
+    return new_arr
+
 
 if __name__ == '__main__':
 
     pulse_time = 100e-15
-
-    n_samples, sampling_interval_t = temporal_sampling_requirements(pulse_time, VERBOSE = True)
+    sigma = 4 
+    S = 4
+    Seff = S/sigma
+    
+    n_samples, sampling_interval_t = temporal_sampling_requirements(pulse_time, VERBOSE = True, S = S)
     sampling_interval_w = 1/sampling_interval_t
 
-
+    n_samples *= sigma 
+    
     t = np.arange(-pulse_time*4, pulse_time*4, pulse_time/n_samples)
 
     temporal_profile = generate_temporal_SASE_pulse(pulse_time = pulse_time,
                                                     n_samples = n_samples,
+                                                    sigma = sigma,
                                                     VERBOSE = True)
-
-    spatial_profile = construct_SA1_wavefront(512, 512, 5.0, 0.25)
+    print("Number of Samples: ",n_samples)
+    print(temporal_profile.dtype)
+    spatial_profile = construct_SA1_wavefront(128, 128, 5.0, 0.25)
 
     wfr = wavefront_to_wavefield(spatial_profile, temporal_profile)
+    
+    from wpg.wpg_uti_wf import plot_intensity_map
+    plot_intensity_map(wfr)
+    wfr.set_electric_field_representation('f')
+    from felpy.model.beamlines.exfel_spb.methods import setup_spb
+    spb = setup_spb(parameter_file = "/opt/FELpy/felpy/data/params/spb-sfx_nkb_FAST.json", theta_KB = 5e-03, theta_HOM = 3.5e-03) #bl = spb.bl
+    bl = spb.bl 
+    
+    ## EXEC
+    bl.propagate_sequential(wfr)
