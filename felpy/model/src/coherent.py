@@ -92,7 +92,7 @@ def analytical_pulse_width(ekev):
     :return sig: Radiation pulse width (FWHM) [m]
     """
 
-    sig = 6*np.log((7.4e03/ekev))
+    sig = np.log((7.4e03/ekev))#*6
     return sig/1e6
 
 def analytical_pulse_divergence(q, ekev):
@@ -144,8 +144,7 @@ def construct_gaussian(nx, ny, ekev, extent, sigX, sigY, divergence, xoff = 0, y
     wfr = Wavefront(gsnBm)
     wfr.params.wavelength = ekev2wav(ekev)
     
-    modify_beam_divergence(wfr,sigX, divergence)
-
+    modify_beam_divergence(wfr,sigX, divergence) 
     return wfr
 
 
@@ -186,7 +185,8 @@ def construct_SA1_wavefront(nx, ny, ekev, q, xoff = 0, yoff = 0, mx = 0, my = 0,
     wfr.params.wavelength = wavelength
     srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
 
-    modify_beam_divergence(wfr,analytical_pulse_width(ekev),analytical_pulse_divergence(q,ekev))
+    modify_beam_divergence(wfr,analytical_pulse_width(ekev), analytical_pulse_divergence(q,ekev)) ## note 300 is hardcoded fix, should not stay past tue 13/01/21
+
 
 
     return wfr

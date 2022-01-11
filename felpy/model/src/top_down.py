@@ -99,7 +99,7 @@ def generate_temporal_SASE_pulse(pulse_time, n_samples = 100, sigma = 4, VERBOSE
     return E_t
 
 
-def wavefront_from_array(cfr,nx,ny,nz,dx,dy,dz,ekev, pulse_duration = 40e-15):
+def wavefront_from_array(cfr,nx,ny,nz,dx,dy,dz,ekev, pulse_duration = 40e-15, sigma = 4):
 
 
     # Initialize empty wavefront.
@@ -118,8 +118,8 @@ def wavefront_from_array(cfr,nx,ny,nz,dx,dy,dz,ekev, pulse_duration = 40e-15):
 
 
     
-    wfr.params.Mesh.sliceMin = -pulse_duration / 2.
-    wfr.params.Mesh.sliceMax = pulse_duration / 2.
+    wfr.params.Mesh.sliceMin = -pulse_duration*sigma / 2.
+    wfr.params.Mesh.sliceMax = pulse_duration*sigma / 2.
 
     range_x = dx*nx
     range_y = dy*ny
