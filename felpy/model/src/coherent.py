@@ -148,9 +148,11 @@ def construct_gaussian(nx, ny, ekev, extent, sigX, sigY, divergence, xoff = 0, y
     return wfr
 
 
-
-def construct_SA1_wavefront(nx, ny, ekev, q, xoff = 0, yoff = 0, mx = 0, my = 0,
-                            tiltX = 0, tiltY = 0):
+def construct_wavefront(nx, ny, ekev, fwhm, divergence, pulse_energy = 1, pulse_duration = 50e-15, xoff = 0, yoff = 0, mx = 0, my = 0,
+                        tiltX = 0, tiltY = 0,
+                        xMin = -400e-06, xMax = 400e-06,
+                        yMin = -400e-06, yMax = 400e-06):
+    
     """
     Construct a fully-coherent Gaussian source with properties related to the
     energy of the radiation and beam charge.
@@ -169,8 +171,47 @@ def construct_SA1_wavefront(nx, ny, ekev, q, xoff = 0, yoff = 0, mx = 0, my = 0,
     """
     wavelength = (h*c)/(ekev*1e3)
 
-    xMin, xMax = -400e-06, 400e-06 #based on fwhm of 1 nC, 3 keV beam
-    yMin, yMax = -400e-06, 400e-06 #based on fwhm of 1 nC, 3 keV beam
+    
+
+    sigX, sigY = fwhm/fwhm2rms, fwhm/fwhm2rms
+
+    
+    tau = pulse_duration
+
+
+    gsnBm = build_gaussian(nx, ny, ekev, xMin, xMax, yMin, yMax, sigX, sigY, 1, xoff = xoff, yoff = yoff, pulseTau = tau, _mx = mx, _my = my, tiltX= tiltX, tiltY = tiltY)
+
+    wfr = Wavefront(gsnBm)
+    wfr.params.wavelength = wavelength
+    srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
+
+    modify_beam_divergence(wfr, fwhm, divergence) ## note 300 is hardcoded fix, should not stay past tue 13/01/21
+
+    return wfr
+
+def construct_SA1_wavefront(nx, ny, ekev, q, xoff = 0, yoff = 0, mx = 0, my = 0,
+                            tiltX = 0, tiltY = 0,
+                            xMin = -400e-06, xMax = 400e-06,
+                            yMin = -400e-06, yMax = 400e-06):
+    """
+    Construct a fully-coherent Gaussian source with properties related to the
+    energy of the radiation and beam charge.
+
+    Important points: pulseTau (coherence length) is set to tau (pulse length)
+    in the fully coherent case
+
+    :param nx: number of horizontal pixels [int]
+    :param ny: number of vertical pixels [int]
+    :param nz: number of slices [int]
+    :param ekev: radiation energy [keV]
+    :param q: electron beam bunch charge [nC]
+    :param xoff: horizontal offset of beam maximum [m]
+    :param yoff: vertical offset of beam maximum [m]
+    :param modify_beam_divergenceergence: Choose to set non-diffraction limited div [bool]
+    """
+    wavelength = (h*c)/(ekev*1e3)
+
+    
 
     sigX, sigY = analytical_pulse_width(ekev)/fwhm2rms, analytical_pulse_width(ekev)/fwhm2rms
     pulseEn = analytical_pulse_energy(q, ekev)
@@ -186,8 +227,6 @@ def construct_SA1_wavefront(nx, ny, ekev, q, xoff = 0, yoff = 0, mx = 0, my = 0,
     srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
 
     modify_beam_divergence(wfr,analytical_pulse_width(ekev), analytical_pulse_divergence(q,ekev)) ## note 300 is hardcoded fix, should not stay past tue 13/01/21
-
-
 
     return wfr
 
