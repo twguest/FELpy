@@ -18,85 +18,8 @@ from felpy.utils.opt_utils import ekev2wav
 
 from scipy.constants import c
 
-def gaussian_envelope(x, x0, width):
-    """
-    generate a gaussian envelope for modelling the integrated pulse_data
-
-    :param x: 1D list of time/frequency positions
-    :param x0: central time/frequency
-    :param width: width of XFEL pulse
-    """
-    return np.exp(-np.power(x - x0, 2.) / (2 * np.power(width, 2.)))
 
 
-def temporal_sampling_requirements(pulse_time, S = 10, VERBOSE = True):
-    """
-    calculate the number of samples required for the defined pulse length.
-
-    from Partial-coherence method to model experimental free-electron laser pulse statistics - Pfeifer - 2021 -
-    Optics Letters - Vol. 35 No 20.
-
-    We expect the number of sampling intervals to satisfy
-    |w_{i} - w_{i+1} << 2\pi/tau
-    where tau is pulse time.
-
-    :params pulse_time: length of the XFEL pulse
-    :param S: sampling fadctor
-    :returns n: number of sampling intervals req.
-
-    NOTE: a<<b is set to satisfy a*10<b
-    """
-    freq_sampling = (2*np.pi)/(pulse_time)
-    temporal_sampling = 1/(freq_sampling)
-    n = np.ceil(S*pulse_time/(temporal_sampling))
-
-    if VERBOSE:
-        print("Frequency Sampling Interval: {:.2e} Hz".format(freq_sampling))
-        print("Temporal Sampling Interval: {:.2e} s".format(temporal_sampling))
-        print("Number of Req. Samples: {}".format(n))
-
-    return int(n), temporal_sampling
-
-
-def generate_temporal_SASE_pulse(pulse_time, n_samples = 100, sigma = 4, VERBOSE = True):
-    """
-    generate a single SASE pulse
-
-    - assumes that the spectral and temporal bandwidth are the pulse are reciprocal,
-    - assumes that the spectral and temporal profiles are gaussian,
-    - assumes that there is no jitter from the central value of the Gaussian (ie, the pulse profile
-    is persistent).
-
-    in future, we will extend this extned the functionality to account for non-Gaussian profiles,
-    and pulse-length jitter.
-
-    it will also be useful to trim the function to the relevant regions (and thus reduce the number of points)
-
-    :param pulse_time: expectation value of the SASE pulse time
-    :param VERBOSE: [bool] enables printing and plotting
-    """
-    
-    t = np.linspace(-pulse_time*sigma, pulse_time*sigma, n_samples)
-
-    temporal_envelope = (1/np.sqrt(2*np.pi))*gaussian_envelope(t, 0, pulse_time)
-        
-    spectral_bw = 1/pulse_time
-    w = 1/t
-    spectral_envelope = gaussian_envelope(w, 0, spectral_bw)
-    
-    random_phases = np.random.uniform(-np.pi, np.pi, temporal_envelope.shape)
-
-    E_t = fft.fft(spectral_envelope*np.exp(1j*random_phases))*temporal_envelope
-
-    
-    if VERBOSE:
-        signal_plot(t, abs(E_t)**2,
-                   xlabel = "Time (s)",
-                   ylabel = "Intensity (a.u.)",
-                   title = 'SASE Pulse',
-                   context = 'talk')
-
-    return E_t
 
 
 def wavefront_from_array(cfr,nx,ny,nz,dx,dy,dz,ekev, pulse_duration = 40e-15, sigma = 4):

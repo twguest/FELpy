@@ -110,8 +110,8 @@ def test_coherent_pulse_divergence(E, Q, sdir):
 
 def core(E = np.linspace(3, 16, 15), Q = [0.25], sdir = None):
     
-    #test_coherent_pulse_fwhm(E, sdir)
-    test_coherent_pulse_divergence(E, Q, sdir)
+    test_coherent_pulse_fwhm(E, sdir)
+    #test_coherent_pulse_divergence(E, Q, sdir)
 
 if __name__ == '__main__':
     core(sdir = "")
