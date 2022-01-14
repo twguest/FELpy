@@ -1,7 +1,7 @@
 import numpy as np
 
-from felpy.model.src.coherent import construct_SA1_wavefront, construct_SA1_pulse
-from felpy.model.src.coherent import analytical_pulse_divergence,analytical_pulse_duration,analytical_pulse_energy,analytical_pulse_width
+from felpy.model.source.coherent import construct_SA1_wavefront, construct_SA1_pulse
+from felpy.model.source.coherent import analytical_pulse_divergence,analytical_pulse_duration,analytical_pulse_energy,analytical_pulse_width
 
 
 from matplotlib import pyplot as plt

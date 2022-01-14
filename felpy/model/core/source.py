@@ -8,9 +8,10 @@ from wpg import srwlib
 
 from felpy.utils.opt_utils import ekev2k, geometric_focus
 from felpy.model.backend.wpg_converters import wavefront_from_array
-from felpy.model.src.coherent import modify_beam_divergence
+from felpy.model.source.coherent import modify_beam_divergence
 
 FWHM2RMS = np.sqrt(8*np.log(2)) ### FWHM = sqrt(8ln(2))*sigma
+FWHM2E2 = 1.66
 
 def gaussian_profile(x, x0, width):
     """
@@ -126,7 +127,7 @@ def gaussian_envelope(nx, ny,
     dst = np.sqrt(x*x+y*y)
      
     # Initializing sigma and muu
-    sigma = fwhm/1.66#/FWHM2RMS
+    sigma = fwhm/FWHM2E2
     muu = 0.000
      
     # Calculating Gaussian array
@@ -144,7 +145,7 @@ def spherical_phase(nx, ny,
     
     k = ekev2k(ekev)
     f = geometric_focus(fwhm, divergence) 
-        
+    print(f,k)
     # Initializing value of x-axis and y-axis
     # in the range -1 to 1
     x, y = np.meshgrid(np.linspace(xMin, xMax, nx), np.linspace(yMin, yMax, ny))
@@ -158,6 +159,8 @@ def spherical_phase(nx, ny,
 
     return spherical_phase_term 
     
+def spherical_phase_sampling():
+    pass
 def complex_gaussian_envelope(nx, ny,
                       xMin, xMax,
                       yMin, yMax,
@@ -202,57 +205,57 @@ if __name__ == '__main__':
     xMin = yMin = -400e-06
     xMax = yMax =  400e-06
     
-    fwhm = 75e-06
+    for fwhm in np.linspace(50e-06, 150e-06, 10):
+        
+        divergence = 11e-06
+        ekev = 10
+        
+        env = complex_gaussian_envelope(nx, ny,
+                                        xMin, xMax, yMin, yMax,
+                                        fwhm,
+                                        divergence,
+                                        ekev)
+        
+        pulse_time = 55e-15
+        sigma = 4
+        S = 4
+        Seff = S/sigma
+        
+        n_samples, sampling_interval_t = temporal_sampling_requirements(pulse_time, VERBOSE = True, S = S)
+        sampling_interval_w = 1/sampling_interval_t
     
-    divergence = 11e-06
-    ekev = 10
+        n_samples *= sigma 
+        #n_samples = 10
+        t = np.arange(-pulse_time, pulse_time, pulse_time/n_samples)
     
-    env = complex_gaussian_envelope(nx, ny,
-                                    xMin, xMax, yMin, yMax,
-                                    fwhm,
-                                    divergence,
-                                    ekev)
+        temporal_profile = generate_temporal_SASE_pulse(pulse_time = pulse_time,
+                                                        n_samples = n_samples,
+                                                        sigma = sigma)
+        env = env[:,:,np.newaxis]*temporal_profile
+        
+        wfr = wavefront_from_array(env, nx = nx, ny = ny,
+                                  nz = n_samples, dx = (xMax-xMin)/nx,
+                                  dy = (yMax-yMin)/ny, dz = (pulse_time/n_samples),
+                                  ekev = ekev, pulse_duration = pulse_time)
+        
+        
+        #modify_beam_divergence(wfr, wfr.get_fwhm()[0], divergence)
+        
+        plot_intensity_map(wfr)
+        print(wfr.get_fwhm())
+        print(wfr.get_divergence())
+        plot_intensity_map(wfr)
+        #srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
     
-    pulse_time = 55e-15
-    sigma = 4
-    S = 4
-    Seff = S/sigma
-    
-    n_samples, sampling_interval_t = temporal_sampling_requirements(pulse_time, VERBOSE = True, S = S)
-    sampling_interval_w = 1/sampling_interval_t
-
-    n_samples *= sigma 
-    #n_samples = 10
-    t = np.arange(-pulse_time, pulse_time, pulse_time/n_samples)
-
-    temporal_profile = generate_temporal_SASE_pulse(pulse_time = pulse_time,
-                                                    n_samples = n_samples,
-                                                    sigma = sigma)
-    env = env[:,:,np.newaxis]*temporal_profile
-    
-    wfr = wavefront_from_array(env, nx = nx, ny = ny,
-                              nz = n_samples, dx = (xMax-xMin)/nx,
-                              dy = (yMax-yMin)/ny, dz = (pulse_time/n_samples),
-                              ekev = ekev, pulse_duration = pulse_time)
-    
-    
-    #modify_beam_divergence(wfr, wfr.get_fwhm()[0], divergence)
-    
-    plot_intensity_map(wfr)
-    print(wfr.get_fwhm())
-    print(wfr.get_divergence())
-    plot_intensity_map(wfr)
-    #srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
-
-# =============================================================================
-#     plot_intensity_map(wfr)
-#     print(wfr.get_divergence())
-#     plot_intensity_map(wfr)
-# 
-#     #print(wfr.get_spatial_resolution())
-#     modify_beam_divergence(wfr, fwhm, divergence)
-#     #print(wfr)
-# 
-#     #env = env[:,:,np.newaxis] * temporal_profile
-# =============================================================================
-    
+    # =============================================================================
+    #     plot_intensity_map(wfr)
+    #     print(wfr.get_divergence())
+    #     plot_intensity_map(wfr)
+    # 
+    #     #print(wfr.get_spatial_resolution())
+    #     modify_beam_divergence(wfr, fwhm, divergence)
+    #     #print(wfr)
+    # 
+    #     #env = env[:,:,np.newaxis] * temporal_profile
+    # =============================================================================
+        
