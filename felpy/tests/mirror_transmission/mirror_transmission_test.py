@@ -28,7 +28,7 @@ def no_mirror(ekev = 5.0):
     
     return ii
 
-
+ 
 def no_aperture(angle = 1e-03, ekev = 5.0):
     
    

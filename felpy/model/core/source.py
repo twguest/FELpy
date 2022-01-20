@@ -9,10 +9,146 @@ from wpg import srwlib
 from felpy.utils.opt_utils import ekev2k, geometric_focus
 from felpy.model.backend.wpg_converters import wavefront_from_array
 from felpy.model.source.coherent import modify_beam_divergence
+from felpy.utils.opt_utils import ekev2wav, ekev2k
+from felpy.utils.os_utils import timing
+from wpg.wpg_uti_wf import calc_pulse_energy
+from felpy.model.source.SA1 import analytical_pulse_divergence,analytical_pulse_energy,analytical_pulse_width,analytical_pulse_duration
 
 FWHM2RMS = np.sqrt(8*np.log(2)) ### FWHM = sqrt(8ln(2))*sigma
 FWHM2E2 = 1.66
 
+def get_pulse_energy(wfr):
+    wfr.set_electric_field_representation('t')
+    energy = calc_pulse_energy(wfr)[0]
+    wfr.set_electric_field_representation('f')
+    return energy
+        
+class Source:
+    """
+    generalised source class
+    """
+    def __init__(self, ekev, fwhm, divergence,
+                 nx, ny, nz, xMin, xMax, yMin, yMax, pulse_duration,
+                 zDomain = 'frequency', energy = 1,
+                 temporal_profile = None):
+        
+        self.ekev = ekev
+        self.wavelength = ekev2wav(ekev)
+        self.k = ekev2k(ekev)
+        
+        self.divergence = divergence
+        self.fwhm = fwhm
+        
+        self.pulse_duration = pulse_duration
+        
+        self.nx = nx
+        self.ny = ny
+        self.xMin = xMin
+        self.xMax = xMax
+        self.yMin = yMin
+        self.yMax = yMax
+        self.zMin = -pulse_duration/2
+        self.zMax = pulse_duration/2
+        
+        self.zDomain = 'frequency'
+        
+        self.energy = energy
+        self.wfr = None
+        
+        self.temporal_profile = temporal_profile
+    
+    def set_beam_energy(self,  beam_energy):
+        
+        if self.wfr is None:
+            assert("this operation acts on the wpg wavefront class")
+            assert("please ensure self.wfr exists, then re-run")
+        else:
+            
+            E0 = get_pulse_energy(self.wfr)
+            self.wfr.data.arrEhor /= E0
+            print(get_pulse_energy(self.wfr)*(self.zMax-self.zMin))
+            
+class SA1_Source(Source):
+    
+    def __init__(self, ekev, q,
+                 nx, ny, xMin, xMax, yMin, yMax):
+        
+        self.q = q
+        
+        divergence = np.random.uniform(low = analytical_pulse_divergence(ekev, 'lower'),
+                                       high = analytical_pulse_divergence(ekev, 'upper'))
+        
+        energy = analytical_pulse_energy(q, ekev)
+        fwhm = analytical_pulse_width(ekev)
+        pulse_duration = analytical_pulse_duration(q)
+        
+        
+        
+        super().__init__(ekev = ekev, fwhm = fwhm, divergence = divergence,
+                         nx = nx, ny = ny,nz = 1,
+                         xMin = xMin, xMax = xMax,
+                         yMin = yMin, yMax = yMax,
+                         pulse_duration = pulse_duration,
+                         zDomain ='frequency',
+                         energy = energy)
+    
+    #@timing
+    def get_temporal_profile(self, sigma = 4, S = 4, refresh = False):
+        
+        if self.temporal_profile is None:
+            
+            n_samples, sampling_interval_t = temporal_sampling_requirements(self.pulse_duration, VERBOSE = True, S = S)
+         
+            n_samples *= sigma 
+            self.nz = n_samples
+            self.temporal_profile = generate_temporal_SASE_pulse(pulse_time = self.pulse_duration,
+                                                                 n_samples = n_samples,
+                                                                 sigma = sigma)
+        elif refresh == True:
+
+
+            self.temporal_profile = generate_temporal_SASE_pulse(pulse_time = self.pulse_duration,
+                                                                 n_samples = self.nz,
+                                                                 sigma = sigma)
+            
+        return self.temporal_profile
+        
+    
+    def get_wfr(self):
+        
+        if self.wfr is None:
+        
+            env = complex_gaussian_envelope(self.nx, self.ny,
+                                            self.xMin, self.xMax, self.yMin, self.yMax,
+                                            self.fwhm,
+                                            self.divergence,
+                                            self.ekev)
+            
+    
+
+ 
+            
+            #sampling_interval_w = 1/sampling_interval_t
+        
+            #n_samples = 10
+        
+            self.get_temporal_profile()
+            
+            env = env[:,:,np.newaxis]*self.temporal_profile
+            
+            self.wfr = wavefront_from_array(env, nx = self.nx, ny = self.ny,
+                                      nz = len(self.temporal_profile), dx = (self.xMax-self.xMin)/self.nx,
+                                  dy = (self.yMax-self.yMin)/self.ny, dz = (self.pulse_duration/len(self.temporal_profile)),
+                                  ekev = self.ekev, pulse_duration = self.pulse_duration)
+            
+            self.set_beam_energy(self.energy)
+            
+            return self.wfr
+        else: 
+            return self.wfr
+    
+    
+    
 def gaussian_profile(x, x0, width):
     """
     generate a gaussian envelope for modelling the integrated pulse_data
@@ -24,7 +160,7 @@ def gaussian_profile(x, x0, width):
     return np.exp(-np.power(x - x0, 2.) / (2 * np.power(width, 2.)))
 
 
-def temporal_sampling_requirements(pulse_time, S = 10, VERBOSE = True):
+def temporal_sampling_requirements(pulse_time, S = 10, VERBOSE = False):
     """
     calculate the number of samples required for the defined pulse length.
 
@@ -53,7 +189,7 @@ def temporal_sampling_requirements(pulse_time, S = 10, VERBOSE = True):
     return int(n), temporal_sampling
 
 
-def generate_temporal_SASE_pulse(pulse_time, n_samples = 100, sigma = 4):
+def generate_temporal_SASE_pulse(pulse_time, n_samples = 100, sigma = 4, t0 = 0):
     """
     generate a single SASE pulse
 
@@ -73,11 +209,17 @@ def generate_temporal_SASE_pulse(pulse_time, n_samples = 100, sigma = 4):
     
     t = np.linspace(-pulse_time*sigma, pulse_time*sigma, n_samples)
 
-    temporal_envelope = (1/np.sqrt(2*np.pi))*gaussian_profile(t, 0, pulse_time)
+    temporal_envelope = (1/np.sqrt(2*np.pi))*gaussian_profile(t, t0, pulse_time)
         
     spectral_bw = 1/pulse_time
     w = 1/t
-    spectral_envelope = gaussian_profile(w, 0, spectral_bw)
+    
+    if t0 == 0:
+        w0 = t0
+    elif t0 != 0:
+        w0 = 1/t0
+        
+    spectral_envelope = gaussian_profile(w, w0, spectral_bw)
     
     random_phases = np.random.uniform(-np.pi, np.pi, temporal_envelope.shape)
 
@@ -108,7 +250,7 @@ def wavefront_to_wavefield(spatial_wfr, temporal_profile):
 def gaussian_envelope(nx, ny,
                       xMin, xMax,
                       yMin, yMax,
-                      fwhm):
+                      fwhm, x0 = 0, y0 = 0):
     """
 
     :param nx: DESCRIPTION
@@ -128,10 +270,10 @@ def gaussian_envelope(nx, ny,
      
     # Initializing sigma and muu
     sigma = fwhm/FWHM2E2
-    muu = 0.000
+ 
      
     # Calculating Gaussian array
-    gaussian = np.exp(-( (dst-muu)**2 / (2*sigma**2 ) ) )
+    gaussian = np.exp(-(((x-x0)**2+(y-y0)**2) / (2*sigma**2 ) ) )
 
     return gaussian 
 
@@ -139,33 +281,33 @@ def spherical_phase(nx, ny,
                       xMin, xMax,
                       yMin, yMax,
                       fwhm, divergence,
-                      ekev):
+                      ekev, x0 = 0, y0 = 0):
     
  
     
     k = ekev2k(ekev)
     f = geometric_focus(fwhm, divergence) 
-    print(f,k)
+
     # Initializing value of x-axis and y-axis
     # in the range -1 to 1
     x, y = np.meshgrid(np.linspace(xMin, xMax, nx), np.linspace(yMin, yMax, ny))
-    dst = np.sqrt(x*x+y*y)
-     
+ 
     # Initializing sigma and muu
-    muu = 0.000
+    
      
     # Calculating Gaussian array
-    spherical_phase_term = np.exp(1j*k*(x**2+y**2)/(2*f))
+    spherical_phase_term = np.exp(1j*k*((x-x0)**2+(y-y0)**2)/(2*f))
 
     return spherical_phase_term 
     
 def spherical_phase_sampling():
     pass
+
 def complex_gaussian_envelope(nx, ny,
                       xMin, xMax,
                       yMin, yMax,
                       fwhm, divergence,
-                      ekev):
+                      ekev, x0 = 0, y0 = 0):
     """
     
     :param nx: DESCRIPTION
@@ -179,11 +321,11 @@ def complex_gaussian_envelope(nx, ny,
 
     """
 
-    gaussian = gaussian_envelope(nx, ny, xMin, xMax, yMin, yMax, fwhm).astype('complex128')
+    gaussian = gaussian_envelope(nx, ny, xMin, xMax, yMin, yMax, fwhm, x0 = x0, y0 = y0).astype('complex128')
     
     gaussian*= spherical_phase(nx, ny, xMin, xMax, yMin, yMax,
                           fwhm, divergence,
-                          ekev)
+                          ekev, x0 = x0, y0 = y0)
     
     return gaussian
     
@@ -221,7 +363,7 @@ if __name__ == '__main__':
         S = 4
         Seff = S/sigma
         
-        n_samples, sampling_interval_t = temporal_sampling_requirements(pulse_time, VERBOSE = True, S = S)
+        n_samples, sampling_interval_t = temporal_sampling_requirements(pulse_time, VERBOSE = False, S = S)
         sampling_interval_w = 1/sampling_interval_t
     
         n_samples *= sigma 

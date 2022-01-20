@@ -66,3 +66,5 @@ def analytical_pulse_divergence(ekev, limit = 'upper'):
         return (8.76)/(1e06*ekev**0.85)
     elif limit == 'upper':
         return (14.1)/(1e06*ekev**0.75)
+    elif limit == 'mean':
+        return ( (8.76)/(1e06*ekev**0.85) + (14.1)/(1e06*ekev**0.75) )/2
