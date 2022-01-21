@@ -11,7 +11,8 @@ from felpy.model.backend.wpg_converters import wavefront_from_array
 from felpy.model.source.coherent import modify_beam_divergence
 from felpy.utils.opt_utils import ekev2wav, ekev2k
 from felpy.utils.os_utils import timing
-from wpg.wpg_uti_wf import calc_pulse_energy
+from wpg.wpg_uti_wf import calc_pulse_energy, plot_intensity_map
+
 from felpy.model.source.SA1 import analytical_pulse_divergence,analytical_pulse_energy,analytical_pulse_width,analytical_pulse_duration
 
 FWHM2RMS = np.sqrt(8*np.log(2)) ### FWHM = sqrt(8ln(2))*sigma
@@ -65,23 +66,34 @@ class Source:
         else:
             
             E0 = get_pulse_energy(self.wfr)
-            self.wfr.data.arrEhor /= E0
-            print(get_pulse_energy(self.wfr)*(self.zMax-self.zMin))
+            self.wfr.data.arrEhor /= np.sqrt(E0/beam_energy)
+            
+            #print(get_pulse_energy(self.wfr))
+            
             
 class SA1_Source(Source):
     
     def __init__(self, ekev, q,
-                 nx, ny, xMin, xMax, yMin, yMax):
+                 nx, ny,
+                 xMin = -200e-06, xMax = 200e-06, yMin =-200e-06, yMax = 200e-06, S = 4):
         
         self.q = q
+        self.S = S
         
-        divergence = np.random.uniform(low = analytical_pulse_divergence(ekev, 'lower'),
-                                       high = analytical_pulse_divergence(ekev, 'upper'))
-        
+        divergence = analytical_pulse_divergence(ekev, 'mean')
+        #divergence = np.random.uniform(low = analytical_pulse_divergence(ekev, 'lower'),
+        #                               high = analytical_pulse_divergence(ekev, 'upper'))
+        print("Expected Divergence: {}".format(divergence))
+
         energy = analytical_pulse_energy(q, ekev)
-        fwhm = analytical_pulse_width(ekev)
+        #print("Expected Energy: {}".format(energy))
+
+        fwhm = analytical_pulse_width(ekev) 
+        print("Expected Size: {}".format(fwhm))
+
         pulse_duration = analytical_pulse_duration(q)
-        
+        #print("Expected Duration: {}".format(pulse_duration))
+
         
         
         super().__init__(ekev = ekev, fwhm = fwhm, divergence = divergence,
@@ -91,13 +103,20 @@ class SA1_Source(Source):
                          pulse_duration = pulse_duration,
                          zDomain ='frequency',
                          energy = energy)
-    
+        
+        self.get_wfr()
+        
+
+
+        print(self.wfr.get_divergence())
+        plot_intensity_map(self.wfr)
+
     #@timing
-    def get_temporal_profile(self, sigma = 4, S = 4, refresh = False):
+    def get_temporal_profile(self, sigma = 4, refresh = False):
         
         if self.temporal_profile is None:
             
-            n_samples, sampling_interval_t = temporal_sampling_requirements(self.pulse_duration, VERBOSE = True, S = S)
+            n_samples, sampling_interval_t = temporal_sampling_requirements(self.pulse_duration, VERBOSE = True, S = self.S)
          
             n_samples *= sigma 
             self.nz = n_samples
@@ -182,10 +201,11 @@ def temporal_sampling_requirements(pulse_time, S = 10, VERBOSE = False):
     n = np.ceil(S*pulse_time/(temporal_sampling))
 
     if VERBOSE:
-        print("Frequency Sampling Interval: {:.2e} Hz".format(freq_sampling))
-        print("Temporal Sampling Interval: {:.2e} s".format(temporal_sampling))
-        print("Number of Req. Samples: {}".format(n))
-
+        #print("Frequency Sampling Interval: {:.2e} Hz".format(freq_sampling))
+        #print("Temporal Sampling Interval: {:.2e} s".format(temporal_sampling))
+        #print("Number of Req. Samples: {}".format(n))
+        pass
+    
     return int(n), temporal_sampling
 
 
@@ -349,7 +369,7 @@ if __name__ == '__main__':
     
     for fwhm in np.linspace(50e-06, 150e-06, 10):
         
-        divergence = 11e-06
+        divergence = 25e-06
         ekev = 10
         
         env = complex_gaussian_envelope(nx, ny,
@@ -380,12 +400,13 @@ if __name__ == '__main__':
                                   dy = (yMax-yMin)/ny, dz = (pulse_time/n_samples),
                                   ekev = ekev, pulse_duration = pulse_time)
         
+        print(wfr.get_divergence())
         
         #modify_beam_divergence(wfr, wfr.get_fwhm()[0], divergence)
         
         plot_intensity_map(wfr)
-        print(wfr.get_fwhm())
-        print(wfr.get_divergence())
+
+        
         plot_intensity_map(wfr)
         #srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
     

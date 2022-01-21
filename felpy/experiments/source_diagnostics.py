@@ -21,6 +21,13 @@ from felpy.analysis.statistics.correlation import norm
 from matplotlib import pyplot as plt
 from wpg.wpg_uti_wf import calc_pulse_energy
 
+from felpy.utils.np_utils import memory_map
+
+def get_pulse_energy(wfr):
+    wfr.set_electric_field_representation('t')
+    energy = calc_pulse_energy(wfr)[0]
+    wfr.set_electric_field_representation('f')
+    return energy
 
 def plot_average_spectra(src, n_spectra = 5000):
     """
@@ -30,7 +37,7 @@ def plot_average_spectra(src, n_spectra = 5000):
     
     :param src: felpy.model.core.source.Source type object
     :param n_spectra: number of spectra over which we take the average
-    """
+    """ 
     
     temporal_profiles = np.zeros([src.nz, n_spectra])
     freq_profiles = np.zeros([src.nz, n_spectra])
@@ -70,14 +77,89 @@ def plot_average_spectra(src, n_spectra = 5000):
     ax1.xaxis.label.set_size(fontsize)
     ax1.yaxis.label.set_size(fontsize)
     
+
+def scan_source_energy(ekev, q):
+    """ 
+    objective: generate a function that records the pulse energy in J for a
+    given set of input parameters - here we use ekev and q to align w/ SA1 req.
     
+    :param ekev: photon energy (keV) or list of photon energies
+    :param q: electron bunch charge (nC) or list of bunch charges
+    
+    :returns data: array of pulse-energies - len(ekev)xlen(q)
+    usage
+    >>> data = scan_source_energy(ekev = np.arange(1,5), q = [0.1])
+    
+    this is part of the source validation criterion.
+    """
+
+    
+    data = np.zeros([len(ekev), len(q)])
+    
+    for i, e in tqdm(enumerate(ekev)):
+        for k, Q in enumerate(q):
+            
+            src = SA1_Source(ekev = e, q = Q, nx = 512, ny = 512)
+
+            data[i,k] = get_pulse_energy(src.wfr)
+            
+    return data
+
+def scan_source_size(ekev, q = 0.25):
+    """ 
+    objective: generate a function that records beam area in [um] for a given
+    set of input parameters - here we use ekev to align w/ empirical def of SA1
+    
+    :param ekev: list/array of photon energies (keV)
+    :param q: arbitrary choice of electron beam charge (nC)
+    
+    :returns data: list of beam-sizes - len = len(ekev)
+    
+    usage
+    >>> data = scan_source_size(ekev = np.arange(1,5))
+    """
+    
+    data = np.zeros([len(ekev)])
+    
+    
+    for i, e in tqdm(enumerate(ekev)):
+        src = SA1_Source(ekev = e, q = q, nx = 512, ny = 512)
+        data[i] = src.wfr.get_fwhm()[0]
+    
+    return data
+
+def scan_source_divergence(ekev, q, n = 10):
+    
+    data = np.zeros([len(ekev), len(q), n])
+    
+    for j in tqdm(range(n)):
+                
+        for i, e in enumerate(ekev):
+            for k, Q in enumerate(q):
+                    
+                src = SA1_Source(ekev = e, q = Q, nx = 512, ny = 512,
+                                 xMin = -25e-06, xMax = 25e-06, yMin= -25e-06, yMax= 25e-06, S = 1)
+                
+                data[i,k,j] = src.wfr.get_divergence()[0]
+    print(src.wfr.get_spatial_resolution())        
+    return data    
+
+
+
 if __name__ == '__main__':
-    
-    src = SA1_Source(ekev = 5.2, q = 0.25, nx = 512, ny = 512,
-                     xMin = -400e-06, xMax = 400e-06, yMin= -400e-06, yMax= 400e-06)
-    
+# =============================================================================
+#     
+#     src = SA1_Source(ekev = 5.2, q = 0.25, nx = 512, ny = 512,
+#                      xMin = -400e-06, xMax = 400e-06, yMin= -400e-06, yMax= 400e-06)
+#     
+# =============================================================================
     #plot_average_spectra(src, n_spectra = 100000)
 
-    wfr = src.get_wfr()
+    #wfr = src.get_wfr()
     
+    #data = scan_source_energy(ekev = np.arange(1,5), q = [0.1])
+    #data = scan_source_size(ekev = np.arange(1,5))
+    data = scan_source_divergence(ekev = np.arange(5,10), q = [0.1], n = 1)
+    
+    #print(get_pulse_energy(wfr))
     #plot_intensity_map(wfr)    
