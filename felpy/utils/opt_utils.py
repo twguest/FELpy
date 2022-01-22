@@ -26,6 +26,15 @@ def get_phase_shift(OPD, wav):
 def ekev2wav(ekev):
     return (h*c)/(e*ekev*1000)
 
+def ekev2k(ekev):
+    return (np.pi*2)/ekev2wav(ekev)
+
+def geometric_focus(fwhm, divergence):
+    """
+    calculate the focal length of a converging beam of size fwhm
+    """
+    return fwhm/np.tan(divergence)
+
 def get_magnification(src2sample, sample2det):
     """
     determine the magnification (M > 1 is a demagnification)

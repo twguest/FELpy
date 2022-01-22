@@ -101,7 +101,7 @@ def gaussian_2d(nx, ny, sigma, mu = 0):
 
 
 
-def readMap(mapdir,shape,dtype = 'float64'):
+def read_map(mapdir,shape,dtype = 'float64'):
     """
     read a map from mapDir
     """

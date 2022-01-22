@@ -1,7 +1,7 @@
 import numpy as np
 
-from felpy.model.src.coherent import construct_SA1_wavefront, construct_SA1_pulse
-from felpy.model.src.coherent import analytical_pulse_divergence,analytical_pulse_duration,analytical_pulse_energy,analytical_pulse_width
+from felpy.model.source.coherent import construct_SA1_wavefront, construct_SA1_pulse
+from felpy.model.source.coherent import analytical_pulse_divergence,analytical_pulse_duration,analytical_pulse_energy,analytical_pulse_width
 
 
 from matplotlib import pyplot as plt
@@ -11,7 +11,7 @@ from wpg.wpg_uti_wf import calculate_fwhm, look_at_q_space
 import wpg.srwlpy
 from wpg import srwlib
 
-from wpg.misc import calcDivergence
+
 import seaborn as sns
 
 def test_coherent_pulse_fwhm(E, sdir = None):
@@ -41,7 +41,7 @@ def test_coherent_pulse_fwhm(E, sdir = None):
     fwhms = []
 
     for energy in E:
-        wfr = construct_SA1_pulse(nx = 1024, ny = 1024, nz = 5, ekev = energy, q = 0.25)
+        wfr = construct_SA1_wavefront(nx = 1024, ny = 1024, ekev = energy, q = 0.25)
         fwhms.append(calculate_fwhm(wfr)['fwhm_x']*1e6)
 
     simulation, = ax.plot(E, fwhms, 'r')
@@ -83,14 +83,14 @@ def test_coherent_pulse_divergence(E, Q, sdir):
     
     
     
-    nx, ny = 512, 512 
+    nx, ny = 1024,1024
   
     for q in Q:
         
         divergences = []
         
         for energy in E:
-            wfr = construct_SA1_wavefront(nx, ny, energy, q)
+            wfr = construct_SA1_pulse(512, 512, 2, energy, q)
             divergences.append(wfr.get_divergence()[0])
             
         ax.scatter(E, np.array(divergences)*1e6, marker = 'o')
@@ -108,10 +108,10 @@ def test_coherent_pulse_divergence(E, Q, sdir):
 
 
 
-def core(E = np.linspace(3, 16, 15), Q = [0.01, 0.05, 0.1, 0.25, 0.5], sdir = None):
+def core(E = np.linspace(3, 16, 15), Q = [0.25], sdir = None):
     
     test_coherent_pulse_fwhm(E, sdir)
-    test_coherent_pulse_divergence(E, Q, sdir)
+    #test_coherent_pulse_divergence(E, Q, sdir)
 
 if __name__ == '__main__':
     core(sdir = "")

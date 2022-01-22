@@ -184,7 +184,7 @@ def setup_spb(parameter_file = "spb-sfx_nkb_FAST", options = 'nano', ekev = 5.0,
 
 if __name__ == '__main__':
     from wpg.wpg_uti_wf import plot_intensity_map
-    from felpy.model.src.coherent import construct_SA1_wavefront
+    from felpy.model.source.coherent import construct_SA1_wavefront
 
     spb = setup_spb()
     bl = spb.bl

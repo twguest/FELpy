@@ -74,7 +74,7 @@ class Beamline(WPG_Beamline):
             
 if __name__ == '__main__':
 
-    from felpy.model.src.coherent import construct_SA1_pulse
+    from felpy.model.source.coherent import construct_SA1_pulse
     from felpy.model.tools import propagation_parameters
     from wpg.optical_elements import Drift
     wfr = construct_SA1_pulse(512,512,2,5.0,1)

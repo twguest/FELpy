@@ -19,7 +19,7 @@ from felpy.utils.os_utils import mkdir_p
 from felpy.model.beamlines.exfel_spb.methods import get_beamline_object
 from felpy.model.core.wavefront import Wavefront
 from felpy.model.tools import propagation_parameters, scale
-from felpy.model.src.coherent import construct_SA1_pulse
+from felpy.model.source.coherent import construct_SA1_pulse
 from wpg.optical_elements import Drift
 from wpg.wpg_uti_wf import plot_intensity_map as plot_wfr
 from multiprocessing import Pool, cpu_count

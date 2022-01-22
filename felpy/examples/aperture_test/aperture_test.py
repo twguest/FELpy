@@ -21,7 +21,7 @@ sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
 import numpy as np
 from copy import deepcopy
 
-from felpy.model.src.coherent import construct_SA1_pulse
+from felpy.model.source.coherent import construct_SA1_pulse
 from felpy.model.core.instrument import Instrument
 
 from matplotlib import pyplot as plt

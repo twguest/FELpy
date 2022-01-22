@@ -16,7 +16,7 @@ __status__ = "Developement"
 import numpy as np
 
 from wpg.srwlib import SRWLOptD as Drift
-from felpy.model.src.coherent import construct_SA1_wavefront
+from felpy.model.source.coherent import construct_SA1_wavefront
 from felpy.model.core.beamline import Beamline
 from wpg.srwlib import srwl_opt_setup_surf_height_2d as OPD
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
