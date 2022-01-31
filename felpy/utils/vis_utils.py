@@ -7,7 +7,7 @@ FELPY
 __author__ = "Trey Guest"
 __credits__ = ["Trey Guest"]
 __license__ = "EuXFEL"
-__version__ = "1.0.1"
+__version__ = "0.1.1"
 __maintainer__ = "Trey Guest"
 __email__ = "twguest@students.latrobe.edu.au"
 __status__ = "Developement"
@@ -94,23 +94,45 @@ class Grids:
     def pad(self, pad):
         self.fig.tight_layout(pad = pad)
 
-    def add_global_colorbar(self, clabel, vmin = 0, vmax = 1, cmap = 'bone', tick_values = None, tick_labels = None, fontsize = 12):
+    def add_global_colorbar(self, clabel, vmin = 0, vmax = 1, cmap = 'bone', tick_values = None, tick_labels = None, fontsize = 12, orientation = 'vertical', pad = 0.025):
                 
         cmap=cm.get_cmap(cmap)
         normalizer=Normalize(vmin, vmax)
         im=cm.ScalarMappable(norm=normalizer, cmap = cmap)
         
         if self.n*self.m > 1:
-            cbar = self.fig.colorbar(im, ax=self.axes.ravel().tolist(), pad = 0.025)
+            cbar = self.fig.colorbar(im, ax=self.axes.ravel().tolist(), pad = pad, orientation = orientation)
         else:
-            cbar = self.fig.colorbar(im, ax=self.axes, pad = 0.025)
+            cbar = self.fig.colorbar(im, ax=self.axes, pad = pad, orientation = orientation)
 
         cbar.set_label(clabel, fontsize = fontsize)
         
         if tick_values != None and tick_labels != None:
             cbar.set_ticks(tick_values)
             cbar.set_ticklabels(tick_labels)
-            
+    
+    def get_axes(self):
+        if self.n*self.m == 1:
+            return self.axes
+        else:
+            return self.axes.flatten()
+    
+    def set_fontsize(self, fontsize = 16):
+        
+        if self.m*self.n == 1: 
+            self.axes.tick_params(axis='both', which='major', labelsize=fontsize)
+            self.axes.xaxis.label.set_size(fontsize)
+            self.axes.yaxis.label.set_size(fontsize)
+        else:
+            for ax in self.get_axes():
+
+                ax.tick_params(axis='both', which='major', labelsize=fontsize)
+                ax.xaxis.label.set_size(fontsize)
+                ax.yaxis.label.set_size(fontsize)
+
+    def savefig(self, sdir):
+        self.fig.savefig(sdir)
+        
         
     def create_grid(self, n = 1, m = 1, title = None, xlabel = None, ylabel = None,
                             resolution = 100, fontsize = 12, sharex = True, sharey = True):

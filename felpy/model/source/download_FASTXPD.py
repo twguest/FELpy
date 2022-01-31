@@ -7,7 +7,7 @@ FELPY
 __author__ = "Trey Guest"
 __credits__ = ["Trey Guest"]
 __license__ = "EuXFEL"
-__version__ = "1.0.1"
+__version__ = "0.1.1"
 __maintainer__ = "Trey Guest"
 __email__ = "twguest@students.latrobe.edu.au"
 __status__ = "Developement"
@@ -114,7 +114,7 @@ if __name__ == '__main__':
     
     options = load_options()
 
-    for idx in range()options.shape[0]):
+    for idx in range(options.shape[0]):
         input_folder = options['Pulse Name'][idx]
         time_end = options['End Time'][idx]
         z_output_point = options['Start Point'][idx]

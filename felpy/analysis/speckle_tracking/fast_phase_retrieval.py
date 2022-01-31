@@ -5,7 +5,7 @@ from math import floor
 
 from numpy.fft import fft2, fftshift, ifft2, ifftshift
 
-def fast_phase_retrieval(dx,dy,wav,z):
+def geometric_flow(dx,dy,wav,z):
     """
     this function calculates the phase-shift of a set of wavefields given the 
     displacement fields dx,dy between phase-reconstructions.

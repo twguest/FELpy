@@ -7,7 +7,7 @@ FELPY
 __author__ = "Trey Guest"
 __credits__ = ["Trey Guest"]
 __license__ = "EuXFEL"
-__version__ = "1.0.1"
+__version__ = "0.1.1"
 __maintainer__ = "Trey Guest"
 __email__ = "twguest@students.latrobe.edu.au"
 __status__ = "Developement"
@@ -101,7 +101,7 @@ def gaussian_2d(nx, ny, sigma, mu = 0):
 
 
 
-def readMap(mapdir,shape,dtype = 'float64'):
+def read_map(mapdir,shape,dtype = 'float64'):
     """
     read a map from mapDir
     """
@@ -118,7 +118,7 @@ def memory_map(map_loc, shape, dtype = 'float64'):
     """
 
     if os.path.exists(map_loc):
-        memmap = readMap(map_loc, shape, dtype)
+        memmap = read_map(map_loc, shape, dtype)
     else:
         memmap = np.memmap(map_loc, mode = "w+",
                            shape = shape, dtype = dtype)

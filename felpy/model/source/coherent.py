@@ -7,7 +7,7 @@ FELPY
 __author__ = "Trey Guest"
 __credits__ = ["Trey Guest"]
 __license__ = "EuXFEL"
-__version__ = "1.0.1"
+__version__ = "0.1.1"
 __maintainer__ = "Trey Guest"
 __email__ = "twguest@students.latrobe.edu.au"
 __status__ = "Developement"
@@ -47,6 +47,8 @@ from wpg.srwlib import SRWLOptL as thinLens
 
 from wpg.optical_elements import Drift
 from wpg.srwlib import SRWLOptD
+
+from felpy.model.backend.wpg_converters import wavefront_from_array
 
 fwhm2rms = np.sqrt(8*np.log(2)) ### FWHM = sqrt(8ln(2))*sigma
 h = scipy.constants.physical_constants['Planck constant in eV s'][0]
@@ -92,7 +94,7 @@ def analytical_pulse_width(ekev):
     :return sig: Radiation pulse width (FWHM) [m]
     """
 
-    sig = 6*np.log((7.4e03/ekev))
+    sig = np.log((7.4e03/ekev))*6
     return sig/1e6
 
 def analytical_pulse_divergence(q, ekev):
@@ -123,7 +125,7 @@ def modify_beam_divergence(wfr, sig, dtheta):
     tl = thinLens(f,f)
     bl = Beamline()
     bl.append(tl, [0,0,0,0,0,1,1,1,1,0,0,0])
-    bl.append(Drift(2*f), [0,0,1,0,0,1,1,1,1,0,0,0])
+    bl.append(Drift(2*f), [0,0,0,0,0,1,1,1,1,0,0,0])
     bl.propagate(wfr)
 
     wfr.params.Mesh.zCoord = 0
@@ -144,14 +146,15 @@ def construct_gaussian(nx, ny, ekev, extent, sigX, sigY, divergence, xoff = 0, y
     wfr = Wavefront(gsnBm)
     wfr.params.wavelength = ekev2wav(ekev)
     
-    modify_beam_divergence(wfr,sigX, divergence)
-
+    modify_beam_divergence(wfr,sigX, divergence) 
     return wfr
 
 
 
 def construct_SA1_wavefront(nx, ny, ekev, q, xoff = 0, yoff = 0, mx = 0, my = 0,
-                            tiltX = 0, tiltY = 0):
+                            tiltX = 0, tiltY = 0,
+                            xMin = -400e-06, xMax = 400e-06,
+                            yMin = -400e-06, yMax = 400e-06):
     """
     Construct a fully-coherent Gaussian source with properties related to the
     energy of the radiation and beam charge.
@@ -170,8 +173,7 @@ def construct_SA1_wavefront(nx, ny, ekev, q, xoff = 0, yoff = 0, mx = 0, my = 0,
     """
     wavelength = (h*c)/(ekev*1e3)
 
-    xMin, xMax = -400e-06, 400e-06 #based on fwhm of 1 nC, 3 keV beam
-    yMin, yMax = -400e-06, 400e-06 #based on fwhm of 1 nC, 3 keV beam
+    
 
     sigX, sigY = analytical_pulse_width(ekev)/fwhm2rms, analytical_pulse_width(ekev)/fwhm2rms
     pulseEn = analytical_pulse_energy(q, ekev)
@@ -186,13 +188,12 @@ def construct_SA1_wavefront(nx, ny, ekev, q, xoff = 0, yoff = 0, mx = 0, my = 0,
     wfr.params.wavelength = wavelength
     srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
 
-    modify_beam_divergence(wfr,analytical_pulse_width(ekev),analytical_pulse_divergence(q,ekev))
-
+    modify_beam_divergence(wfr,sigX, analytical_pulse_divergence(q,ekev)) ## note 300 is hardcoded fix, should not stay past tue 13/01/21
 
     return wfr
 
 
-def construct_SA1_pulse(nx, ny, nz, ekev, q, modify_beam_divergenceergence = True, mx = 0, my = 0):
+def construct_SA1_pulse(nx, ny, nz, ekev, q, mx = 0, my = 0):
     """
     Construct a fully-coherent Gaussian source with properties related to the
     energy of the radiation and beam charge.
@@ -236,9 +237,10 @@ def construct_SA1_pulse(nx, ny, nz, ekev, q, modify_beam_divergenceergence = Tru
 
     wfr = Wavefront(gsnBm)
     srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
-
+    print(wfr)
     wfr.params.wavelength = wavelength
-    modify_beam_divergence(wfr,analytical_pulse_width(ekev),analytical_pulse_divergence(q,ekev))
+    
+    #modify_beam_divergence(wfr,analytical_pulse_width(ekev),analytical_pulse_divergence(q,ekev))
     
     modify_beam_energy(wfr, desired = 2*pulseEn)
     return wfr

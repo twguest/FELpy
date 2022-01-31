@@ -8,7 +8,7 @@ Created on Wed Sep 16 15:18:05 2020
 import os
 import sys
 sys.path.append("../../")
-from felpy.model.src.coherent import construct_SA1_wavefront
+from felpy.model.source.coherent import construct_SA1_wavefront
 from felpy.model.tools import mkdir_p
 from felpy.model.core.wavefront import Wavefront
 import numpy as np
@@ -74,7 +74,7 @@ if __name__ == '__main__':
     py = 1
     wav = 1e-10
     z = 1e-08
-    from felpy.model.src.partially_coherent import define_wfr_tilt
+    from felpy.model.source.partially_coherent import define_wfr_tilt
     from felpy.model.core.fresnel_propagator import frensel_propagator
     
     wfr = define_wfr_tilt(grid, kx = 0, ky = 1)
