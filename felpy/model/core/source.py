@@ -75,12 +75,13 @@ class SA1_Source(Source):
     
     def __init__(self, ekev, q,
                  nx, ny,
-                 xMin = -200e-06, xMax = 200e-06, yMin =-200e-06, yMax = 200e-06, S = 4):
+                 xMin = -100e-06, xMax = 100e-06, yMin = -100e-06, yMax = 100e-06, S = 4):
+        
         
         self.q = q
         self.S = S
         
-        divergence = analytical_pulse_divergence(ekev, 'mean')
+        divergence = 25e-06#analytical_pulse_divergence(ekev, 'mean')
         #divergence = np.random.uniform(low = analytical_pulse_divergence(ekev, 'lower'),
         #                               high = analytical_pulse_divergence(ekev, 'upper'))
         print("Expected Divergence: {}".format(divergence))
@@ -106,11 +107,17 @@ class SA1_Source(Source):
         
         self.get_wfr()
         
+        #print(self.wfr.get_spatial_resolution())
 
-
-        print(self.wfr.get_divergence())
+        #print(self.wfr.get_divergence())
         plot_intensity_map(self.wfr)
-
+    
+    def plot(self):
+        plot_intensity_map(self.wfr)
+    
+    def plot_divergence(self):
+        self.plot()
+        #self.wfr.set_electric_field_representation('r')
     #@timing
     def get_temporal_profile(self, sigma = 4, refresh = False):
         
@@ -139,9 +146,9 @@ class SA1_Source(Source):
         
             env = complex_gaussian_envelope(self.nx, self.ny,
                                             self.xMin, self.xMax, self.yMin, self.yMax,
-                                            self.fwhm,
-                                            self.divergence,
-                                            self.ekev)
+                                            fwhm = self.fwhm,
+                                            divergence = self.divergence,
+                                            ekev = self.ekev)
             
     
 
@@ -355,70 +362,84 @@ def generate_coherent_source_wavefront(nx, ny, fwhm, divergence):
     
     gaussian_1d = gaussian_envelope(nx, ny, fwhm, divergence)
 
-
-
 if __name__ == '__main__':
-    
-    from wpg.wpg_uti_wf import plot_intensity_map, plot_intensity_qmap
-    
-    nx = 512
-    ny = 512
-    
-    xMin = yMin = -400e-06
-    xMax = yMax =  400e-06
-    
-    for fwhm in np.linspace(50e-06, 150e-06, 10):
-        
-        divergence = 25e-06
-        ekev = 10
-        
-        env = complex_gaussian_envelope(nx, ny,
-                                        xMin, xMax, yMin, yMax,
-                                        fwhm,
-                                        divergence,
-                                        ekev)
-        
-        pulse_time = 55e-15
-        sigma = 4
-        S = 4
-        Seff = S/sigma
-        
-        n_samples, sampling_interval_t = temporal_sampling_requirements(pulse_time, VERBOSE = False, S = S)
-        sampling_interval_w = 1/sampling_interval_t
-    
-        n_samples *= sigma 
-        #n_samples = 10
-        t = np.arange(-pulse_time, pulse_time, pulse_time/n_samples)
-    
-        temporal_profile = generate_temporal_SASE_pulse(pulse_time = pulse_time,
-                                                        n_samples = n_samples,
-                                                        sigma = sigma)
-        env = env[:,:,np.newaxis]*temporal_profile
-        
-        wfr = wavefront_from_array(env, nx = nx, ny = ny,
-                                  nz = n_samples, dx = (xMax-xMin)/nx,
-                                  dy = (yMax-yMin)/ny, dz = (pulse_time/n_samples),
-                                  ekev = ekev, pulse_duration = pulse_time)
-        
-        print(wfr.get_divergence())
-        
-        #modify_beam_divergence(wfr, wfr.get_fwhm()[0], divergence)
-        
-        plot_intensity_map(wfr)
 
-        
-        plot_intensity_map(wfr)
-        #srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
+    nx = ny = 512
+    xMin = yMin = -300e-06
+    yMax = xMax = -1*xMin
+    fwhm = 5e-06
+    divergence = 5e-06
+    ekev = 10
     
-    # =============================================================================
-    #     plot_intensity_map(wfr)
-    #     print(wfr.get_divergence())
-    #     plot_intensity_map(wfr)
-    # 
-    #     #print(wfr.get_spatial_resolution())
-    #     modify_beam_divergence(wfr, fwhm, divergence)
-    #     #print(wfr)
-    # 
-    #     #env = env[:,:,np.newaxis] * temporal_profile
-    # =============================================================================
-        
+    env = complex_gaussian_envelope(nx, ny,
+                                    xMin, xMax, yMin, yMax,
+                                    fwhm,
+                                    divergence,
+                                    ekev)
+    
+    pulse_time = 55e-15
+    sigma = 4
+    S = 4
+    Seff = S/sigma
+    
+    n_samples, sampling_interval_t = temporal_sampling_requirements(pulse_time, VERBOSE = False, S = S)
+    sampling_interval_w = 1/sampling_interval_t
+
+    n_samples *= sigma 
+    #n_samples = 10
+    t = np.arange(-pulse_time, pulse_time, pulse_time/n_samples)
+
+    temporal_profile = generate_temporal_SASE_pulse(pulse_time = pulse_time,
+                                                    n_samples = n_samples,
+                                                    sigma = sigma)
+    env = env[:,:,np.newaxis]*temporal_profile
+    
+    wfr = wavefront_from_array(env, nx = nx, ny = ny,
+                              nz = n_samples, dx = (xMax-xMin)/nx,
+                              dy = (yMax-yMin)/ny, dz = (pulse_time/n_samples),
+                              ekev = ekev, pulse_duration = pulse_time)
+    
+    print(wfr.get_divergence())
+    
+    #modify_beam_divergence(wfr, wfr.get_fwhm()[0], divergence)
+    
+    plot_intensity_map(wfr)
+
+    
+    plot_intensity_map(wfr)
+        #srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
+# =============================================================================
+#     
+#     # =============================================================================
+#     #     plot_intensity_map(wfr)
+#     #     print(wfr.get_divergence())
+#     #     plot_intensity_map(wfr)
+#     # 
+#     #     #print(wfr.get_spatial_resolution())
+#     #     modify_beam_divergence(wfr, fwhm, divergence)
+#     #     #print(wfr)
+#     # 
+#     #     #env = env[:,:,np.newaxis] * temporal_profile
+#     # =============================================================================
+# =============================================================================
+# =============================================================================
+# 
+# 
+# if __name__ == '__main__':
+#     
+#     from wpg.wpg_uti_wf import plot_intensity_map, plot_intensity_qmap
+#     
+#     nx = 512
+#     ny = 512
+#     
+#     xMin = yMin = -400e-06
+#     xMax = yMax =  400e-06
+#     
+#     #for fwhm in np.linspace(50e-06, 150e-06, 10):
+#          
+#         
+#     from felpy.experiments.source_diagnostics import scan_source_divergence
+#     
+#     data = scan_source_divergence(ekev = np.arange(5,10), q = [0.1], n = 1)
+# 
+# =============================================================================

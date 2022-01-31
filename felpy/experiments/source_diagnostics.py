@@ -133,15 +133,14 @@ def scan_source_divergence(ekev, q, n = 10):
     data = np.zeros([len(ekev), len(q), n])
     
     for j in tqdm(range(n)):
-                
         for i, e in enumerate(ekev):
             for k, Q in enumerate(q):
                     
-                src = SA1_Source(ekev = e, q = Q, nx = 512, ny = 512,
-                                 xMin = -25e-06, xMax = 25e-06, yMin= -25e-06, yMax= 25e-06, S = 1)
-                
+                src = SA1_Source(ekev = e, q = Q, nx = 1024, ny = 1024, S = 1)
+                #src.plot()
+                #src.plot_divergence()
                 data[i,k,j] = src.wfr.get_divergence()[0]
-    print(src.wfr.get_spatial_resolution())        
+                src.plot()
     return data    
 
 
