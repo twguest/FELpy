@@ -86,6 +86,18 @@ class Wavefront(WPG_Wavefront):
             print(self.custom_fields['spatial resolution'])
         return px, py
     
+    def get_angular_resolution(self, VERBOSE = False):
+        qx = (self.params.Mesh.qxMax - self.params.Mesh.qxMin) / self.params.Mesh.nx
+        qy = (self.params.Mesh.qyMax - self.params.Mesh.qyMin) / self.params.Mesh.ny
+        
+        
+        self.custom_fields['angular resolution'] = qx, qy
+        
+        
+        if VERBOSE:
+            print(self.custom_fields['angular resolution'])
+        return qx, qy
+           
     def get_temporal_resolution(self, VERBOSE = False):
         
         wDomain = self.params.wDomain

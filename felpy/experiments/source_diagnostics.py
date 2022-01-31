@@ -123,13 +123,13 @@ def scan_source_size(ekev, q = 0.25):
     
     for i, e in tqdm(enumerate(ekev)):
         src = SA1_Source(ekev = e, q = q, nx = 1024, ny = 1024, S = 1)
-        data[i] = src.wfr.get_fwhm()[0]
+        data[i] = src.get_fwhm()[0][0]
     
     return data
 
 def scan_source_divergence(ekev, q, n = 10):
     
-    data = np.zeros([len(ekev), len(q), n])
+    data = np.zeros([len(ekev), 2, len(q), n])
     
     for j in tqdm(range(n)):
         for i, e in enumerate(ekev):
@@ -138,7 +138,7 @@ def scan_source_divergence(ekev, q, n = 10):
                 src = SA1_Source(ekev = e, q = Q, nx = 512, ny = 512,
                                  xMin = -300e-06, xMax = 300e-06, yMin= -300e-06, yMax= 300e-06, S = 1)
                 
-                data[i,k,j] = src.wfr.get_divergence()[0]
+                data[i,:,k,j] = src.get_divergence()[0]
    
     return data    
 
