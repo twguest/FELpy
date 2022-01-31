@@ -7,7 +7,7 @@ FELPY
 __author__ = "Trey Guest"
 __credits__ = ["Trey Guest"]
 __license__ = "EuXFEL"
-__version__ = "1.0.1"
+__version__ = "0.1.1"
 __maintainer__ = "Trey Guest"
 __email__ = "twguest@students.latrobe.edu.au"
 __status__ = "Developement"
@@ -176,8 +176,8 @@ def generate_infinite_mirror():
     fpath = felpy_path()
     
     generate_mirror_surface(512, 512,
-                           dx = 10,
-                           dy = 10,
+                           dx = 25,
+                           dy = 25,
                            savedir = fpath + "/data/spb/tmp/",
                            mode = 'flat',
                            mirror_name = "infinite")

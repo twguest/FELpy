@@ -81,16 +81,14 @@ class SA1_Source(Source):
         self.q = q
         self.S = S
         
-        divergence = 25e-06#analytical_pulse_divergence(ekev, 'mean')
-        #divergence = np.random.uniform(low = analytical_pulse_divergence(ekev, 'lower'),
-        #                               high = analytical_pulse_divergence(ekev, 'upper'))
-        print("Expected Divergence: {}".format(divergence))
+        #divergence = analytical_pulse_divergence(ekev, 'mean')
+        divergence = np.random.uniform(low = analytical_pulse_divergence(ekev, 'lower'), high = analytical_pulse_divergence(ekev, 'upper'))
+        #print("Expected Divergence: {}".format(divergence))
 
         energy = analytical_pulse_energy(q, ekev)
-        #print("Expected Energy: {}".format(energy))
 
         fwhm = analytical_pulse_width(ekev) 
-        print("Expected Size: {}".format(fwhm))
+        #print("Expected Size: {}".format(fwhm))
 
         pulse_duration = analytical_pulse_duration(q)
         #print("Expected Duration: {}".format(pulse_duration))
@@ -109,15 +107,6 @@ class SA1_Source(Source):
         
         #print(self.wfr.get_spatial_resolution())
 
-        #print(self.wfr.get_divergence())
-        plot_intensity_map(self.wfr)
-    
-    def plot(self):
-        plot_intensity_map(self.wfr)
-    
-    def plot_divergence(self):
-        self.plot()
-        #self.wfr.set_electric_field_representation('r')
     #@timing
     def get_temporal_profile(self, sigma = 4, refresh = False):
         
@@ -146,18 +135,14 @@ class SA1_Source(Source):
         
             env = complex_gaussian_envelope(self.nx, self.ny,
                                             self.xMin, self.xMax, self.yMin, self.yMax,
-                                            fwhm = self.fwhm,
-                                            divergence = self.divergence,
-                                            ekev = self.ekev)
-            
-    
+                                            self.fwhm,
+                                            self.divergence,
+                                            self.ekev)
+               
 
- 
-            
+             
             #sampling_interval_w = 1/sampling_interval_t
-        
-            #n_samples = 10
-        
+      
             self.get_temporal_profile()
             
             env = env[:,:,np.newaxis]*self.temporal_profile

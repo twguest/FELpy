@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import scipy
-
 import numpy as np
 
 """

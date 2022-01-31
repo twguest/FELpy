@@ -3,4 +3,4 @@
 	url = https://github.com/twguest/WPG
 [submodule "phase_retrieval"]
 	path = phase_retrieval
-	url = twguest/phase_retrieval
+	url = https://github.com/twguest/phase_retrieval
