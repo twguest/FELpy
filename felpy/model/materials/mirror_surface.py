@@ -176,8 +176,8 @@ def generate_infinite_mirror():
     fpath = felpy_path()
     
     generate_mirror_surface(512, 512,
-                           dx = 10,
-                           dy = 10,
+                           dx = 25,
+                           dy = 25,
                            savedir = fpath + "/data/spb/tmp/",
                            mode = 'flat',
                            mirror_name = "infinite")

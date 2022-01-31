@@ -99,7 +99,7 @@ class Instrument:
     def adjust_mirror(self, mirror_name, ekev, new_ang, mirror_refl = None):
 
         if mirror_refl is None:
-            if ekev >= 7.5:
+            if ekev <= 7.5:
                 material = "B4C"
             else:
                 material = "Ru"
@@ -110,7 +110,7 @@ class Instrument:
 
         self.params[mirror_name]["design angle"] = new_ang
         self.params[mirror_name]["incidence angle"] = new_ang
-        self.params[mirror_name]['reflectivity'] = (1-refl)#**2 ### note, this maps to an absorption parameter (hence 1-refl)
+        self.params[mirror_name]['reflectivity'] = (refl)#**2 ### note, this maps to an absorption parameter (hence 1-refl)
 
 
 

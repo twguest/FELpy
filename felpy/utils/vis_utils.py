@@ -110,7 +110,29 @@ class Grids:
         if tick_values != None and tick_labels != None:
             cbar.set_ticks(tick_values)
             cbar.set_ticklabels(tick_labels)
-            
+    
+    def get_axes(self):
+        if self.n*self.m == 1:
+            return self.axes
+        else:
+            return self.axes.flatten()
+    
+    def set_fontsize(self, fontsize = 16):
+        
+        if self.m*self.n == 1: 
+            self.axes.tick_params(axis='both', which='major', labelsize=fontsize)
+            self.axes.xaxis.label.set_size(fontsize)
+            self.axes.yaxis.label.set_size(fontsize)
+        else:
+            for ax in self.get_axes():
+
+                ax.tick_params(axis='both', which='major', labelsize=fontsize)
+                ax.xaxis.label.set_size(fontsize)
+                ax.yaxis.label.set_size(fontsize)
+
+    def savefig(self, sdir):
+        self.fig.savefig(sdir)
+        
         
     def create_grid(self, n = 1, m = 1, title = None, xlabel = None, ylabel = None,
                             resolution = 100, fontsize = 12, sharex = True, sharey = True):

@@ -48,14 +48,13 @@ def plot_average_spectra(src, n_spectra = 5000):
     t = np.linspace(tMin, tMax, src.nz)*1e15
     
     for itr in tqdm(range(n_spectra)):
-        temporal_profiles[:, itr] = src.get_temporal_profile(refresh = True, sigma = 3, S = 2)
+        temporal_profiles[:, itr] = src.get_temporal_profile(refresh = True, sigma = 3)
 
     
     #for i in range(10):
         #plt.plot(abs(temporal_profiles[:, i])**2)
    
-    plt.plot(abs(temporal_profiles[:, :10])**2)
-        
+       
     ### plotting     
     grid = Grids(global_aspect = 1.5)
     grid.create_grid(n = 1, m = 1, sharex = False, sharey = True)
@@ -123,7 +122,7 @@ def scan_source_size(ekev, q = 0.25):
     
     
     for i, e in tqdm(enumerate(ekev)):
-        src = SA1_Source(ekev = e, q = q, nx = 512, ny = 512)
+        src = SA1_Source(ekev = e, q = q, nx = 1024, ny = 1024, S = 1)
         data[i] = src.wfr.get_fwhm()[0]
     
     return data
@@ -138,10 +137,10 @@ def scan_source_divergence(ekev, q, n = 10):
             for k, Q in enumerate(q):
                     
                 src = SA1_Source(ekev = e, q = Q, nx = 512, ny = 512,
-                                 xMin = -25e-06, xMax = 25e-06, yMin= -25e-06, yMax= 25e-06, S = 1)
+                                 xMin = -300e-06, xMax = 300e-06, yMin= -300e-06, yMax= 300e-06, S = 1)
                 
                 data[i,k,j] = src.wfr.get_divergence()[0]
-    print(src.wfr.get_spatial_resolution())        
+   
     return data    
 
 
