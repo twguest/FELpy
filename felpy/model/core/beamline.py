@@ -32,8 +32,7 @@ class Beamline(WPG_Beamline):
 
         if outdir is not None:
             wfr.write(outdir + "initialSource")
-            wfr.view()
-        
+
         if return_intensity:
             intensity = []
         if return_mesh:
