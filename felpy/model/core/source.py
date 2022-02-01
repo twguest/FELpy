@@ -107,11 +107,11 @@ class Source:
         
         qx, qy = self.wfr.get_angular_resolution()
         
-        fx = abs(cx-ix)*qx*2*ekev2wav(src.ekev)
-        fy = abs(cy-iy)*qy*2*ekev2wav(src.ekev)
+        fx = abs(cx-ix)*qx*2*self.wavelength
+        fy = abs(cy-iy)*qy*2*self.wavelength
         
-        ex = qx*2*ekev2wav(src.ekev)
-        ey = qy*2*ekev2wav(src.ekev)
+        ex = qx*2*self.wavelength
+        ey = qy*2*self.wavelength
 
         self.wfr = wfr
         
