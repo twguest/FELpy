@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import scipy
+import scipy.constants
 import numpy as np
 
 """
