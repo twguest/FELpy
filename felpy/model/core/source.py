@@ -14,7 +14,7 @@ from felpy.model.source.coherent import modify_beam_divergence
 from felpy.utils.opt_utils import ekev2wav, ekev2k
 from felpy.utils.os_utils import timing
 from wpg.wpg_uti_wf import calc_pulse_energy, plot_intensity_map
-
+from felpy.model.core.mesh import Mesh
 from felpy.model.source.SA1 import analytical_pulse_divergence,analytical_pulse_energy,analytical_pulse_width,analytical_pulse_duration
 
 FWHM2RMS = np.sqrt(8*np.log(2)) ### FWHM = sqrt(8ln(2))*sigma
@@ -26,40 +26,51 @@ def get_pulse_energy(wfr):
     wfr.set_electric_field_representation('f')
     return energy
         
+
+
+
 class Source:
     """
     generalised source class
-    """
-    def __init__(self, ekev, fwhm, divergence,
-                 nx, ny, nz, xMin, xMax, yMin, yMax, pulse_duration,
-                 zDomain = 'frequency', energy = 1,
-                 temporal_profile = None):
-        
-        self.ekev = ekev
-        self.wavelength = ekev2wav(ekev)
-        self.k = ekev2k(ekev)
-        
-        self.divergence = divergence
-        self.fwhm = fwhm
-        
-        self.pulse_duration = pulse_duration
-        
-        self.nx = nx
-        self.ny = ny
-        self.xMin = xMin
-        self.xMax = xMax
-        self.yMin = yMin
-        self.yMax = yMax
-        self.zMin = -pulse_duration/2
-        self.zMax = pulse_duration/2
-        
-        self.zDomain = 'frequency'
-        
-        self.energy = energy
-        self.wfr = None
-        
-        self.temporal_profile = temporal_profile
     
+    note: this could be much more general as to not take ekev and fwhm
+    """
+    def __init__(self, **kwargs):
+            
+        self.__dict__.update(kwargs)
+        
+
+
+        ### this means that we first defer to nx/ny/nz definitions of the field    
+        if all(hasattr(self, attr) for attr in ["nx", "ny", "xMin", "xMax", "yMin", "yMax", "zMin", "zMax"]):
+            pass
+        else:
+            if hasattr(self, "mesh"):
+                self.__dict__.update(self.mesh.get_attributes())
+        
+
+        self.wfr = None
+
+
+    def check_attributes(self):
+        """ 
+        a function to check if we have all the necessary mesh definitions before continuing
+        """
+        
+        missing = []
+        
+        for attr in ["nx", "ny", "xMin", "xMax", "yMin", "yMax", "zMin", "zMax"]:
+            
+            if hasattr(self, attr) == False:
+                missing.append(attr)
+        
+
+        if len(missing) > 0:
+            raise Warning("You do not have the required attributes: {}".format(missing))
+        
+        
+        del missing
+        
     def set_beam_energy(self,  beam_energy):
         
         if self.wfr is None:
@@ -119,14 +130,15 @@ class Source:
     
 class SA1_Source(Source):
     
-    def __init__(self, ekev, q,
-                 nx, ny,
-                 xMin = -200e-06, xMax = 200e-06, yMin = -200e-06, yMax = 200e-06, S = 4):
-        
+    def __init__(self, ekev, q, S = 4, **kwargs):
+        """ 
+        :param S: sampling factor
+        """
         
         self.q = q
         self.S = S
-        
+        self.wavelength = ekev2wav(ekev)
+          
         #divergence = analytical_pulse_divergence(ekev, 'mean')
         divergence = np.random.uniform(low = analytical_pulse_divergence(ekev, 'lower'), high = analytical_pulse_divergence(ekev, 'upper'))
         print("Expected Divergence: {}".format(divergence))
@@ -139,15 +151,13 @@ class SA1_Source(Source):
         pulse_duration = analytical_pulse_duration(q)
         #print("Expected Duration: {}".format(pulse_duration))
 
-        
-        
+       
+               
         super().__init__(ekev = ekev, fwhm = fwhm, divergence = divergence,
-                         nx = nx, ny = ny,nz = 1,
-                         xMin = xMin, xMax = xMax,
-                         yMin = yMin, yMax = yMax,
                          pulse_duration = pulse_duration,
-                         zDomain ='frequency',
-                         energy = energy)
+                         zDomain ='frequency', k = ekev2k(ekev),
+                         energy = energy, zMin = -pulse_duration/2, zMax = pulse_duration/2,
+                         **kwargs)
         
         self.get_wfr()
         
@@ -155,8 +165,8 @@ class SA1_Source(Source):
 
     #@timing
     def get_temporal_profile(self, sigma = 4, refresh = False):
-        
-        if self.temporal_profile is None:
+        ### note this gets and sets - should be changed
+        if hasattr(self, "temporal_profile") == False:
             
             n_samples, sampling_interval_t = temporal_sampling_requirements(self.pulse_duration, VERBOSE = True, S = self.S)
          
@@ -204,7 +214,27 @@ class SA1_Source(Source):
         else: 
             return self.wfr
     
+class Source_WPG(Source):
     
+    def __init__(self, wfr, **kwargs):
+        
+        self.wfr = wfr
+        
+        ekev = wfr.params.photonEnergy/1000
+        
+        xMin, xMax, yMin, yMax = wfr.get_limits()
+        nx, ny = wfr.params.Mesh.nx, wfr.params.Mesh.ny
+        
+        zMin, zMax = wfr.params.Mesh.sliceMin, wfr.params.Mesh.sliceMax
+        nz = wfr.params.Mesh.nSlices
+        
+        m = Mesh(nx = nx, ny = ny, nz = nz,
+                 xMin = xMin, xMax = xMax,
+                 yMin = yMin, yMax = yMax,
+                 zMin = zMin, zMax = zMax)
+        
+        super().__init__(mesh = m, **kwargs, ekev = ekev)
+        
     
 def gaussian_profile(x, x0, width):
     """
@@ -286,8 +316,13 @@ def generate_temporal_SASE_pulse(pulse_time, n_samples = 100, sigma = 4, t0 = 0)
 
     return E_t
 
-def wavefront_to_wavefield(spatial_wfr, temporal_profile):
+def wavefront_to_wavefield(spatial_wfr, temporal_profile = 1):
+    """ 
+    this function is primarily a WPG conversion function that takes two wavefields,
+    a spatial and temporal, two define a single WPG array.
     
+    note: in future we might just define a single input wavefront.
+    """
     new_wfr = spatial_wfr.as_complex_array()[:,:,:]*temporal_profile
 
 
@@ -394,9 +429,13 @@ def generate_coherent_source_wavefront(nx, ny, fwhm, divergence):
     gaussian_1d = gaussian_envelope(nx, ny, fwhm, divergence)
 
 if __name__ == '__main__':
-    src = SA1_Source(5.0, 0.25, 1024, 1024)
     
-    print(src.get_divergence())
+    from felpy.model.core.mesh import Mesh
+    m = Mesh(nx = 512, ny = 512, xMin = -1, xMax =1, yMin = 1, yMax = 1)
+    
+    src = SA1_Source(5.0, 0.25, mesh = m)
+    
+
 # =============================================================================
 #     nx = ny = 512
 #     xMin = yMin = -300e-06
