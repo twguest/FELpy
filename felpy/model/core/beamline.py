@@ -19,7 +19,6 @@ class Beamline(WPG_Beamline):
         :param outdir: save directory
         """
         
-        wfr.view()
         
         print(outdir)
         if outdir is not None:

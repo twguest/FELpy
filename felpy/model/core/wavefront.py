@@ -53,8 +53,10 @@ def complex_converter(carr):
 class Wavefront(WPG_Wavefront):
     
     def __init__(self, _srwl_wf = None):
+        self._changed = False
         super().__init__(_srwl_wf)
-        
+
+            
     def load_complex_array(self, carr):
         """
         load a complex array in WPG format, assumes no change in f.o.v etc.

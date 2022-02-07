@@ -11,6 +11,7 @@ class Mesh:
     is constructed via two-methods: from single-value field definitions or from
     numpy arrays defining exact coordinates.
     
+    **kwargs
     :params nx: (optional) [int]
     :params ny: (optional) [int]
     :params nz: (optional) [int]
@@ -158,11 +159,11 @@ class Mesh:
         """
         self.check_axes_options(axes)
         
-        if axes == any('x', 0):
+        if axes in ['x', 0]:
             return np.linspace(self.xMin, self.xMax, self.nx)
-        if axes == any('y', 1):
+        if axes in ['y', 1]:
             return np.linspace(self.yMin, self.yMax, self.ny)
-        if axes == any('z', 2):
+        if axes in ['z', 2]:
             return np.linspace(self.zMin, self.zMax, self.nz)
     
     
@@ -175,6 +176,16 @@ class Mesh:
         if axes not in options:
             raise Warning("We're not sure what axes you require")
     
+    def __update__(self, **kwargs):
+        """
+        update the attributes of the mesh via various methods
+        """
+
+        if "wfr" in kwargs:
+    
+            for o in [x for x in list(self.__dict__.keys()) if x in dir(kwargs['wfr'].params.Mesh)]:
+                setattr(self, o, getattr(kwargs['wfr'].params.Mesh, o))
+                
     
 if __name__ == '__main__':
     m = Mesh(x = np.linspace(10,10,10), y = np.linspace(10,10,10))
