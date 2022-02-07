@@ -1,6 +1,6 @@
 nav:
     - Home: 'index.md'
-    - About: 'about.md'
+
 
 ## Welcome to GitHub Pages
 
