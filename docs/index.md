@@ -1,3 +1,16 @@
+```{toctree}
+---
+caption: Episodes
+maxdepth: 1
+---
+
+basics
+creating-using-web
+creating-using-desktop
+contributing
+doi
+websites
+```
 
 ## Welcome to GitHub Pages
 
