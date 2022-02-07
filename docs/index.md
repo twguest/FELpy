@@ -1,3 +1,18 @@
+
+```{toctree}
+---
+caption: Episodes
+maxdepth: 1
+---
+
+basics
+creating-using-web
+creating-using-desktop
+contributing
+doi
+websites
+```
+
 ## Welcome to GitHub Pages
 
 You can use the [editor on GitHub](https://github.com/twguest/FELpy/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
