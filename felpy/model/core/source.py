@@ -49,9 +49,37 @@ class Source:
                 self.__dict__.update(self.mesh.get_attributes())
         
 
-        self.wfr = None
+        #self.wfr = None
 
+    ### hacky function for now, should use setters/getters/properties. return to later - need better coms between wfr, mesh and source
+    def __update__(self):
+        
+        if hasattr(self, 'mesh') == False:
+            raise Warning("No mesh detected")
+        elif hasattr(self, 'wfr') == False:
+            raise Warning("No wavefront detected")
+        
+        self._is_changed()
 
+        
+        if self.wfr._changed:
+            self.mesh.__update__(wfr = self.wfr)
+            self.wfr._changed = False
+        
+    def _is_changed(self):
+        
+        ###  likely not efficient
+        attr = [a for a in list(self.__dict__.keys()) if a in dir(self.wfr.params.Mesh)]
+       
+        for a in attr:
+            
+            if getattr(self.wfr.params.Mesh, a) != getattr(self.mesh, a):
+                
+                self.wfr._changed == True
+                break
+            
+    
+        
     def check_attributes(self):
         """ 
         a function to check if we have all the necessary mesh definitions before continuing
@@ -141,7 +169,7 @@ class SA1_Source(Source):
           
         #divergence = analytical_pulse_divergence(ekev, 'mean')
         divergence = np.random.uniform(low = analytical_pulse_divergence(ekev, 'lower'), high = analytical_pulse_divergence(ekev, 'upper'))
-        print("Expected Divergence: {}".format(divergence))
+        #print("Expected Divergence: {}".format(divergence))
 
         energy = analytical_pulse_energy(q, ekev)
 
@@ -187,7 +215,7 @@ class SA1_Source(Source):
     
     def get_wfr(self):
         
-        if self.wfr is None:
+        if hasattr(self, "wfr") == False:
         
             env = complex_gaussian_envelope(self.nx, self.ny,
                                             self.xMin, self.xMax, self.yMin, self.yMax,
