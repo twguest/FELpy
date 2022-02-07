@@ -1,3 +1,31 @@
+Contents:
+=========
+
+.. toctree::
+   :maxdepth: 2
+
+   wpg
+   wavefront
+   glossary
+   srwlib
+   beamline
+   optical_elements
+   generators
+   wpg_uti_wf
+   wpg_uti_oe
+   tutorials
+   real_beamlines
+
+
+..   others
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+
 ## Welcome to GitHub Pages
 
 You can use the [editor on GitHub](https://github.com/twguest/FELpy/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
