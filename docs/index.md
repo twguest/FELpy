@@ -1,6 +1,3 @@
-nav:
-    - Home: 'docs/index.md'
-
 
 ## Welcome to GitHub Pages
 
