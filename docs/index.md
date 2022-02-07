@@ -1,5 +1,5 @@
 nav:
-    - Home: 'index.md'
+    - Home: 'docs/index.md'
 
 
 ## Welcome to GitHub Pages
