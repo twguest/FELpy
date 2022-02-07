@@ -1,17 +1,10 @@
+##### Table of Contents  
+[Headers](#headers)  
+[Emphasis](#emphasis)  
+...snip...    
+<a name="headers"/>
+## Headers
 
-```{toctree}
----
-caption: Episodes
-maxdepth: 1
----
-
-basics
-creating-using-web
-creating-using-desktop
-contributing
-doi
-websites
-```
 
 ## Welcome to GitHub Pages
 
