@@ -1,16 +1,6 @@
-```{toctree}
----
-caption: Episodes
-maxdepth: 1
----
-
-basics
-creating-using-web
-creating-using-desktop
-contributing
-doi
-websites
-```
+nav:
+    - Home: 'index.md'
+    - About: 'about.md'
 
 ## Welcome to GitHub Pages
 
