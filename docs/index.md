@@ -1,30 +1,3 @@
-Contents:
-=========
-
-.. toctree::
-   :maxdepth: 2
-
-   wpg
-   wavefront
-   glossary
-   srwlib
-   beamline
-   optical_elements
-   generators
-   wpg_uti_wf
-   wpg_uti_oe
-   tutorials
-   real_beamlines
-
-
-..   others
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 
 ## Welcome to GitHub Pages
 
