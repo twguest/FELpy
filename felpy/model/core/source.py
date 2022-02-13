@@ -47,8 +47,87 @@ class Source:
         else:
             if hasattr(self, "mesh"):
                 self.__dict__.update(self.mesh.get_attributes())
+    @property
+    def nx(self):
         
+        if hasattr(self, 'wfr') == True:
+            setattr(self.mesh, "nx", self.wfr.params.Mesh.nx)
+            
+        return self.mesh.nx
+    
+    @property
+    def ny(self):
+    
+        if hasattr(self, 'wfr') == True:
+            setattr(self.mesh, "ny", self.wfr.params.Mesh.ny)
+            
+        return self.mesh.ny
+    
+    @property
+    def nz(self):
+        if hasattr(self, 'wfr') == True:
+            setattr(self.mesh, "nz", self.wfr.params.Mesh.nSlices)
+        elif hasattr(self, 'temporal_profile') == True:
+            setattr(self.mesh, "zMin", self.temporal_profile.shape[0])
 
+        return self.mesh.nz
+
+    @property
+    def xMin(self):
+        if hasattr(self, 'wfr') == True:
+            setattr(self.mesh, "xMin", self.wfr.params.Mesh.xMin)
+        return self.mesh.xMin
+    
+    
+    @property
+    def xMax(self):
+        if hasattr(self, 'wfr') == True:
+            setattr(self.mesh, "xMax", self.wfr.params.Mesh.xMax)
+        return self.mesh.xMax
+    @property
+    def yMin(self):
+        if hasattr(self, 'wfr') == True:
+            setattr(self.mesh, "yMin", self.wfr.params.Mesh.yMin)
+        return self.mesh.yMin
+    
+    @property
+    def yMax(self):
+        if hasattr(self, 'wfr') == True:
+            setattr(self.mesh, "yMax", self.wfr.params.Mesh.yMax)
+        return self.mesh.yMax
+    
+    @property
+    def zMin(self):
+        if hasattr(self, 'wfr') == True:
+            setattr(self.mesh, "zMin", self.wfr.params.Mesh.sliceMin)
+        elif hasattr(self, 'temporal_profile') == True:
+            setattr(self.mesh, "zMin", self.temporal_profile.shape[0]/2*-self.pulse_duration)
+        
+        return self.mesh.zMin
+    @property
+    def zMax(self):
+        if hasattr(self, 'wfr') == True:
+            setattr(self.mesh, "zMax", self.wfr.params.Mesh.sliceMin)
+        elif hasattr(self, 'temporal_profile') == True:
+            setattr(self.mesh, "zMax", self.temporal_profile.shape[0]/2*self.pulse_duration)
+        
+        return self.mesh.zMax
+    
+    def get_axes(self, axes = 'x'):
+        if axes == 'x':
+            return np.linspace(self.xMin, self.xMax, self.nx)
+        elif axes == 'y':
+            return np.linspace(self.yMin, self.yMax, self.ny)
+        elif axes == 't':
+            return np.linspace(self.zMin, self.zMax, self.nz)
+        elif axes == 'omega':
+            return 1/self.get_axes('t')
+            
+    def get_mesh_extent(self):
+        """
+        wrapper for mesh.get_extent
+        """
+        return [self.xMin, self.xMax, self.yMin, self.yMax]
         #self.wfr = None
 
     ### hacky function for now, should use setters/getters/properties. return to later - need better coms between wfr, mesh and source
@@ -192,6 +271,9 @@ class SA1_Source(Source):
         #print(self.wfr.get_spatial_resolution())
 
     #@timing
+
+        
+        
     def get_temporal_profile(self, sigma = 4, refresh = False):
         ### note this gets and sets - should be changed
         if hasattr(self, "temporal_profile") == False:
@@ -199,11 +281,14 @@ class SA1_Source(Source):
             n_samples, sampling_interval_t = temporal_sampling_requirements(self.pulse_duration, VERBOSE = True, S = self.S)
          
             n_samples *= sigma 
-            self.nz = n_samples
+
             self.temporal_profile = generate_temporal_SASE_pulse(pulse_time = self.pulse_duration,
                                                                  n_samples = n_samples,
                                                                  sigma = sigma)
         elif refresh == True:
+            """
+            this option allows for the temporal profile 
+            """
 
 
             self.temporal_profile = generate_temporal_SASE_pulse(pulse_time = self.pulse_duration,
@@ -262,6 +347,8 @@ class Source_WPG(Source):
                  zMin = zMin, zMax = zMax)
         
         super().__init__(mesh = m, **kwargs, ekev = ekev)
+        
+        
         
     
 def gaussian_profile(x, x0, width):

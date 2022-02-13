@@ -185,7 +185,7 @@ class Mesh:
     
             for o in [x for x in list(self.__dict__.keys()) if x in dir(kwargs['wfr'].params.Mesh)]:
                 setattr(self, o, getattr(kwargs['wfr'].params.Mesh, o))
-                
+
     
 if __name__ == '__main__':
     m = Mesh(x = np.linspace(10,10,10), y = np.linspace(10,10,10))
