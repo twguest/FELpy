@@ -22,4 +22,4 @@ Contents
    api
    
    
-.. include:: source/felpy.utils.rst
+.. include:: /docs/source/felpy.utils.rst
