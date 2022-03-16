@@ -5,7 +5,7 @@ import numpy as np
  
 from felpy.utils.opt_utils import ekev2wav
 from .examples.NFS.cylinder_phase_mask import phase 
-from felpy.model.source.coherent import construct_gaussian
+from felpy.model.src.coherent import construct_gaussian
 
 from wpg.wpg_uti_wf import plot_intensity_map as plot_ii
 from wpg.optical_elements import Drift
@@ -38,7 +38,7 @@ z2 = .01
 
 bl = Beamline()
 
-from felpy.model.source.coherent import construct_SA1_wavefront
+from felpy.model.src.coherent import construct_SA1_wavefront
 
 # =============================================================================
 # src = construct_gaussian(1024, 1024, ekev, extent = [-25e-04, 25e-04, -25e-04, 25e-04],

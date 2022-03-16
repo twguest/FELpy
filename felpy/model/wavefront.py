@@ -579,7 +579,7 @@ class Wavefront(WPG_Wavefront):
 if __name__ == '__main__':
     
     pass 
-    # from felpy.model.source.coherent import construct_SA1_pulse
+    # from felpy.model.src.coherent import construct_SA1_pulse
    
     # wfr = construct_SA1_pulse(200,200,4,1,.1)
     # wfr.analysis()

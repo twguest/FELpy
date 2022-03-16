@@ -32,7 +32,7 @@ from wpg.optical_elements import Mirror_elliptical as MirEl
 from felpy.utils.os_utils import add_path, felpy_path
 from felpy.model.materials.mirror_surface import genMirrorSurface
 from felpy.model.materials.load_refl import get_refl, load_refl
-from felpy.model.source.coherent import construct_SA1_wavefront
+from felpy.model.src.coherent import construct_SA1_wavefront
 from wpg.optical_elements import calculateOPD
 from felpy.model.beamlines.params.exfel_spb import get_params
 from felpy.model.tools import propagation_parameters

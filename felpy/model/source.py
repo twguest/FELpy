@@ -10,12 +10,12 @@ from copy import copy
 
 from felpy.utils.opt_utils import ekev2k, geometric_focus
 from felpy.backend.wpg_converters import wavefront_from_array
-from felpy.model.source.coherent import modify_beam_divergence
+from felpy.model.src.coherent import modify_beam_divergence
 from felpy.utils.opt_utils import ekev2wav, ekev2k
 from felpy.utils.os_utils import timing
 from wpg.wpg_uti_wf import calc_pulse_energy, plot_intensity_map
 from felpy.model.mesh import Mesh
-from felpy.model.source.SA1 import analytical_pulse_divergence, analytical_pulse_energy, analytical_pulse_width, analytical_pulse_duration
+from felpy.model.src.SA1 import analytical_pulse_divergence, analytical_pulse_energy, analytical_pulse_width, analytical_pulse_duration
 
 FWHM2RMS = np.sqrt(8*np.log(2))  # FWHM = sqrt(8ln(2))*sigma
 FWHM2E2 = 1.66

@@ -9,7 +9,7 @@ from wpg.beamline import Beamline
 from wpg.optical_elements import Aperture, Drift
 from felpy.model.wavefront import Wavefront
 
-from felpy.model.source.coherent import construct_SA1_wavefront
+from felpy.model.src.coherent import construct_SA1_wavefront
 
 from matplotlib import pyplot as plt
 

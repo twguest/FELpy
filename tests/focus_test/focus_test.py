@@ -30,7 +30,7 @@ from copy import copy
 from felpy.model.beamline import Beamline
 from wpg.srwlib import SRWLOptD
 
-from felpy.model.source.coherent import construct_SA1_wavefront
+from felpy.model.src.coherent import construct_SA1_wavefront
 from felpy.model.beamlines.exfel_spb.exfel_spb import Instrument, propagation_parameters
 from felpy.model.materials.load_refl import load_refl, get_refl
 
