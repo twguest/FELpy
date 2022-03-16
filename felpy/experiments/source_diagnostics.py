@@ -35,7 +35,7 @@ def plot_average_spectra(src, n_spectra = 5000):
     
     we expect that the source (src) has a temporal profile which can be called by get_temporal profile
     
-    :param src: felpy.model.source.Source type object
+    :param src: felpy.model.src.Source type object
     :param n_spectra: number of spectra over which we take the average
     """ 
     

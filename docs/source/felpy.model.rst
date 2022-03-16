@@ -10,7 +10,7 @@ Subpackages
    felpy.model.beamlines
    felpy.model
    felpy.model.materials
-   felpy.model.source
+   felpy.model.src
 
 Submodules
 ----------

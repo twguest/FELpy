@@ -52,10 +52,10 @@ felpy.model.mesh module
    :undoc-members:
    :show-inheritance:
 
-felpy.model.source module
+felpy.model.src module
 ------------------------------
 
-.. automodule:: felpy.model.source
+.. automodule:: felpy.model.src
    :members:
    :undoc-members:
    :show-inheritance:

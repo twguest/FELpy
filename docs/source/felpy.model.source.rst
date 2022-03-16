@@ -1,61 +1,61 @@
-felpy.model.source package
+felpy.model.src package
 ==========================
 
 Submodules
 ----------
 
-felpy.model.source.SA1 module
+felpy.model.src.SA1 module
 -----------------------------
 
-.. automodule:: felpy.model.source.SA1
+.. automodule:: felpy.model.src.SA1
    :members:
    :undoc-members:
    :show-inheritance:
 
-felpy.model.source.coherent module
+felpy.model.src.coherent module
 ----------------------------------
 
-.. automodule:: felpy.model.source.coherent
+.. automodule:: felpy.model.src.coherent
    :members:
    :undoc-members:
    :show-inheritance:
 
-felpy.model.source.download\_FASTXPD module
+felpy.model.src.download\_FASTXPD module
 -------------------------------------------
 
-.. automodule:: felpy.model.source.download_FASTXPD
+.. automodule:: felpy.model.src.download_FASTXPD
    :members:
    :undoc-members:
    :show-inheritance:
 
-felpy.model.source.h5py\_test module
+felpy.model.src.h5py\_test module
 ------------------------------------
 
-.. automodule:: felpy.model.source.h5py_test
+.. automodule:: felpy.model.src.h5py_test
    :members:
    :undoc-members:
    :show-inheritance:
 
-felpy.model.source.partially\_coherent module
+felpy.model.src.partially\_coherent module
 ---------------------------------------------
 
-.. automodule:: felpy.model.source.partially_coherent
+.. automodule:: felpy.model.src.partially_coherent
    :members:
    :undoc-members:
    :show-inheritance:
 
-felpy.model.source.top\_down module
+felpy.model.src.top\_down module
 -----------------------------------
 
-.. automodule:: felpy.model.source.top_down
+.. automodule:: felpy.model.src.top_down
    :members:
    :undoc-members:
    :show-inheritance:
 
-felpy.model.source.zernicke module
+felpy.model.src.zernicke module
 ----------------------------------
 
-.. automodule:: felpy.model.source.zernicke
+.. automodule:: felpy.model.src.zernicke
    :members:
    :undoc-members:
    :show-inheritance:
@@ -64,7 +64,7 @@ felpy.model.source.zernicke module
 Module contents
 ---------------
 
-.. automodule:: felpy.model.source
+.. automodule:: felpy.model.src
    :members:
    :undoc-members:
    :show-inheritance:
