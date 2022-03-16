@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from felpy.model.core.wavefront import Wavefront
+from felpy.model.wavefront import Wavefront
 
 
 def complex_to_wpg(arr): ### converter

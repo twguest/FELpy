@@ -1,21 +1,21 @@
-felpy.analysis.optics.complex package
+felpy.analysis.complex package
 =====================================
 
 Submodules
 ----------
 
-felpy.analysis.optics.complex.beam\_pointing\_vector module
+felpy.analysis.complex.beam\_pointing\_vector module
 -----------------------------------------------------------
 
-.. automodule:: felpy.analysis.optics.complex.beam_pointing_vector
+.. automodule:: felpy.analysis.complex.beam_pointing_vector
    :members:
    :undoc-members:
    :show-inheritance:
 
-felpy.analysis.optics.complex.coherence module
+felpy.analysis.complex.coherence module
 ----------------------------------------------
 
-.. automodule:: felpy.analysis.optics.complex.coherence
+.. automodule:: felpy.analysis.complex.coherence
    :members:
    :undoc-members:
    :show-inheritance:
@@ -24,7 +24,7 @@ felpy.analysis.optics.complex.coherence module
 Module contents
 ---------------
 
-.. automodule:: felpy.analysis.optics.complex
+.. automodule:: felpy.analysis.complex
    :members:
    :undoc-members:
    :show-inheritance:

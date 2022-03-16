@@ -11,7 +11,7 @@ from scipy.ndimage.filters import gaussian_filter
 from math import pi as pi
 from math import floor as floor
 
-from felpy.analysis.speckle_tracking import frankoChellappa as fc
+from felpy.experiments.speckle_tracking import frankoChellappa as fc
 
 
 

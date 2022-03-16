@@ -1,13 +1,13 @@
-felpy.model.backend package
+felpy.backend package
 ===========================
 
 Submodules
 ----------
 
-felpy.model.backend.wpg\_converters module
+felpy.backend.wpg\_converters module
 ------------------------------------------
 
-.. automodule:: felpy.model.backend.wpg_converters
+.. automodule:: felpy.backend.wpg_converters
    :members:
    :undoc-members:
    :show-inheritance:
@@ -16,7 +16,7 @@ felpy.model.backend.wpg\_converters module
 Module contents
 ---------------
 
-.. automodule:: felpy.model.backend
+.. automodule:: felpy.backend
    :members:
    :undoc-members:
    :show-inheritance:

@@ -20,7 +20,7 @@ from felpy.model.tools import argmax2d
 from wpg import srwlib
 from tqdm import tqdm
 from felpy.model.tools import create_circular_mask
-from felpy.analysis.optics.scalar.centroid import get_com
+from felpy.analysis.scalar.centroid import get_com
 #from wpg.wpg_uti_wf import get_axis
 
 from scipy.stats import norm

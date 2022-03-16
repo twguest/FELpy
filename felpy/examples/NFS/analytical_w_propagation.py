@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 
 from wpg.generators import build_gauss_wavefront_xy as construct_gaussian
-from felpy.model.core.wavefront import Wavefront
+from felpy.model.wavefront import Wavefront
 from wpg.wpg_uti_wf import plot_intensity_map 
 
-from felpy.exp.NFS.cylinder_phase_mask import phase, cylinder_thickness
+from .examples.NFS.cylinder_phase_mask import phase, cylinder_thickness
 import numpy as np
 from felpy.utils.opt_utils import ekev2wav
 from felpy.model.tools import propagation_parameters
 from wpg.optical_elements import Drift
 from wpg.beamline import Beamline
-from felpy.exp.NFS.speckle import define_speckle_mask
+from .examples.NFS.speckle import define_speckle_mask
 
 from felpy.analysis.statistics.correlation import norm
 
@@ -98,7 +98,7 @@ plt.imshow(wfr.get_intensity().sum(-1), cmap = 'bone')
 ### PLOT 5
 plot_intensity_map(wfr, cmap = 'bone')
 
-from felpy.model.core.detector_test import Detector
+from felpy.model.detector_test import Detector
 
 
 

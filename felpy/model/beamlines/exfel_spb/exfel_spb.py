@@ -9,9 +9,9 @@ NOTE: the final goal of this class is to inherit from core.instrument.
 __author__ = "Trey Guest"
 __credits__ = ["Trey Guest"]
 __license__ = "EuXFEL"
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 __maintainer__ = "Trey Guest"
-__email__ = "twguest@students.latrobe.edu.au"
+__email__ = "trey.guest@xfel.eu"
 __status__ = "Developement"
 
 
@@ -27,7 +27,7 @@ import numpy as np
 import sys
 from matplotlib import pyplot as plt
 import os
-from felpy.model.core.beamline import Beamline
+from felpy.model.beamline import Beamline
 from wpg import srwlib
 from wpg.srwlib import SRWLOptD as Drift
 from wpg.srwlib import SRWLOptA as Aperture

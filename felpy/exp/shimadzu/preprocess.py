@@ -9,7 +9,7 @@ import numpy as np
 from labwork.about import dCache
 from felpy.utils.os_utils import mkdir_p
 
-from felpy.utils.np_utils import get_mesh, gaussian_2d
+from felpy.utils.np_utils import get_mesh, complex_gaussian_2d
 from copy import copy
 
 from felpy.utils.daq_utils import load_data, shimadzu_reshape
@@ -33,7 +33,7 @@ def shimadzu_test_data(nx, ny, npulses, ntrains, weight = 0.01,
     
     for train in range(ntrains):
         for pulse in range(npulses):
-            data[:,:,pulse,train] = gaussian_2d(nx,ny, sigma = nx/10) + np.random.rand(nx, ny)*weight
+            data[:,:,pulse,train] = complex_gaussian_2d(nx,ny, sigma = nx/10) + np.random.rand(nx, ny)*weight
     
     return data
 

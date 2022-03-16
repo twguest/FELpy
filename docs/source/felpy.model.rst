@@ -6,9 +6,9 @@ Subpackages
 
 .. toctree::
 
-   felpy.model.backend
+   felpy.backend
    felpy.model.beamlines
-   felpy.model.core
+   felpy.model
    felpy.model.materials
    felpy.model.source
 

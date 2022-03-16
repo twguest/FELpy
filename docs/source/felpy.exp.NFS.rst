@@ -1,53 +1,53 @@
-felpy.exp.NFS package
+.examples.NFS package
 =====================
 
 Submodules
 ----------
 
-felpy.exp.NFS.analytical\_experiment module
+.examples.NFS.analytical\_experiment module
 -------------------------------------------
 
-.. automodule:: felpy.exp.NFS.analytical_experiment
+.. automodule:: .examples.NFS.analytical_experiment
    :members:
    :undoc-members:
    :show-inheritance:
 
-felpy.exp.NFS.analytical\_w\_propagation module
+.examples.NFS.analytical\_w\_propagation module
 -----------------------------------------------
 
-.. automodule:: felpy.exp.NFS.analytical_w_propagation
+.. automodule:: .examples.NFS.analytical_w_propagation
    :members:
    :undoc-members:
    :show-inheritance:
 
-felpy.exp.NFS.cylinder\_phase\_mask module
+.examples.NFS.cylinder\_phase\_mask module
 ------------------------------------------
 
-.. automodule:: felpy.exp.NFS.cylinder_phase_mask
+.. automodule:: .examples.NFS.cylinder_phase_mask
    :members:
    :undoc-members:
    :show-inheritance:
 
-felpy.exp.NFS.simulate\_perturbed\_speckle module
+.examples.NFS.simulate\_perturbed\_speckle module
 -------------------------------------------------
 
-.. automodule:: felpy.exp.NFS.simulate_perturbed_speckle
+.. automodule:: .examples.NFS.simulate_perturbed_speckle
    :members:
    :undoc-members:
    :show-inheritance:
 
-felpy.exp.NFS.simulation\_cylinder module
+.examples.NFS.simulation\_cylinder module
 -----------------------------------------
 
-.. automodule:: felpy.exp.NFS.simulation_cylinder
+.. automodule:: .examples.NFS.simulation_cylinder
    :members:
    :undoc-members:
    :show-inheritance:
 
-felpy.exp.NFS.speckle module
+.examples.NFS.speckle module
 ----------------------------
 
-.. automodule:: felpy.exp.NFS.speckle
+.. automodule:: .examples.NFS.speckle
    :members:
    :undoc-members:
    :show-inheritance:
@@ -56,7 +56,7 @@ felpy.exp.NFS.speckle module
 Module contents
 ---------------
 
-.. automodule:: felpy.exp.NFS
+.. automodule:: .examples.NFS
    :members:
    :undoc-members:
    :show-inheritance:

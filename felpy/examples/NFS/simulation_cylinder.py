@@ -4,16 +4,16 @@ from felpy.model.materials.phase_mask import phase_mask
 import numpy as np
  
 from felpy.utils.opt_utils import ekev2wav
-from felpy.exp.NFS.cylinder_phase_mask import phase 
+from .examples.NFS.cylinder_phase_mask import phase 
 from felpy.model.source.coherent import construct_gaussian
 
 from wpg.wpg_uti_wf import plot_intensity_map as plot_ii
 from wpg.optical_elements import Drift
-from felpy.model.core.beamline import Beamline 
+from felpy.model.beamline import Beamline 
 from felpy.model.tools import propagation_parameters
-from felpy.exp.NFS.speckle import define_speckle_mask
+from .examples.NFS.speckle import define_speckle_mask
 
-from felpy.model.core.detector_test import Detector
+from felpy.model.detector_test import Detector
 
 r1 = 10e-02
 r2 = 5e-02

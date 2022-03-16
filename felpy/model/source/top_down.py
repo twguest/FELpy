@@ -7,7 +7,7 @@ from felpy.utils.np_utils import get_mesh
 from felpy.utils.vis_utils import basic_plot, simple_line_plot, colorbar_plot, signal_plot, scatter_plot
 from wpg.beamline import Beamline
 from wpg.optical_elements import Aperture, Drift
-from felpy.model.core.wavefront import Wavefront
+from felpy.model.wavefront import Wavefront
 
 from felpy.model.source.coherent import construct_SA1_wavefront
 

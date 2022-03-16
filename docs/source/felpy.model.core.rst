@@ -1,69 +1,69 @@
-felpy.model.core package
+felpy.model package
 ========================
 
 Submodules
 ----------
 
-felpy.model.core.beamline module
+felpy.model.beamline module
 --------------------------------
 
-.. automodule:: felpy.model.core.beamline
+.. automodule:: felpy.model.beamline
    :members:
    :undoc-members:
    :show-inheritance:
 
-felpy.model.core.dataset module
+felpy.model.dataset module
 -------------------------------
 
-.. automodule:: felpy.model.core.dataset
+.. automodule:: felpy.model.dataset
    :members:
    :undoc-members:
    :show-inheritance:
 
-felpy.model.core.detector module
+felpy.model.detector module
 --------------------------------
 
-.. automodule:: felpy.model.core.detector
+.. automodule:: felpy.model.detector
    :members:
    :undoc-members:
    :show-inheritance:
 
-felpy.model.core.fresnel\_propagator module
+felpy.model.fresnel\_propagator module
 -------------------------------------------
 
-.. automodule:: felpy.model.core.fresnel_propagator
+.. automodule:: felpy.model.fresnel_propagator
    :members:
    :undoc-members:
    :show-inheritance:
 
-felpy.model.core.instrument module
+felpy.model.instrument module
 ----------------------------------
 
-.. automodule:: felpy.model.core.instrument
+.. automodule:: felpy.model.instrument
    :members:
    :undoc-members:
    :show-inheritance:
 
-felpy.model.core.mesh module
+felpy.model.mesh module
 ----------------------------
 
-.. automodule:: felpy.model.core.mesh
+.. automodule:: felpy.model.mesh
    :members:
    :undoc-members:
    :show-inheritance:
 
-felpy.model.core.source module
+felpy.model.source module
 ------------------------------
 
-.. automodule:: felpy.model.core.source
+.. automodule:: felpy.model.source
    :members:
    :undoc-members:
    :show-inheritance:
 
-felpy.model.core.wavefront module
+felpy.model.wavefront module
 ---------------------------------
 
-.. automodule:: felpy.model.core.wavefront
+.. automodule:: felpy.model.wavefront
    :members:
    :undoc-members:
    :show-inheritance:
@@ -72,7 +72,7 @@ felpy.model.core.wavefront module
 Module contents
 ---------------
 
-.. automodule:: felpy.model.core
+.. automodule:: felpy.model
    :members:
    :undoc-members:
    :show-inheritance:

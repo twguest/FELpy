@@ -21,7 +21,7 @@ import numpy as np
 from utils.os_utils import mkdir_p
 from utils.job_utils import JobScheduler
  
-from felpy.model.core.wavefront import Wavefront
+from felpy.model.wavefront import Wavefront
 
 indir = "/gpfs/exfel/data/user/guestt/labwork/dCache/NanoKB-Pulse/EHC/"
 

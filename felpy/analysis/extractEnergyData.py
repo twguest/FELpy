@@ -23,7 +23,7 @@ import numpy as np
 import wpg.srwlib as srwlib
 
 from wpg.wpg_uti_wf import calc_pulse_energy, get_axial_power_density, get_centroid, get_profile_1d
-from felpy.model.core.wavefront import Wavefront
+from felpy.model.wavefront import Wavefront
 
 
 

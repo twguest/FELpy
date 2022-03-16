@@ -6,9 +6,9 @@ Subpackages
 
 .. toctree::
 
-   felpy.analysis.optics
+   felpy.analysis
    felpy.analysis.phase_retrieval
-   felpy.analysis.speckle_tracking
+   felpy.experiments.speckle_tracking
    felpy.analysis.statistics
 
 Submodules

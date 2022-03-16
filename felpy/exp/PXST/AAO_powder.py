@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from felpy.model.source.coherent import construct_SA1_wavefront
 
 from wpg.optical_elements import Drift
-from felpy.model.core.beamline import Beamline
+from felpy.model.beamline import Beamline
 from felpy.model.beamlines.exfel_spb.exfel_spb import Instrument, propagation_parameters
 from felpy.model.beamlines.exfel_spb.methods import get_beamline_object
 

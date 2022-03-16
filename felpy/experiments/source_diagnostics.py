@@ -7,12 +7,12 @@ FELPY
 Created on %(date)s
 
 __version__ = "1.0.1"
-__email__ = "twguest@students.latrobe.edu.au"
+__email__ = "trey.guest@xfel.eu"
 """
 
 import numpy as np
  
-from felpy.model.core.source import SA1_Source
+from felpy.model.source import SA1_Source
 from felpy.utils.vis_utils import Grids
 
 from wpg.wpg_uti_wf import plot_intensity_map
@@ -35,7 +35,7 @@ def plot_average_spectra(src, n_spectra = 5000):
     
     we expect that the source (src) has a temporal profile which can be called by get_temporal profile
     
-    :param src: felpy.model.core.source.Source type object
+    :param src: felpy.model.source.Source type object
     :param n_spectra: number of spectra over which we take the average
     """ 
     

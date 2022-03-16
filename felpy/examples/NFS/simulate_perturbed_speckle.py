@@ -66,7 +66,7 @@ speckle = ndi.gaussian_filter(np.random.normal(size=sh), ssize) +\
 
 
 
-from felpy.exp.NFS.cylinder_phase_mask import phase as cyl_phase
+from .examples.NFS.cylinder_phase_mask import phase as cyl_phase
 
 xx, yy = np.indices(sh)
 
@@ -75,7 +75,7 @@ sphere = np.real(scipy.sqrt(sphere_radius**2 - (xx-256.)**2 - (yy-256.)**2))
 sample = np.exp(-15*np.pi*2j*sphere/sphere_radius)
 
  
-from felpy.analysis.speckle_tracking.optical_flow import process_optical_flow, kottler, process_all
+from felpy.experiments.speckle_tracking.optical_flow import process_optical_flow, kottler, process_all
 
 Is = abs(free_nf(speckle*sample, 0.5e-10, z = .001, pixsize = psize))**2
 Ir = abs(free_nf(speckle, 0.5e-10, z = .001, pixsize = psize))**2

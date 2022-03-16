@@ -3,7 +3,7 @@
 
 import sys
 
-from felpy.model.core.wavefront import Wavefront
+from felpy.model.wavefront import Wavefront
 
 if __name__ == '__main__':
     print("working")

@@ -23,7 +23,7 @@ from copy import copy
 import numpy as np
 from matplotlib import pyplot as plt
 from felpy.model.source.coherent import construct_SA1_wavefront
-from felpy.model.core.instrument import Instrument
+from felpy.model.instrument import Instrument
 from felpy.model.materials.load_refl import load_refl, get_refl
 import seaborn as sns
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity 

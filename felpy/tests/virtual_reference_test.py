@@ -71,7 +71,7 @@ f = fresnel_criterion(w, z*2, wav)
 print(f)
 z *= 2
  
-from felpy.model.core.beamline import Beamline
+from felpy.model.beamline import Beamline
 from wpg.optical_elements import Drift
 from felpy.model.tools import propagation_parameters
 

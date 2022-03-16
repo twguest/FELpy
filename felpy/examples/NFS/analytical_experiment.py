@@ -9,9 +9,9 @@ FELPY
 __author__ = "Trey Guest"
 __credits__ = ["Trey Guest"]
 __license__ = "EuXFEL"
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 __maintainer__ = "Trey Guest"
-__email__ = "twguest@students.latrobe.edu.au"
+__email__ = "trey.guest@xfel.eu"
 __status__ = "Developement"
 
 A script to plot analytical expectations of a phase contrast imaging experiment
@@ -21,7 +21,7 @@ to be measured using NFS tracking techniques.
 
 import numpy as np
 from matplotlib import pyplot as plt
-from felpy.exp.NFS.cylinder_phase_mask import phase_gradient, phase, edge_diffraction_gradient
+from .examples.NFS.cylinder_phase_mask import phase_gradient, phase, edge_diffraction_gradient
 from felpy.utils.opt_utils import ekev2wav
 import matplotlib as mpl
 from mpl_toolkits.axes_grid1 import make_axes_locatable

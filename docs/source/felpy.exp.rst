@@ -6,7 +6,7 @@ Subpackages
 
 .. toctree::
 
-   felpy.exp.NFS
+   .examples.NFS
    felpy.exp.shimadzu
 
 Submodules

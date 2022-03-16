@@ -17,7 +17,7 @@ sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
 ###############################################################################
 ###############################################################################
 
-from felpy.model.core.wavefront import Wavefront
+from felpy.model.wavefront import Wavefront
 from wpg.wpg_uti_wf import integral_intensity, calculate_fwhm
 
 from model.src.coherent import construct_SA1_wavefront

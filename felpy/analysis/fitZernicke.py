@@ -18,7 +18,7 @@ sys.path.append("/gpfs/exfel/data/user/guestt/spb_model") # DESY MAXWELL PATH
 from poppy import zernike
 import numpy as np
 from model.tools import constructPulse, create_circular_mask, mkdir_p
-from felpy.model.core.wavefront import Wavefront
+from felpy.model.wavefront import Wavefront
 
         
         

@@ -6,10 +6,10 @@ a script to test the com functions
 
 import numpy as np
 
-from felpy.analysis.optics.complex.coherence import get_longitudinal_coherence, get_longitudinal_coherence_new
+from felpy.analysis.complex.coherence import get_longitudinal_coherence, get_longitudinal_coherence_new
 from felpy.model.source.coherent import construct_SA1_pulse
 from felpy.utils.os_utils import timing
-from felpy.analysis.optics.complex.coherence import get_complex_radial_profile
+from felpy.analysis.complex.coherence import get_complex_radial_profile
 
 @timing 
 def old(ii, dx):

@@ -1,4 +1,4 @@
-felpy.analysis.optics package
+felpy.analysis package
 =============================
 
 Subpackages
@@ -6,13 +6,13 @@ Subpackages
 
 .. toctree::
 
-   felpy.analysis.optics.complex
-   felpy.analysis.optics.scalar
+   felpy.analysis.complex
+   felpy.analysis.scalar
 
 Module contents
 ---------------
 
-.. automodule:: felpy.analysis.optics
+.. automodule:: felpy.analysis
    :members:
    :undoc-members:
    :show-inheritance:

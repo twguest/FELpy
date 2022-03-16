@@ -3,17 +3,17 @@ import os
 import numpy as np
 from felpy.utils.np_utils import load_tif
 
-from felpy.analysis.speckle_tracking.paganin_method import paganin_method
+from felpy.experiments.speckle_tracking.paganin_method import paganin_method
 
-from felpy.analysis.speckle_tracking.optical_flow import process_optical_flow
-from felpy.analysis.speckle_tracking.optical_flow import kottler as kottler
-from felpy.analysis.speckle_tracking.optical_flow import LarkinAnissonSheppard as las
-from felpy.analysis.speckle_tracking.frankoChellappa import frankotchellappa as franko
+from felpy.experiments.speckle_tracking.optical_flow import process_optical_flow
+from felpy.experiments.speckle_tracking.optical_flow import kottler as kottler
+from felpy.experiments.speckle_tracking.optical_flow import LarkinAnissonSheppard as las
+from felpy.experiments.speckle_tracking.frankoChellappa import frankotchellappa as franko
 
-from felpy.analysis.speckle_tracking.fast_phase_retrieval import fast_phase_retrieval
+from felpy.experiments.speckle_tracking.fast_phase_retrieval import fast_phase_retrieval
 
-from felpy.analysis.speckle_tracking.UMPA import match_speckles as UMPA
-from felpy.analysis.speckle_tracking.UMPA import get_measurements
+from felpy.experiments.speckle_tracking.UMPA import match_speckles as UMPA
+from felpy.experiments.speckle_tracking.UMPA import get_measurements
 
 from felpy.utils.opt_utils import ekev2wav
 from felpy.utils.vis_utils import Grids

@@ -5,7 +5,7 @@ import numpy as np
 from felpy.utils.vis_utils import basic_plot
 from matplotlib import pyplot as plt
 from felpy.utils.np_utils import get_mesh
-from felpy.utils.np_utils import gaussian_2d
+from felpy.utils.maths.generator_funcs import complex_gaussian_2d
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap, LogNorm
@@ -111,7 +111,7 @@ if __name__ == '__main__':
 #     X, Y = np.meshgrid(x, y)
 #     C = f(X, Y)
 #     
-#     gauss = gaussian_2d(dx, dx, dx/5)
+#     gauss = complex_gaussian_2d(dx, dx, dx/5)
 #      
 #     fig, ax = plt.subplots()
 #     im = ax.imshow(np.angle(ans*1j*gauss), cmap=my_cmap, vmin=-1, vmax=1, extent=(-3, 3, -3, 3), origin='lower')

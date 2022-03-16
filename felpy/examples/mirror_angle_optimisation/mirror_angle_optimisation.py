@@ -14,7 +14,7 @@ import shutil
 import numpy as np
 import multiprocessing as mp
 
-from felpy.model.core.instrument import Instrument
+from felpy.model.instrument import Instrument
 from felpy.model.source.coherent import construct_spb_pulse
 from felpy.analysis.energy_statistics import get_energy_statistics
 from felpy.utils.os_utils import mkdir_p

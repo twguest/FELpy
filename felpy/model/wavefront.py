@@ -9,11 +9,11 @@ import numpy as np
 from wpg.wpg_uti_wf import calculate_fwhm, calc_pulse_energy
 import seaborn as sns
 from felpy.utils.np_utils import get_mesh
-from felpy.analysis.optics.scalar.enclosed_energy import get_enclosed_energy
+from felpy.analysis.scalar.enclosed_energy import get_enclosed_energy
 from scipy.constants import h, c, e
-from felpy.analysis.optics.scalar.centroid import get_com
-from felpy.analysis.optics.complex.coherence import get_coherence_time
-from felpy.model.core.fresnel_propagator import frensel_propagator
+from felpy.analysis.scalar.centroid import get_com
+from felpy.analysis.complex.coherence import get_coherence_time
+from felpy.model.fresnel_propagator import frensel_propagator
 from felpy.utils.vis_utils import colorbar_plot
 from felpy.utils.np_utils import get_mesh
 from felpy.model.tools import radial_profile

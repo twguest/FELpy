@@ -9,7 +9,7 @@ Created on Mon Mar  1 14:21:55 2021
 import numpy as np
 from matplotlib import pyplot as plt
 import seaborn as sns
-from felpy.utils.np_utils import gaussian_2d
+from felpy.utils.maths.generator_funcs import complex_gaussian_2d
  
 kx = np.pi/4
 ky = 0
