@@ -13,7 +13,7 @@ from felpy.analysis.scalar.enclosed_energy import get_enclosed_energy
 from scipy.constants import h, c, e
 from felpy.analysis.scalar.centroid import get_com
 from felpy.analysis.complex.coherence import get_coherence_time
-from felpy.model.fresnel_propagator import frensel_propagator
+
 from felpy.utils.vis_utils import colorbar_plot
 from felpy.utils.np_utils import get_mesh
 from felpy.model.tools import radial_profile
