@@ -237,7 +237,7 @@ def construct_SA1_pulse(nx, ny, nz, ekev, q, mx = 0, my = 0):
 
     wfr = Wavefront(gsnBm)
     srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
-    print(wfr)
+
     wfr.params.wavelength = wavelength
     
     #modify_beam_divergence(wfr,analytical_pulse_width(ekev),analytical_pulse_divergence(q,ekev))

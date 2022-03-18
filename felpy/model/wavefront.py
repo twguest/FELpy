@@ -20,7 +20,9 @@ from felpy.model.tools import radial_profile
 from datetime import datetime
 import os
 
-
+from felpy.analysis.scalar.centroid import get_com
+from felpy.utils.maths.fit import fit_gaussian
+from felpy.utils.maths.constants import sigma_to_fwhm
 
 ls = {"m": 1,
       "cm": 1e2,
@@ -318,69 +320,12 @@ class Wavefront(WPG_Wavefront):
         if VERBOSE: print(self.custom_fields['beam size'])
         
         return res, err
-    
-    def get_com(self, longitudinal = False, VERBOSE = False):
-        
-        if longitudinal: 
-            ii = self.get_intensity()
-        else:    
-            ii = self.get_intensity().sum(-1)
-        
-        idx = get_com(ii)
-        
-        px, py = self.get_spatial_resolution()
-        
-        self.custom_fields['com'] = [px*idx[1], py*idx[0]]
-    
-        if VERBOSE: print(self.custom_fields['com'])
-        
-        return [px*idx[1], py*idx[0]]
-    
-        
-    def get_profile_1d(self, method = sum):
-        """
-        return 1d profiles along the center of each transverse axis.
-        """
-        
-        
-        ii = self.get_intensity().method(-1)
-        
-        idx = self.params.Mesh.nx//2
-        idy = self.params.Mesh.ny//2
-                
-        
-        ix = ii[:, int(idx)]
-        iy = ii[int(idy), :]
-        
-        return ix, iy
-
-    def get_coherence_time(self, mpi = False, VERBOSE = False):
-    
-        self.set_electric_field_representation('t')
-        time_step = self.get_temporal_resolution()
-        
-        ctime = get_coherence_time(self.as_complex_array(), time_step, mpi = mpi)
-            
-        self.custom_fields['coherence time'] = ctime
-    
-        if VERBOSE: print(self.custom_fields['coherence time'])
-        return ctime
-    
-    
-    def propagate(self, z, upsample = 1):
-        """
-        returns propagated wfr
-        """
-
-        px, py = self.get_spatial_resolution()
-        wf = frensel_propagator(self.as_complex_array().sum(-1), px, py,
-                           self.get_wavelength(), z)
-        return wf
-    
-    
+ 
+ 
+ 
+    @property
     def get_mesh(self):
-        mesh = get_mesh(self.get_intensity().sum(-1), *self.get_spatial_resolution())
-        return mesh
+        return get_mesh(self.get_intensity().sum(-1), *self.get_spatial_resolution())
     
     def plot(self, scale = 'mm', sdir = None, label = None):
         
@@ -492,75 +437,165 @@ class Wavefront(WPG_Wavefront):
         self.custom_fields['coherence length'] = clen
         
         return clen
-
-    def get_extent(self):
+    
+    @property
+    def extent(self):
         """
         returns matplotlib plt.imshow extent for plotting purposes.
         """
         return [self.params.Mesh.xMin, self.params.Mesh.xMax, self.params.Mesh.yMin, self.params.Mesh.yMax]
-        
-    def analysis(self, VERBOSE = False, DEBUG = False):
-        """
-        run a full analysis of the non-plotting utils and write to h5 file        
-        """
-        
-        print("Running Full Analysis")
-        if DEBUG:
-            print("")
-            print("**********************************************")
-            print("Warning: Coherence Measurements are Disabled")
-            print("**********************************************")
-            print("")
-        
-        if DEBUG:
-            VERBOSE = True
-            
-        if VERBOSE: print("PULSE DURATION")
-        self.get_pulse_duration(VERBOSE = DEBUG)
-        
-        if VERBOSE: print("SPATIAL RESOLUTION")
-        self.get_spatial_resolution(VERBOSE = DEBUG)
-
-        if VERBOSE: print("TEMPORAL RESOLUTION")
-        self.get_temporal_resolution(VERBOSE = DEBUG)
-
-        if VERBOSE: print("WAVELENGTH")
-        self.get_wavelength(VERBOSE = DEBUG)
-
-        if VERBOSE: print("ENERGY STATISTICS")
-        self.get_energy_statistics(VERBOSE = DEBUG)
-
-        if VERBOSE: print("PULSE DURATION")
-        self.get_pulse_duration(VERBOSE = DEBUG)
-
-        if VERBOSE: print("BEAM SIZE")
-        self.get_beam_size(VERBOSE = DEBUG)
-
-        if VERBOSE: print("CENTER OF MASS")
-        self.get_com(VERBOSE = DEBUG)
-
-        if VERBOSE: print("COHERENCE TIME")
-        ###self.get_coherence_time(VERBOSE = DEBUG, mpi = True)
-
-        if VERBOSE: print("COHERENCE LENGTH")
-        ###self.get_coherence_len(VERBOSE = DEBUG)
-
-        if VERBOSE: print("TDOC")
-        ###self.get_transverse_doc(VERBOSE = DEBUG)
-
-
-        if DEBUG:
-            print(self.custom_fields)
-            
     
-    def print(self):
-        print(self.custom_fields)
-        
-    def get_keys(self):
+    @property
+    def xMin(self):
+        return self.params.Mesh.xMin
+    
+    @property
+    def xMax(self):
+        return self.params.Mesh.xMax
+    
+    @property
+    def yMin(self):
+        return self.params.Mesh.yMin
+    
+    @property
+    def yMax(self):
+        return self.params.Mesh.yMax    
+
+    @property
+    def dx(self):
+        return (self.xMax-self.xMin)/self.nx
+    
+    @property
+    def dy(self):
+        return (self.yMax-self.yMin)/self.ny
+    
+    @property
+    def nx(self):
+        return self.params.Mesh.nx
+    
+    @property
+    def ny(self):
+        return self.params.Mesh.ny
+    
+    @property
+    def nz(self):
+        return self.params.Mesh.nSlices
+   
+    @property
+    def x_axis(self):
+        return np.linspace(self.extent[0], self.extent[1], self.nx)
+
+    @property
+    def y_axis(self):
+        return np.linspace(self.extent[1], self.extent[2], self.ny) 
+    
+    @property
+    def keys(self):
         return list(self.custom_fields.keys())
     
-    def get_values(self):
-        return list(self.custom_fields.values())
+    @property
+    def com(self):
+        """ 
+        return the center of mass
+        """
+        cx, cy = self.dx*self.nx//2, self.dy*self.ny//2
+        
+        return (get_com(self.get_intensity().sum(-1)
+                        )-np.asarray([self.nx/2, self.ny//2])
+                )*np.asarray([self.dx, self.dy])
+    
+    @property
+    def peak_intensity(self):
+        return np.max(self.get_intensity().sum(-1))
+    
+    
+    def get_x_profile(self, method = 'com'):
+        """ 
+        return a one-dimensional line profile along the x-axis
+        
+        :param method: determines how the line-profile is determined    
+        """
+        
+        if method == 'com':
+            x_profile = self.get_intensity().sum(-1)[:, int(self.dy+(self.com[1]+self.nx//2))]
+        elif method == 'avg':
+            x_profile = self.get_intensity().sum(-1).mean(1)
+        elif method == 'c':
+            x_profile = self.get_intensity().sum(-1)[:, self.ny//2]
+        
+        return x_profile
+            
+            
+    
+    def get_y_profile(self, method = 'com'):
+        """ 
+        return a one-dimensional line profile along the x-axis
+        
+        :param method: determines how the line-profile is determined    
+        """
+        
+        if method == 'com':
+            y_profile = self.get_intensity().sum(-1)[int(self.dx+(self.com[0]+self.ny//2)),:]
+        elif method == 'avg':
+            y_profile = self.get_intensity().sum(-1).mean(0)
+        elif method == 'c':
+            y_profile = self.get_intensity().sum(-1)[self.nx//2, :]
+        
+        return y_profile
+    
+    @property        
+    def fwhm(self):
+        """
+        return the fwhm of the intensity distribution by fitting a wavefront
+        """
+        
+        x = self.x_axis
+        y = self.y_axis
+    
+        ix = self.get_x_profile()
+        iy = self.get_y_profile()
+        
+        imax = self.peak_intensity       
+        
+        ### fit x
+        initial_guess = [self.get_fwhm()[0], self.com[0], imax]
+        p, co = fit_gaussian(x, ix, p0 = initial_guess, VERBOSE = False)
+        
+        fwhm_x = p[0]*sigma_to_fwhm
+            
+        ### fit y
+        initial_guess = [self.get_fwhm()[1], self.com[1], imax]
+        p, co = fit_gaussian(y, iy, p0 = initial_guess, VERBOSE = False)
+        
+        fwhm_y = p[0]*sigma_to_fwhm
+        
+        return fwhm_x, fwhm_y
+    
+    
+    def gaussian_fit(self, method = 'com'):
+        """
+        return the properties of a guassian distribution fitted to the
+        intensity distribution of the wavefront
+        """
+        
+        x = self.x_axis
+        y = self.y_axis
+    
+        ix = self.get_x_profile(method)
+        iy = self.get_y_profile(method)
+        
+        imax = self.peak_intensity       
+        
+        ### fit x
+        initial_guess = [self.get_fwhm()[0], self.com[0], imax]
+        px, cox = fit_gaussian(x, ix, p0 = initial_guess, VERBOSE = False)
+        
+        ### fit y
+        initial_guess = [self.get_fwhm()[1], self.com[1], imax]
+        py, coy = fit_gaussian(y, iy, p0 = initial_guess, VERBOSE = False)
+        
+        return px, py
+    
     
     def log(self, bl = None, descriptor = None):
         
@@ -575,7 +610,7 @@ class Wavefront(WPG_Wavefront):
             self.custom_fields['function'] = descriptor[0]
             self.custom_fields['filename'] = descriptor[1] 
             self.custom_fields['summary'] = descriptor[2]
-        
+
 if __name__ == '__main__':
     
     pass 
