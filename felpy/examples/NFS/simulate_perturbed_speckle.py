@@ -66,7 +66,7 @@ speckle = ndi.gaussian_filter(np.random.normal(size=sh), ssize) +\
 
 
 
-from .examples.NFS.cylinder_phase_mask import phase as cyl_phase
+from felpy.examples.NFS.cylinder_phase_mask import phase as cyl_phase
 
 xx, yy = np.indices(sh)
 

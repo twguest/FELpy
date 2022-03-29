@@ -10,7 +10,7 @@ from felpy.experiments.speckle_tracking.optical_flow import kottler as kottler
 from felpy.experiments.speckle_tracking.optical_flow import LarkinAnissonSheppard as las
 from felpy.experiments.speckle_tracking.frankoChellappa import frankotchellappa as franko
 
-from felpy.experiments.speckle_tracking.fast_phase_retrieval import fast_phase_retrieval
+from felpy.experiments.speckle_tracking.fast_phase_retrieval import geometric_flow
 
 from felpy.experiments.speckle_tracking.UMPA import match_speckles as UMPA
 from felpy.experiments.speckle_tracking.UMPA import get_measurements

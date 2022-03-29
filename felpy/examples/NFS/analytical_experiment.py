@@ -21,7 +21,7 @@ to be measured using NFS tracking techniques.
 
 import numpy as np
 from matplotlib import pyplot as plt
-from .examples.NFS.cylinder_phase_mask import phase_gradient, phase, edge_diffraction_gradient
+from felpy.examples.NFS.cylinder_phase_mask import phase_gradient, phase, edge_diffraction_gradient
 from felpy.utils.opt_utils import ekev2wav
 import matplotlib as mpl
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -144,7 +144,7 @@ def delta_phase_gradient(r1, r2):
                     aspect = 'auto', cmap = 'jet')
     
     ax1.set_yticks([])
-    ax1.set_xlim([-15, 15])
+    ax1.set_xlim([-7.5, 7.5])
     ax1.set_xlabel("x (mm)")
 
     divider = make_axes_locatable(ax1)
