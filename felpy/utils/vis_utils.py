@@ -131,7 +131,7 @@ class Grids:
                 ax.yaxis.label.set_size(fontsize)
 
     def savefig(self, sdir):
-        self.fig.savefig(sdir)
+        self.fig.savefig(sdir, dpi = 600)
         
         
     def create_grid(self, n = 1, m = 1, title = None, xlabel = None, ylabel = None,

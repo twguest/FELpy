@@ -200,7 +200,7 @@ class Wavefront(WPG_Wavefront):
         :param domain: choice ofangular - 'a', frequency 'f' or time 't' [str]
         """
         srwlpy.SetRepresElecField(self._srwl_wf, domain)
-
+        
 
     def get_divergence(self):
         """
@@ -280,6 +280,19 @@ class Wavefront(WPG_Wavefront):
                      norm = None)
         
  
+    @property
+    def divergence(self):
+        self.set_electric_field_representation('a')
+        div_x, div_y = self.fwhm
+        self.set_electric_field_representation('c')
+        return div_x, div_y
+    
+    @property
+    def pulse_energy(self):
+        self.set_electric_field_representation('t')
+        e = calc_pulse_energy(self)[0]
+        self.set_electric_field_representation('f')
+        return e
         
         
     def plot_phase(self, scale = "mm", label = "", title = "", context = 'talk', sdir = None):
@@ -446,6 +459,39 @@ class Wavefront(WPG_Wavefront):
         return [self.params.Mesh.xMin, self.params.Mesh.xMax, self.params.Mesh.yMin, self.params.Mesh.yMax]
     
     @property
+    def qxMin(self):
+        return self.params.Mesh.qxMin
+    
+    @property
+    def qyMin(self):
+        return self.params.Mesh.qyMin
+    
+    @property
+    def qxMax(self):
+        return self.params.Mesh.qxMax
+    
+    @property
+    def qyMax(self):
+        return self.params.Mesh.qyMax
+    
+    @property
+    def qx(self):
+        return (self.qxMax-self.qxMin)/self.nx
+    
+    @property
+    def qy(self):
+        return (self.qyMax-self.qyMin)/self.ny
+    
+    
+    @property
+    def qx_axis(self):
+        return np.linspace(self.qxMin, self.qxMax, self.nx)
+
+    @property
+    def qy_axis(self):
+        return np.linspace(self.qyMin, self.qyMax, self.ny)
+    
+    @property
     def xMin(self):
         return self.params.Mesh.xMin
     
@@ -463,11 +509,21 @@ class Wavefront(WPG_Wavefront):
 
     @property
     def dx(self):
-        return (self.xMax-self.xMin)/self.nx
+        if self.params.wSpace == 'R-space':
+            dx = (self.xMax-self.xMin)/self.nx
+        elif self.params.wSpace == 'Q-space':
+            dx = self.qx
+        
+        return dx
     
     @property
     def dy(self):
-        return (self.yMax-self.yMin)/self.ny
+        if self.params.wSpace == 'R-space':
+            dy = (self.yMax-self.yMin)/self.ny
+        elif self.params.wSpace == 'Q-space':
+            dy = self.qy
+        
+        return dy
     
     @property
     def nx(self):
@@ -517,7 +573,7 @@ class Wavefront(WPG_Wavefront):
         """
         
         if method == 'com':
-            x_profile = self.get_intensity().sum(-1)[:, int(self.dy+(self.com[1]+self.nx//2))]
+            x_profile = self.get_intensity().sum(-1)[:, int(self.ny//2 + self.com[1]//self.dy)]
         elif method == 'avg':
             x_profile = self.get_intensity().sum(-1).mean(1)
         elif method == 'c':
@@ -535,7 +591,7 @@ class Wavefront(WPG_Wavefront):
         """
         
         if method == 'com':
-            y_profile = self.get_intensity().sum(-1)[int(self.dx+(self.com[0]+self.ny//2)),:]
+            y_profile = self.get_intensity().sum(-1)[int(self.nx//2 + self.com[0]//self.dx),:]
         elif method == 'avg':
             y_profile = self.get_intensity().sum(-1).mean(0)
         elif method == 'c':
@@ -549,25 +605,31 @@ class Wavefront(WPG_Wavefront):
         return the fwhm of the intensity distribution by fitting a wavefront
         """
         
-        x = self.x_axis
-        y = self.y_axis
-    
+        if self.params.wSpace == 'R-space':
+            x = self.x_axis
+            y = self.y_axis
+        
+        if self.params.wSpace == 'Q-space':
+            x = self.qx_axis
+            y = self.qy_axis
+        
         ix = self.get_x_profile()
         iy = self.get_y_profile()
-        
+
+
         imax = self.peak_intensity       
         
         ### fit x
         initial_guess = [self.get_fwhm()[0], self.com[0], imax]
         p, co = fit_gaussian(x, ix, p0 = initial_guess, VERBOSE = False)
         
-        fwhm_x = p[0]*sigma_to_fwhm
+        fwhm_x = p[0]/sigma_to_fwhm
             
         ### fit y
         initial_guess = [self.get_fwhm()[1], self.com[1], imax]
         p, co = fit_gaussian(y, iy, p0 = initial_guess, VERBOSE = False)
         
-        fwhm_y = p[0]*sigma_to_fwhm
+        fwhm_y = p[0]/sigma_to_fwhm
         
         return fwhm_x, fwhm_y
     
