@@ -34,6 +34,8 @@ from wpg.srwlib import SRWLOptA as Aperture
 from wpg.srwlib import SRWLOptT
 from wpg.optical_elements import Mirror_elliptical as MirEl
 
+from felpy.model.instrument import Instrument as base_class
+
 from felpy.utils.os_utils import add_path, felpy_path
 from felpy.model.materials.mirror_surface import genMirrorSurface, generate_mirror_surface
 from felpy.model.materials.load_refl import get_refl, load_refl
@@ -48,20 +50,16 @@ import sys
 
 import seaborn as sns
 
-class Instrument:
+class Instrument(base_class):
 
     """
     A container for loading and modifying beamline data
     """
 
 
-    def __init__(self, parameter_file = None, VERBOSE = True):
+    def __init__(self, parameter_file = None, VERBOSE = True, **kwargs):
 
         self.VERBOSE = VERBOSE
-
-        if VERBOSE:
-            print("Initialising Single Particle Beamline")
-
         self.load_params(file = parameter_file)
         self.fpath = felpy_path() ### felpy path (for dev. purposes)
 
@@ -69,6 +67,8 @@ class Instrument:
         self.nano = ["HOM1", "HOM2", "NVE", "NHE"]
         self.focus = ["MHE", "MVE", "NVE", "NHE"]
         add_path()
+        
+        super().__init__(VERBOSE, **kwargs)
 
     def load_params(self, file = None):
         """

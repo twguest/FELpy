@@ -158,3 +158,9 @@ dmypy.json
 
 
 /felpy/examples/**/*.npy
+
+felpy/data/spb/mirror_surface/hom2_mir_real.dat
+
+felpy/data/spb/mirror_surface/nhe_mir_real.dat
+
+felpy/data/spb/mirror_surface/nve_mir_real.dat
