@@ -493,5 +493,52 @@ class Instrument:
 
         return surface, mesh
  
+    
+    @property
+    def list_elements(self):
+        return [el.name for el in self.optical_elements]
+    
+    
+    @property
+    def optical_elements(self):
+        """
+        returns an ordered list of optical elements
+        """
+        if hasattr(self, "bl"):
+            optical_elements = self.bl.propagation_options[0]['optical_elements']
+        else: 
+            assert("instrument class has no beamline attribute")
+        
+        return optical_elements
+    
+    def element_index(self, element_name):
+        """
+        get the index of an element in a beamline by name
+        """
+        ### get index
+        names = self.list_elements
+
  
- 
+        if element_name in names:
+            index = names.index(element_name)
+        else:
+            assert("Beamline does not contain optical element: {}".format(element_name))
+
+        return index
+
+    def remove_element(self, element_name):
+        """
+        remove an element from the beamline by name
+        """
+
+        index = self.element_index(element_name)
+
+        del self.bl.propagation_options[0]['optical_elements'][index]
+        del self.bl.propagation_options[0]['propagation_parameters'][index]
+
+    def edit_propagation_parameters(self, element_name, new_parameters):
+        """
+        edit the propagation parameters of an element by name
+        """
+        self.bl.propagation_options[0]['propagation_parameters'][self.element_index(element_name)] = new_parameters
+

@@ -342,7 +342,8 @@ class Instrument:
                             _dim = self.params['NVE_error']['orientation'],
                             _ang = self.params['NVE_error']['incidence angle'], ### + self.params['NVE']['incidence angle'],
                             _refl = self.params['NVE_error']['transmission'],
-                            _x = self.params['NVE_error']['xc'], _y = self.params['NVE_error']['yc'])
+                            _x = self.params['NVE_error']['xc'], _y = self.params['NVE_error']['yc'],
+                            _amp_coef = 1e-09)
 
             self.NVE_error.name = self.params['NVE_error']['name']
 
@@ -350,7 +351,8 @@ class Instrument:
                 _dim = self.params['NHE_error']['orientation'],
                 _ang = self.params['NHE_error']['incidence angle'], ###+self.params['NHE']['incidence angle'],
                 _refl = self.params['NHE_error']['transmission'],
-                _x = self.params['NHE_error']['xc'], _y = self.params['NHE_error']['yc'])
+                _x = self.params['NHE_error']['xc'], _y = self.params['NHE_error']['yc'],
+                _amp_coef = 1e-09)
 
 
 
@@ -511,41 +513,6 @@ class Instrument:
 
         return surface, x, y
 
-    @property
-    def elements(self):
-        return [el.name for el in self.bl.propagation_options[0]['optical_elements']]
-
-    def get_index(self, element_name):
-        """
-        get the index of an element in a beamline by name
-        """
-        ### get index
-        names = self.elements
-
-        if self.VERBOSE:
-            print("List of Elements: {}".format(names))
-        try:
-            index = names.index(element_name)
-        except(ValueError):
-            print("Beamline does not contain optical element: {}".format(element_name))
-
-        return index
-
-    def remove_element(self, element_name):
-        """
-        remove an element from the beamline by name
-        """
-
-        index = self.get_index(element_name)
-
-        del self.bl.propagation_options[0]['optical_elements'][index]
-        del self.bl.propagation_options[0]['propagation_parameters'][index]
-
-    def edit_propagation_parameters(self, element_name, new_parameters):
-        """
-        edit the propagation parameters of an element by name
-        """
-        self.bl.propagation_options[0]['propagation_parameters'][self.get_index(element_name)] = new_parameters
 
 
     def rebuild(self, focus = 'nano'):

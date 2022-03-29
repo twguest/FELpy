@@ -101,7 +101,7 @@ def get_beamline_object(parameter_file = "", options = 'nano', ekev = 5.0,
     return spb.get_beamline()
 
 
-def setup_spb(parameter_file = "spb-sfx_nkb_FAST", options = 'nano', ekev = 5.0,
+def setup_spb(parameter_file = "../../../data/params/spb-sfx_nkb_FAST.json", options = 'nano', ekev = 5.0,
               apertures = True, surface = 'real', crop = None,
               theta_HOM = 2.3e-03, theta_KB = 3.5e-03,
               save_params = False):
