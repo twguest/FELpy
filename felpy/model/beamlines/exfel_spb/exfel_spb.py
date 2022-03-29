@@ -9,9 +9,9 @@ NOTE: the final goal of this class is to inherit from core.instrument.
 __author__ = "Trey Guest"
 __credits__ = ["Trey Guest"]
 __license__ = "EuXFEL"
-__version__ = "0.2.1"
+__version__ = "0.1.1"
 __maintainer__ = "Trey Guest"
-__email__ = "trey.guest@xfel.eu"
+__email__ = "twguest@students.latrobe.edu.au"
 __status__ = "Developement"
 
 
@@ -488,7 +488,7 @@ class Instrument:
         drift2screen = Drift(distance)
         if screenName is not None:
             drift2screen.name = "screen"
-        else:
+        else: 
             drift2screen.name = screenName
         self.bl.append(Drift(distance), propagation_parameters(1, 1, 1, 1, m = 'quadratic'))
 
@@ -507,11 +507,12 @@ class Instrument:
         x = surface[1:, 0]*1e3
         y = surface[0, 1:]*1e3
 
-        surface = surface[1:,1:]*1e9
+        surface = surface[1:,1:]
 
         return surface, x, y
 
-    def list_elements(self):
+    @property
+    def elements(self):
         return [el.name for el in self.bl.propagation_options[0]['optical_elements']]
 
     def get_index(self, element_name):
@@ -519,7 +520,7 @@ class Instrument:
         get the index of an element in a beamline by name
         """
         ### get index
-        names = self.list_elements()
+        names = self.elements
 
         if self.VERBOSE:
             print("List of Elements: {}".format(names))
