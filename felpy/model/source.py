@@ -241,7 +241,7 @@ class Source:
 
 class SA1_Source(Source):
 
-    def __init__(self, ekev, q, S=4, **kwargs):
+    def __init__(self, ekev, q, S=4, test_mode = False, stochastic = False, **kwargs):
         """
         :param S: sampling factor
         """
@@ -249,15 +249,18 @@ class SA1_Source(Source):
         self.q = q
         self.S = S
         self.wavelength = ekev2wav(ekev)
-
-        #divergence = analytical_pulse_divergence(ekev, 'mean')
-        divergence = np.random.uniform(low=analytical_pulse_divergence(
-            ekev, 'lower'), high=analytical_pulse_divergence(ekev, 'upper'))
+        
+        divergence = analytical_pulse_divergence(ekev, 'mean')
+        #divergence = np.random.uniform(low=analytical_pulse_divergence(
+        #    ekev, 'lower'), high=analytical_pulse_divergence(ekev, 'upper'))
         #print("Expected Divergence: {}".format(divergence))
-
+        
         energy = analytical_pulse_energy(q, ekev)
-
-        fwhm = analytical_pulse_width(ekev)
+        
+        if test_mode == True:
+            fwhm = 500e-06
+        else:
+            fwhm = analytical_pulse_width(ekev)
         #print("Expected Size: {}".format(fwhm))
 
         pulse_duration = analytical_pulse_duration(q)
@@ -500,7 +503,7 @@ def spherical_phase(nx, ny,
     # Initializing sigma and muu
 
     # Calculating Gaussian array
-    spherical_phase_term = np.exp(1j*k*((x-x0)**2+(y-y0)**2)/(2*f))
+    spherical_phase_term = np.exp(1j*k*((x-x0)**2+(y-y0)**2)/(4*f))
 
     return spherical_phase_term
 

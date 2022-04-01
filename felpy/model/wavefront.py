@@ -212,7 +212,7 @@ class Wavefront(WPG_Wavefront):
         self.set_electric_field_representation('a') 
         sig_x, sig_y = calculate_fwhm(self)['fwhm_x'], calculate_fwhm(self)['fwhm_y']
         
-        self.set_electric_field_representation('f') 
+        self.set_electric_field_representation('c') 
         
         self.custom_fields['divergence'] = sig_x, sig_y
         
