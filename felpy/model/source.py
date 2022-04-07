@@ -245,7 +245,13 @@ class SA1_Source(Source):
         """
         :param S: sampling factor
         """
-
+        
+        if 'observation_point' in kwargs:
+            z = kwargs['observation_point'] 
+        else:
+            z = 0
+        
+        
         self.q = q
         self.S = S
         self.wavelength = ekev2wav(ekev)
@@ -260,7 +266,7 @@ class SA1_Source(Source):
         if test_mode == True:
             fwhm = 500e-06
         else:
-            fwhm = analytical_pulse_width(ekev)
+            fwhm = 2*z*np.tan(divergence)*analytical_pulse_width(ekev) + analytical_pulse_width(ekev)
         #print("Expected Size: {}".format(fwhm))
 
         pulse_duration = analytical_pulse_duration(q)
