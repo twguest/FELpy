@@ -19,7 +19,7 @@ from felpy.utils.np_utils import get_mesh
 from felpy.model.tools import radial_profile
 from datetime import datetime
 import os
-
+from felpy.analysis.energy_spectral_density import power_spectral_density
 from felpy.analysis.scalar.centroid import get_com
 from felpy.utils.maths.fit import fit_gaussian
 from felpy.utils.maths.constants import sigma_to_fwhm
@@ -101,24 +101,21 @@ class Wavefront(WPG_Wavefront):
         if VERBOSE:
             print(self.custom_fields['angular resolution'])
         return qx, qy
-           
-    def get_temporal_resolution(self, VERBOSE = False):
+    
+    @property
+    def pulse_duration(self):
         
         wDomain = self.params.wDomain
         
         if wDomain == 'time':
-            delta_tau = (self.params.Mesh.sliceMax - self.params.Mesh.sliceMin) / self.params.Mesh.nSlices
+            pulse_duration = (self.params.Mesh.sliceMax - self.params.Mesh.sliceMin) 
         else:
             self.set_electric_field_representation('t')
-            delta_tau = (self.params.Mesh.sliceMax - self.params.Mesh.sliceMin) / self.params.Mesh.nSlices
+            pulse_duration = (self.params.Mesh.sliceMax - self.params.Mesh.sliceMin) 
             self.set_electric_field_representation(wDomain)
-
-
-        self.custom_fields['temporal resolution'] = delta_tau
-        
-        if VERBOSE: self.custom_fields['temporal resolution']
-        
-        return delta_tau
+            
+ 
+        return pulse_duration
 
 
     def to_txt(self, outdir):
@@ -127,7 +124,18 @@ class Wavefront(WPG_Wavefront):
         output = open(outdir + ".txt", "w")
         output.write(self.__str__())
         output.close()
+    
+    
+    
+    @property
+    def spatial_power_spectral_density(self):
+        """
+        wrapper function for felpy.analysis.energy_spectral_density.power_spectral_density
+        """
+        freq, s = power_spectral_density(self.as_complex_array().sum(-1),
+                                         spatial_sampling = self.dx, pulse_duration = self.pulse_duration)
         
+        return freq, s
     def as_complex_array(self, ignoreVer = True, ignoreHor = False):
         """
         Convert electric field data to complex representation]
