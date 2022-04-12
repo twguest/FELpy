@@ -24,7 +24,11 @@ class Mesh:
 
     :params zMin: (optional) [float64]
     :params zMax: (optional) [float64]
-
+    
+    :params dx: (optional) [float64]
+    :params dy: (optional) [float64]
+    
+    
     :params x: (optional) [np.ndarray]
     :params y: (optional) [np.ndarray]
     :params z: (optional) [np.ndarray]
@@ -35,7 +39,15 @@ class Mesh:
         self.ndims = 0
         self.__dict__.update(kwargs)
         
-               
+        
+        if all(hasattr(self, attr) for attr in ["dx", "nx"]):
+            self.xMin = -self.dx*self.nx//2
+            self.xMax = -1*self.xMin
+            
+        if all(hasattr(self, attr) for attr in ["dy", "ny"]):
+            self.yMin = -self.dy*self.ny//2
+            self.yMax = -1*self.yMin
+                
         
         if all(hasattr(self, attr) for attr in D2):
             
@@ -51,6 +63,7 @@ class Mesh:
             if all(hasattr(self, attr) for attr in ["z"]):
                 
                 self.ndims = 3
+                
         
             self.build_from_array()
         
