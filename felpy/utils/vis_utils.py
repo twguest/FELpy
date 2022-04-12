@@ -101,15 +101,15 @@ class Grids:
         im=cm.ScalarMappable(norm=normalizer, cmap = cmap)
         
         if self.n*self.m > 1:
-            cbar = self.fig.colorbar(im, ax=self.axes.ravel().tolist(), pad = pad, orientation = orientation)
+            self.cbar = self.fig.colorbar(im, ax=self.axes.ravel().tolist(), pad = pad, orientation = orientation)
         else:
-            cbar = self.fig.colorbar(im, ax=self.axes, pad = pad, orientation = orientation)
+            self.cbar = self.fig.colorbar(im, ax=self.axes, pad = pad, orientation = orientation)
 
-        cbar.set_label(clabel, fontsize = fontsize)
+        self.cbar.set_label(clabel, fontsize = fontsize)
         
         if tick_values != None and tick_labels != None:
-            cbar.set_ticks(tick_values)
-            cbar.set_ticklabels(tick_labels)
+            self.cbar.set_ticks(tick_values)
+            self.cbar.set_ticklabels(tick_labels)
     
     def get_axes(self):
         if self.n*self.m == 1:
@@ -135,15 +135,26 @@ class Grids:
         
         
     def create_grid(self, n = 1, m = 1, title = None, xlabel = None, ylabel = None,
-                            resolution = 100, fontsize = 12, sharex = True, sharey = True):
+                            resolution = 100, fontsize = 12, sharex = True, sharey = True, **kwargs):
     
         self.n = n
         self.m = m
         
+        if 'width_ratios' in kwargs:
+            width_ratios = kwargs['width_ratios']
+        else:
+            width_ratios = np.ones(m)
+        
+        if 'height_ratios' in kwargs:
+            height_ratios = kwargs['height_ratios']
+        else:
+            height_ratios = np.ones(n)
+            
         fig, axes = plt.subplots(nrows=n, ncols=m,
                                  figsize = self.fig_size,
                                  dpi = resolution,
-                                 sharex = sharex, sharey = sharey,  gridspec_kw={'width_ratios': np.ones(m)})
+                                 sharex = sharex, sharey = sharey,  gridspec_kw={'width_ratios': width_ratios,
+                                                                                'height_ratios': height_ratios})
  
         
         if n*m > 1:

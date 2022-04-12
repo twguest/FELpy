@@ -146,13 +146,13 @@ def setup_spb(parameter_file = "../../../data/params/spb-sfx_nkb_FAST.json", opt
             spb.params[mirror]["mirror profile"] = generate_infinite_mirror()
     
         for focus in spb.focus:
+            
+            spb.params[focus]["design angle"] = np.pi/3 ### [A]s ## fix for now, should onkly accept elliptical mirrors
+            spb.params[focus]["incidence angle"] = np.pi/3 ### should be for elliptical mirror surfaces
 
-            spb.params['NVE_error']["design angle"] = np.pi/2 ### [A]s ## fix for now, should onkly accept elliptical mirrors
-            spb.params['NVE_error']["incidence angle"] = np.pi/2 ### should be for elliptical mirror surfaces
 
-            spb.params['NHE_error']["design angle"] = np.pi/2 ### [A]s ## fix for now, should onkly accept elliptical mirrors
-            spb.params['NHE_error']["incidence angle"] = np.pi/2 ### should be for elliptical mirror surfaces
-
+            
+            
     for mirror in mirrors:
         if mirror in spb.focus:
             spb.params[mirror]['reflectivity'] = get_refl(load_refl(material), ekev, theta_KB)
@@ -167,7 +167,12 @@ def setup_spb(parameter_file = "../../../data/params/spb-sfx_nkb_FAST.json", opt
 
     spb.build_elements(focus = options)
     spb.build_beamline(focus = options)
-
+    
+    if apertures == False and surface == 'flat':
+        spb.remove_element("NVE_error")
+        spb.remove_element("NHE_error")
+        spb.remove_element("NKB_PSlit")
+        
 
     if save_params:
         spb.export_params()
