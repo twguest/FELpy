@@ -11,27 +11,15 @@ class Beamline(WPG_Beamline):
         super().__init__(_srwl_wf)
         
 
-    def propagate_sequential(self, wfr, outdir = None, return_intensity = False, return_mesh = False):
+    def propagate_sequential(self, wfr, return_intensity = False, return_mesh = False, savedir = "", checkpoints = []):
         """
         Propagate sequentially through each optical element in beamline.
 
         :param wfr: Input wavefront (will be re-writed after propagation)
         :param outdir: save directory
         """
+               
         
-        
-        print(outdir)
-        if outdir is not None:
-            
-            if os.path.exists(outdir) == False: 
-                assert(ValueError, "Output Directory Could Not Be Found")
-            else: 
-                pass
-        
-
-        if outdir is not None:
-            wfr.write(outdir + "initialSource")
-
         if return_intensity:
             intensity = []
         if return_mesh:
@@ -47,7 +35,8 @@ class Beamline(WPG_Beamline):
                 print(oe.name)
             except:
                 print(oe)
-                
+             
+            
             srwl.PropagElecField(wfr._srwl_wf, bl)
             
             if return_intensity:
@@ -55,13 +44,8 @@ class Beamline(WPG_Beamline):
             if return_mesh:
                 mesh.append(wfr.get_mesh())
                     
- 
-            if outdir is None:
-                if return_intensity:
-                    pass
-                else:
-                    plot_intensity_map(wfr)
-
+            plot_intensity_map(wfr)
+            
         if return_intensity:
             
             if return_mesh:

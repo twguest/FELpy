@@ -100,6 +100,8 @@ class Grids:
         normalizer=Normalize(vmin, vmax)
         im=cm.ScalarMappable(norm=normalizer, cmap = cmap)
         
+        
+        
         if self.n*self.m > 1:
             self.cbar = self.fig.colorbar(im, ax=self.axes.ravel().tolist(), pad = pad, orientation = orientation)
         else:
