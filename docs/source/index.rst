@@ -18,7 +18,7 @@ how to :ref:`installation` the project.
 
 Indices and tables
 ==================
-* :ref:'modules.rst'
+* :ref:'modules'
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
