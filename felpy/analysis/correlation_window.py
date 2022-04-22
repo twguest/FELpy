@@ -144,6 +144,7 @@ def autocovariance2D(roi):
 
     return acov
 
+from felpy.math.fit_funcs import gaussian
 
 def fitExponent(acov, ax, sigmaGuess=1):
     """
@@ -154,9 +155,8 @@ def fitExponent(acov, ax, sigmaGuess=1):
     :returns params: parameter fit of autocov function
     """
 
-    params, params_covariance = optimize.curve_fit(gaussian, ax, acov[:len(acov)-1],
-                                                   p0=[1, 0, sigmaGuess*50, 0], maxfev=10000)
-
+    params, params_covariance = optimize.curve_fit(gaussian_func, ax, acov[:len(acov)-1],
+                                                   p0=[1,0,sigmaGuess*50,0], maxfev = 10000)
     return params
 
 
@@ -217,15 +217,14 @@ def getFeatureSize(ii, nWindows=16, px=None, bPlot=False):
         wFeature = params[2]*2
 
         cors[itr] = wFeature
-
-        if bPlot == True:
-
-            cid = np.random.randint(0, len(clist))
-            ax2.plot(ax*1e6, acov[:acov.shape[0]-1], c=clist[cid])
-            ax2.plot(ax*1e6, gaussian(ax, *params),
-                     linestyle='--', c=clist[cid])
-
-    cors = cors.reshape([int(np.sqrt(nWindows)), int(np.sqrt(nWindows))])
+        
+        if bPlot == True: 
+            
+            cid = np.random.randint(0,len(clist))
+            ax2.plot(ax*1e6, acov[:acov.shape[0]-1], c = clist[cid])
+            ax2.plot(ax*1e6, gaussian(ax, *params), linestyle = '--', c = clist[cid])
+       
+    cors = cors.reshape([int(np.sqrt(nWindows)),int(np.sqrt(nWindows))])
     if bPlot == True:
 
         plt.show()
