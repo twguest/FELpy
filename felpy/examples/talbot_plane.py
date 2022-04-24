@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from felpy.model.source.coherent import construct_SA1_wavefront
-from felpy.model.core.beamline import Beamline
+from felpy.model.src.coherent import construct_SA1_wavefront
+from felpy.model.beamline import Beamline
 
 from wpg.srwl_uti_smp import srwl_opt_setup_transm_from_file as srwloptT
 

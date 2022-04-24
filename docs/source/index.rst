@@ -18,6 +18,10 @@ how to :ref:`installation` the project.
 
 Indices and tables
 ==================
+<<<<<<< HEAD
+=======
+* :ref:'modules'
+>>>>>>> master
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`

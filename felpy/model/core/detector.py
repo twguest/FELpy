@@ -4,9 +4,9 @@
 hybrid wpg-felpy detector module
 """
 
-from felpy.model.source.coherent import construct_SA1_pulse
+from felpy.model.src.coherent import construct_SA1_pulse
 from wpg.srwlib import SRWLDet
-from felpy.model.core.beamline import Beamline
+from felpy.model.beamline import Beamline
 from felpy.model.tools import propagation_parameters
 from wpg.optical_elements import Drift
 

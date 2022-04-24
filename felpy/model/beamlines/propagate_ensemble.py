@@ -7,9 +7,9 @@ FELPY
 __author__ = "Trey Guest"
 __credits__ = ["Trey Guest"]
 __license__ = "EuXFEL"
-__version__ = "0.1.1"
+__version__ = "0.2.1"
 __maintainer__ = "Trey Guest"
-__email__ = "twguest@students.latrobe.edu.au"
+__email__ = "trey.guest@xfel.eu"
 __status__ = "Developement"
 """
 
@@ -17,9 +17,9 @@ from os import listdir
 from felpy.utils.os_utils import mkdir_p
 
 from felpy.model.beamlines.exfel_spb.methods import get_beamline_object
-from felpy.model.core.wavefront import Wavefront
+from felpy.model.wavefront import Wavefront
 from felpy.model.tools import propagation_parameters, scale
-from felpy.model.source.coherent import construct_SA1_pulse
+from felpy.model.src.coherent import construct_SA1_pulse
 from wpg.optical_elements import Drift
 from wpg.wpg_uti_wf import plot_intensity_map as plot_wfr
 from multiprocessing import Pool, cpu_count

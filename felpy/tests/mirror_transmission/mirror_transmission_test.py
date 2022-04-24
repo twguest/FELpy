@@ -4,7 +4,7 @@ import numpy as np
 from felpy.utils.vis_utils import scatter_plot
 from felpy.model.beamlines.exfel_spb.exfel_spb import Instrument
 from felpy.model.beamlines.exfel_spb.methods import get_beamline_object
-from felpy.model.source.coherent import construct_SA1_wavefront
+from felpy.model.src.coherent import construct_SA1_wavefront
 from tqdm import tqdm
 from wpg.wpg_uti_wf import plot_intensity_map
 from felpy.model.materials.load_refl import load_refl, get_refl 

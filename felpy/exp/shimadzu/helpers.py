@@ -15,7 +15,7 @@ def shimadzu_test_data(nx, ny, npulses, ntrains, weight = 0.1,
     :returns data: numpy array of shape [nx, ny, npulses, ntrains]
     """
     
-    data = np.ones([nx, ny, npulses, ntrains])*gaussian_2d(nx,ny)
+    data = np.ones([nx, ny, npulses, ntrains])*complex_gaussian_2d(nx,ny)
     data += np.random.rand(nx, ny npulses, ntrains)*weight
     
     return data

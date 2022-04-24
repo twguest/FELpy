@@ -7,9 +7,9 @@ FELPY
 __author__ = "Trey Guest"
 __credits__ = ["Trey Guest"]
 __license__ = "EuXFEL"
-__version__ = "0.1.1"
+__version__ = "0.2.1"
 __maintainer__ = "Trey Guest"
-__email__ = "twguest@students.latrobe.edu.au"
+__email__ = "trey.guest@xfel.eu"
 __status__ = "Developement"
 """
 
@@ -101,7 +101,7 @@ def get_beamline_object(parameter_file = "", options = 'nano', ekev = 5.0,
     return spb.get_beamline()
 
 
-def setup_spb(parameter_file = "spb-sfx_nkb_FAST", options = 'nano', ekev = 5.0,
+def setup_spb(parameter_file = "../../../data/params/spb-sfx_nkb_FAST.json", options = 'nano', ekev = 5.0,
               apertures = True, surface = 'real', crop = None,
               theta_HOM = 2.3e-03, theta_KB = 3.5e-03,
               save_params = False):
@@ -146,13 +146,13 @@ def setup_spb(parameter_file = "spb-sfx_nkb_FAST", options = 'nano', ekev = 5.0,
             spb.params[mirror]["mirror profile"] = generate_infinite_mirror()
     
         for focus in spb.focus:
+            
+            spb.params[focus]["design angle"] = np.pi/3 ### [A]s ## fix for now, should onkly accept elliptical mirrors
+            spb.params[focus]["incidence angle"] = np.pi/3 ### should be for elliptical mirror surfaces
 
-            spb.params['NVE_error']["design angle"] = np.pi/2 ### [A]s ## fix for now, should onkly accept elliptical mirrors
-            spb.params['NVE_error']["incidence angle"] = np.pi/2 ### should be for elliptical mirror surfaces
 
-            spb.params['NHE_error']["design angle"] = np.pi/2 ### [A]s ## fix for now, should onkly accept elliptical mirrors
-            spb.params['NHE_error']["incidence angle"] = np.pi/2 ### should be for elliptical mirror surfaces
-
+            
+            
     for mirror in mirrors:
         if mirror in spb.focus:
             spb.params[mirror]['reflectivity'] = get_refl(load_refl(material), ekev, theta_KB)
@@ -167,7 +167,12 @@ def setup_spb(parameter_file = "spb-sfx_nkb_FAST", options = 'nano', ekev = 5.0,
 
     spb.build_elements(focus = options)
     spb.build_beamline(focus = options)
-
+    
+    if apertures == False and surface == 'flat':
+        spb.remove_element("NVE_error")
+        spb.remove_element("NHE_error")
+        spb.remove_element("NKB_PSlit")
+        
 
     if save_params:
         spb.export_params()
@@ -186,7 +191,7 @@ def setup_spb(parameter_file = "spb-sfx_nkb_FAST", options = 'nano', ekev = 5.0,
 
 if __name__ == '__main__':
     from wpg.wpg_uti_wf import plot_intensity_map
-    from felpy.model.source.coherent import construct_SA1_wavefront
+    from felpy.model.src.coherent import construct_SA1_wavefront
 
     spb = setup_spb()
     bl = spb.bl

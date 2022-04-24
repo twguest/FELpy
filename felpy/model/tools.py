@@ -16,8 +16,8 @@ from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
 from wpg.srwlib import SRWLOptD as Drift
 from wpg.srwlib import SRWLOptA as Aperture
 from wpg.generators import build_gauss_wavefront
-from felpy.model.core.beamline import Beamline
-from felpy.utils.np_utils import gaussian_2d
+from felpy.model.beamline import Beamline
+from felpy.utils.maths.generator_funcs import complex_gaussian_2d
 
 def propagation_parameters(sx, zx, sy, zy, mode = "fresnel"):
     """

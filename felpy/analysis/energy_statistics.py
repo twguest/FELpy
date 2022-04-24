@@ -14,9 +14,9 @@ import numpy as np
 import wpg.srwlib as srwlib
 
 from wpg.wpg_uti_wf import calc_pulse_energy, get_axial_power_density, get_centroid, get_profile_1d, get_axis
-from felpy.model.core.wavefront import Wavefront
+from felpy.model.wavefront import Wavefront
 
-from felpy.model.source.coherent import construct_spb_pulse
+from felpy.model.src.coherent import construct_spb_pulse
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
 
 from wpg.srwlib import srwl

@@ -7,9 +7,9 @@ FELPY
 __author__ = "Trey Guest"
 __credits__ = ["Trey Guest"]
 __license__ = "EuXFEL"
-__version__ = "0.1.1"
+__version__ = "0.2.1"
 __maintainer__ = "Trey Guest"
-__email__ = "twguest@students.latrobe.edu.au"
+__email__ = "trey.guest@xfel.eu"
 __status__ = "Developement"
 """
 
@@ -22,7 +22,7 @@ from felpy.utils.vis_utils import extract_animation
 from labwork.about import dCache, logs
 from felpy.utils.job_utils import JobScheduler
 from felpy.exp.shimadzu.correlation_analysis import correlation_analysis
-from felpy.analysis.optics.scalar.enclosed_energy import get_enclosed_energy
+from felpy.analysis.scalar.enclosed_energy import get_enclosed_energy
 import sys
 
 

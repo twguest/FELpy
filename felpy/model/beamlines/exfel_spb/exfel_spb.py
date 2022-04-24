@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 """
@@ -27,41 +26,39 @@ import numpy as np
 import sys
 from matplotlib import pyplot as plt
 import os
-from felpy.model.core.beamline import Beamline
+from felpy.model.beamline import Beamline
 from wpg import srwlib
 from wpg.srwlib import SRWLOptD as Drift
 from wpg.srwlib import SRWLOptA as Aperture
 from wpg.srwlib import SRWLOptT
 from wpg.optical_elements import Mirror_elliptical as MirEl
 
+from felpy.model.instrument import Instrument as base_class
+
 from felpy.utils.os_utils import add_path, felpy_path
 from felpy.model.materials.mirror_surface import genMirrorSurface, generate_mirror_surface
 from felpy.model.materials.load_refl import get_refl, load_refl
-from felpy.model.source.coherent import construct_SA1_wavefront
+from felpy.model.src.coherent import construct_SA1_wavefront
 from wpg.optical_elements import calculateOPD
 from felpy.model.beamlines.exfel_spb.params import get_params
 from felpy.model.tools import propagation_parameters
 from wpg.srwlib import srwl_opt_setup_surf_height_2d as MirPl
-
+from scipy.ndimage import gaussian_filter1d
 import os
 import sys
 
 import seaborn as sns
 
-class Instrument:
+class Instrument(base_class):
 
     """
     A container for loading and modifying beamline data
     """
 
 
-    def __init__(self, parameter_file = None, VERBOSE = True):
+    def __init__(self, parameter_file = None, VERBOSE = True, **kwargs):
 
         self.VERBOSE = VERBOSE
-
-        if VERBOSE:
-            print("Initialising Single Particle Beamline")
-
         self.load_params(file = parameter_file)
         self.fpath = felpy_path() ### felpy path (for dev. purposes)
 
@@ -69,6 +66,8 @@ class Instrument:
         self.nano = ["HOM1", "HOM2", "NVE", "NHE"]
         self.focus = ["MHE", "MVE", "NVE", "NHE"]
         add_path()
+        
+        super().__init__(VERBOSE, **kwargs)
 
     def load_params(self, file = None):
         """
@@ -337,12 +336,16 @@ class Instrument:
                     _ext_in = self.params['NVE']["_ext_in"], _ext_out = self.params['NVE']["_ext_out"])
 
             self.NVE.name = self.params["NVE"]["name"]
-
-            self.NVE_error = MirPl(np.loadtxt(self.params['NVE_error']['mirror profile'].replace("../../","")),
+            
+            NVE_error = np.loadtxt(self.params['NVE_error']['mirror profile'].replace("../../",""))
+            NVE_error[1:,1:] = gaussian_filter1d(NVE_error[1:,1:],20)
+            
+            self.NVE_error = MirPl(NVE_error,
                             _dim = self.params['NVE_error']['orientation'],
                             _ang = self.params['NVE_error']['incidence angle'], ### + self.params['NVE']['incidence angle'],
                             _refl = self.params['NVE_error']['transmission'],
-                            _x = self.params['NVE_error']['xc'], _y = self.params['NVE_error']['yc'])
+                            _x = self.params['NVE_error']['xc'], _y = self.params['NVE_error']['yc'],
+                            _amp_coef = 1e-10)
 
             self.NVE_error.name = self.params['NVE_error']['name']
 
@@ -350,7 +353,8 @@ class Instrument:
                 _dim = self.params['NHE_error']['orientation'],
                 _ang = self.params['NHE_error']['incidence angle'], ###+self.params['NHE']['incidence angle'],
                 _refl = self.params['NHE_error']['transmission'],
-                _x = self.params['NHE_error']['xc'], _y = self.params['NHE_error']['yc'])
+                _x = self.params['NHE_error']['xc'], _y = self.params['NHE_error']['yc'],
+                _amp_coef = 1e-10)
 
 
 
@@ -488,7 +492,7 @@ class Instrument:
         drift2screen = Drift(distance)
         if screenName is not None:
             drift2screen.name = "screen"
-        else:
+        else: 
             drift2screen.name = screenName
         self.bl.append(Drift(distance), propagation_parameters(1, 1, 1, 1, m = 'quadratic'))
 
@@ -507,44 +511,10 @@ class Instrument:
         x = surface[1:, 0]*1e3
         y = surface[0, 1:]*1e3
 
-        surface = surface[1:,1:]*1e9
+        surface = surface[1:,1:]
 
         return surface, x, y
 
-    def list_elements(self):
-        return [el.name for el in self.bl.propagation_options[0]['optical_elements']]
-
-    def get_index(self, element_name):
-        """
-        get the index of an element in a beamline by name
-        """
-        ### get index
-        names = self.list_elements()
-
-        if self.VERBOSE:
-            print("List of Elements: {}".format(names))
-        try:
-            index = names.index(element_name)
-        except(ValueError):
-            print("Beamline does not contain optical element: {}".format(element_name))
-
-        return index
-
-    def remove_element(self, element_name):
-        """
-        remove an element from the beamline by name
-        """
-
-        index = self.get_index(element_name)
-
-        del self.bl.propagation_options[0]['optical_elements'][index]
-        del self.bl.propagation_options[0]['propagation_parameters'][index]
-
-    def edit_propagation_parameters(self, element_name, new_parameters):
-        """
-        edit the propagation parameters of an element by name
-        """
-        self.bl.propagation_options[0]['propagation_parameters'][self.get_index(element_name)] = new_parameters
 
 
     def rebuild(self, focus = 'nano'):

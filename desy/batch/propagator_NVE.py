@@ -5,11 +5,11 @@ import ast
 import json
 
 from felpy.model.beamlines.exfel_spb.methods import get_beamline_object
-from felpy.model.core.beamline import Beamline
+from felpy.model.beamline import Beamline
 from felpy.utils.job_utils import JobScheduler
 from felpy.utils.os_utils import mkdir_p
 from felpy.model.tools import propagation_parameters, scale
-from felpy.model.core.wavefront import Wavefront
+from felpy.model.wavefront import Wavefront
 
 from wpg.wpg_uti_wf import plot_intensity_map as plt
 from wpg.optical_elements import Drift, Aperture

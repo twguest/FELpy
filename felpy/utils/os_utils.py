@@ -7,9 +7,9 @@ FELPY
 __author__ = "Trey Guest"
 __credits__ = ["Trey Guest"]
 __license__ = "EuXFEL"
-__version__ = "0.1.1"
+__version__ = "0.2.1"
 __maintainer__ = "Trey Guest"
-__email__ = "twguest@students.latrobe.edu.au"
+__email__ = "trey.guest@xfel.eu"
 __status__ = "Developement"
 """
 
@@ -52,7 +52,10 @@ def felpy_path():
     get felpy path
     """
     fpath = os.path.dirname(os.path.realpath(__file__))
-    fpath = os.path.join(fpath.split("felpy/")[0] + "/felpy/")
+    if "/felpy/felpy/" in fpath:
+        fpath = os.path.join(fpath.split("felpy/")[0] + "/felpy/felpy/")    
+    else:
+        fpath = os.path.join(fpath.split("felpy/")[0] + "/felpy/")
 
     return fpath
 
@@ -82,3 +85,7 @@ class color:
    BOLD = '\033[1m'
    UNDERLINE = HEADER = '\033[4m'
    END = '\033[0m'
+
+if __name__ == '__main__':
+    print(felpy_path())
+    

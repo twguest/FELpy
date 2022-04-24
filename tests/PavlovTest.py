@@ -24,9 +24,9 @@ from model.beamline.structure import propagation_parameters
 from model.tools import constructPulse
 from utils.banded_utils import diagonal_form, solve_banded
 from wpg.optical_elements import Drift
-from felpy.model.core.beamline import Beamline
+from felpy.model.beamline import Beamline
 from OpticalFlow import processOneProjection
-from felpy.model.core.wavefront import Wavefront
+from felpy.model.wavefront import Wavefront
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity
 from sklearn.preprocessing import minmax_scale as norm
 from matplotlib import pyplot as plt
