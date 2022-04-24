@@ -1,3 +1,17 @@
+# -*- coding: utf-8 -*-
+"""
+FELPY
+
+__author__ = "Trey Guest"
+__credits__ = ["Trey Guest"]
+__license__ = "EuXFEL"
+__version__ = "0.2.1"
+__maintainer__ = "Trey Guest"
+__email__ = "trey.guest@xfel.eu"
+__status__ = "Developement"
+"""
+
+
 from wpg.srw import srwlpy 
 from wpg.wavefront import Wavefront as WPG_Wavefront
 from matplotlib import pyplot as plt
@@ -55,8 +69,9 @@ def complex_converter(carr):
 class Wavefront(WPG_Wavefront):
     
     def __init__(self, _srwl_wf = None):
-        self._changed = False
         super().__init__(_srwl_wf)
+        self.custom_fields['metadata'] = {}
+        self._changed = False
 
             
     def load_complex_array(self, carr):
@@ -342,7 +357,36 @@ class Wavefront(WPG_Wavefront):
         
         return res, err
  
- 
+    
+    @property
+    def x_axis(self):
+        """
+        return a one-dimensional array of wavefront coordinates along the horizontal-axis 
+        """
+        return np.linspace(self.xMin, self.xMax, self.nx)
+
+    @property
+    def y_axis(self):
+        """
+        return a one-dimensional array of wavefront coordinates along the vertical-axis 
+        """
+        return np.linspace(self.yMin, self.yMax, self.ny)
+
+    @property
+    def t_axis(self):
+        """
+        return a one-dimensional array of wavefront coordinates along the time-axis 
+        """
+        return np.linspace(self.zMin, self.zMax, self.nz)
+
+    @property
+    def f_axis(self):
+        """
+        return a one-dimensional array of wavefront coordinates along the
+    temporal frequency-axis 
+        """
+        return 1/self.t_axis
+
  
     @property
     def get_mesh(self):
@@ -572,6 +616,9 @@ class Wavefront(WPG_Wavefront):
     def peak_intensity(self):
         return np.max(self.get_intensity().sum(-1))
     
+    @property
+    def metadata(self):
+        return self.custom_fields['metadata']
     
     def get_x_profile(self, method = 'com'):
         """ 
@@ -666,26 +713,20 @@ class Wavefront(WPG_Wavefront):
         
         return px, py
     
-    
-    def log(self, bl = None, descriptor = None):
-        
-        self.custom_fields['user'] = os.getlogin()
-        self.custom_fields['run directory'] = os.getcwd()
-        self.custom_fields['datetime'] = datetime.now().__str__().split(".")[0]
-        
-        if bl is not None:
-            self.custom_fields['beamline'] = bl.__str__()
-            
-        if descriptor is not None:
-            self.custom_fields['function'] = descriptor[0]
-            self.custom_fields['filename'] = descriptor[1] 
-            self.custom_fields['summary'] = descriptor[2]
+
+    def scale_beam_energy(self,  beam_energy = 1):
+        self.data.arrEhor /= np.sqrt(self.pulse_energy/beam_energy)
+
 
 if __name__ == '__main__':
-    
-    pass 
-    # from felpy.model.src.coherent import construct_SA1_pulse
-   
-    # wfr = construct_SA1_pulse(200,200,4,1,.1)
-    # wfr.analysis()
- 
+
+# =============================================================================
+#     from felpy.model.src.coherent import construct_SA1_pulse
+#    
+#     wfr = construct_SA1_pulse(200,200,4,1,.1)
+#     wfr.metadata['trey'] = True
+#     wfr.store_hdf5("../data/tmp/test.h5")
+#     wfr.load_hdf5("../data/tmp/test.h5")
+#     
+# =============================================================================
+    pass

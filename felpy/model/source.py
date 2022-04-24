@@ -21,11 +21,7 @@ FWHM2RMS = np.sqrt(8*np.log(2))  # FWHM = sqrt(8ln(2))*sigma
 FWHM2E2 = 1.66
 
 
-def get_pulse_energy(wfr):
-    wfr.set_electric_field_representation('t')
-    energy = calc_pulse_energy(wfr)[0]
-    wfr.set_electric_field_representation('f')
-    return energy
+
 
 
 class Source:
@@ -45,120 +41,7 @@ class Source:
         else:
             if hasattr(self, "mesh"):
                 self.__dict__.update(self.mesh.get_attributes())
-
-    @property
-    def nx(self):
-
-        if hasattr(self, 'wfr') == True:
-            setattr(self.mesh, "nx", self.wfr.params.Mesh.nx)
-
-        return self.mesh.nx
-
-    @property
-    def ny(self):
-
-        if hasattr(self, 'wfr') == True:
-            setattr(self.mesh, "ny", self.wfr.params.Mesh.ny)
-
-        return self.mesh.ny
-
-    @property
-    def nz(self):
-        if hasattr(self, 'wfr') == True:
-            setattr(self.mesh, "nz", self.wfr.params.Mesh.nSlices)
-        elif hasattr(self, 'temporal_profile') == True:
-            setattr(self.mesh, "zMin", self.temporal_profile.shape[0])
-
-        return self.mesh.nz
-
-    @property
-    def xMin(self):
-        if hasattr(self, 'wfr') == True:
-            setattr(self.mesh, "xMin", self.wfr.params.Mesh.xMin)
-        return self.mesh.xMin
-
-    @property
-    def xMax(self):
-        if hasattr(self, 'wfr') == True:
-            setattr(self.mesh, "xMax", self.wfr.params.Mesh.xMax)
-        return self.mesh.xMax
-
-    @property
-    def yMin(self):
-        if hasattr(self, 'wfr') == True:
-            setattr(self.mesh, "yMin", self.wfr.params.Mesh.yMin)
-        return self.mesh.yMin
-
-    @property
-    def yMax(self):
-        if hasattr(self, 'wfr') == True:
-            setattr(self.mesh, "yMax", self.wfr.params.Mesh.yMax)
-        return self.mesh.yMax
-
-    @property
-    def zMin(self):
-        if hasattr(self, 'wfr') == True:
-            setattr(self.mesh, "zMin", self.wfr.params.Mesh.sliceMin)
-        elif hasattr(self, 'temporal_profile') == True:
-            setattr(self.mesh, "zMin",
-                    self.temporal_profile.shape[0]/2*-self.pulse_duration)
-
-        return self.mesh.zMin
-
-    @property
-    def zMax(self):
-        if hasattr(self, 'wfr') == True:
-            setattr(self.mesh, "zMax", self.wfr.params.Mesh.sliceMin)
-        elif hasattr(self, 'temporal_profile') == True:
-            setattr(self.mesh, "zMax",
-                    self.temporal_profile.shape[0]/2*self.pulse_duration)
-
-        return self.mesh.zMax
-
-    def get_axes(self, axes='x'):
-        if axes == 'x':
-            return np.linspace(self.xMin, self.xMax, self.nx)
-        elif axes == 'y':
-            return np.linspace(self.yMin, self.yMax, self.ny)
-        elif axes == 't':
-            return np.linspace(self.zMin, self.zMax, self.nz)
-        elif axes == 'omega':
-            return 1/self.get_axes('t')
-
-    def get_mesh_extent(self):
-        """
-        wrapper for mesh.get_extent
-        """
-        return [self.xMin, self.xMax, self.yMin, self.yMax]
-        #self.wfr = None
-
-    ### hacky function for now, should use setters/getters/properties. return to later - need better coms between wfr, mesh and source
-    def __update__(self):
-
-        if hasattr(self, 'mesh') == False:
-            raise Warning("No mesh detected")
-        elif hasattr(self, 'wfr') == False:
-            raise Warning("No wavefront detected")
-
-        self._is_changed()
-
-        if self.wfr._changed:
-            self.mesh.__update__(wfr=self.wfr)
-            self.wfr._changed = False
-
-    def _is_changed(self):
-
-        ###  likely not efficient
-        attr = [a for a in list(self.__dict__.keys())
-                if a in dir(self.wfr.params.Mesh)]
-
-        for a in attr:
-
-            if getattr(self.wfr.params.Mesh, a) != getattr(self.mesh, a):
-
-                self.wfr._changed == True
-                break
-
+                
     def check_attributes(self):
         """
         a function to check if we have all the necessary mesh definitions before continuing
@@ -175,68 +58,6 @@ class Source:
             raise Warning(
                 "You do not have the required attributes: {}".format(missing))
 
-        del missing
-
-    def set_beam_energy(self,  beam_energy):
-
-        if self.wfr is None:
-            assert("this operation acts on the wpg wavefront class")
-            assert("please ensure self.wfr exists, then re-run")
-        else:
-
-            E0 = get_pulse_energy(self.wfr)
-            self.wfr.data.arrEhor /= np.sqrt(E0/beam_energy)
-
-            #print(get_pulse_energy(self.wfr))
-
-    def get_fwhm(self):
-        """
-        returns the fwhm of the source intensity
-        """
-
-        ii = self.wfr.get_intensity().sum(-1)
-
-        cx, cy = ii.shape
-        cx //= 2
-        cy //= 2
-
-        ix = np.argmin(abs(ii[:, cy]-np.max(ii)/2))
-        iy = np.argmin(abs(ii[cx, :]-np.max(ii)/2))
-
-        px, py = self.wfr.get_spatial_resolution()
-
-        fx = abs(cx-ix)*px*2
-        fy = abs(cy-iy)*py*2
-
-        ex = px*2
-        ey = py*2
-        return (fx, ex), (fy, ey)
-
-    def get_divergence(self):
-
-        wfr = copy(self.wfr)
-        self.wfr.set_electric_field_representation('a')
-
-        ii = self.wfr.get_intensity().sum(-1)
-
-        cx, cy = ii.shape
-        cx //= 2
-        cy //= 2
-
-        ix = np.argmin(abs(ii[:, cy]-np.max(ii)/2))
-        iy = np.argmin(abs(ii[cx, :]-np.max(ii)/2))
-
-        qx, qy = self.wfr.get_angular_resolution()
-
-        fx = abs(cx-ix)*qx*2*self.wavelength
-        fy = abs(cy-iy)*qy*2*self.wavelength
-
-        ex = qx*2*self.wavelength
-        ey = qy*2*self.wavelength
-
-        self.wfr = wfr
-
-        return (fx, ex), (fy, ey)
 
 
 class SA1_Source(Source):
@@ -328,7 +149,7 @@ class SA1_Source(Source):
                                             dy=(self.yMax-self.yMin)/self.ny, dz=(self.pulse_duration/len(self.temporal_profile)),
                                             ekev=self.ekev, pulse_duration=self.pulse_duration)
 
-            self.set_beam_energy(self.energy)
+            self.wfr.scale_beam_energy(self.energy)
 
             return self.wfr
         else:
