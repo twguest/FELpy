@@ -21,7 +21,7 @@ def complex_to_wpg(arr): ### converter
 
 
 
-def wavefront_from_array(cfr,nx,ny,nz,dx,dy,dz,ekev, pulse_duration = 40e-15, sigma = 4):
+def wavefront_from_array(cfr,nx,ny,nz,dx,dy,dz,ekev, pulse_duration = 40e-15, sigma = 4, **kwargs):
     """
     function to produce a wpg wavefront object instance from a complex valued
     wavefront definition
@@ -69,9 +69,10 @@ def wavefront_from_array(cfr,nx,ny,nz,dx,dy,dz,ekev, pulse_duration = 40e-15, si
 
     wfr.params.Rx = 2
     wfr.params.Ry = 1
-    
     wfr.data.arrEhor = complex_to_wpg(cfr)
     
     wfr.set_electric_field_representation('f')
         
+    wfr.custom_fields.update(**kwargs)
+       
     return wfr

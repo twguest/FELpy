@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-
+from pprint import pprint
 from numpy import fft
 
 from wpg import srwlib
@@ -33,128 +33,192 @@ class Source:
 
     def __init__(self, **kwargs):
 
-        self.__dict__.update(kwargs)
+            
+        self.metadata = {}
+        
+        self.source_properties = {}
+        self.source_properties.update(kwargs)
 
-        ### this means that we first defer to nx/ny/nz definitions of the field
-        if all(hasattr(self, attr) for attr in ["nx", "ny", "xMin", "xMax", "yMin", "yMax", "zMin", "zMax"]):
-            pass
-        else:
-            if hasattr(self, "mesh"):
-                self.__dict__.update(self.mesh.get_attributes())
+        if "mesh" in kwargs:
+            self.source_properties.update(**kwargs['mesh'].get_attributes())
+    
+    @property
+    def _control(self):
+        """
+        a tool to return the longest array in the source properties (ie. the control variable)
+        """
+        d = {}
+        for item in self.source_properties:
+            if isinstance(self.source_properties[item], np.ndarray):
+                d[item] = self.source_properties[item]
+        try: 
+            l = len(self.source_properties[max(d, key=lambda x:len(d[x]))])
+        except(TypeError, ValueError):
+            l = 1
+        return l
+    
+    def build_properties(self):
+        
+        g = self._control
+        for item in self.source_properties:
+            ### DEBUG
+            print(item)
+            self.source_properties[item] *= np.ones(g).astype(type(self.source_properties[item]))
+            
+    
+    def set_property(self, property_name, value):
+        """
+        wrapper function to store a source property
+        
+        :param property_name: name of the proeprty to be stored in dict 
+        :type: str
+        
+        :param value: value of the property
+        :type: single value or list of values.
+        """
+        self.source_properties[property_name] = value
+
+
+    def get_property(self, property_name):
+        """
+        return the value of a specific source property
+    
+        :param property_name: name of the proeprty to be read from dict 
+        :type: str
+        
+        """
+        assert property_name in self.source_properties, "Source property is not currently defined"
+        return self.source_properties[property_name]
+    
+    
+    def generate(self, array):
+        
+        for itr in range(self._control):
+            pulse_properties = {item:self.source_properties[item][0] for item in self.source_properties}
+            
+            if array.ndim == 4:
+                input_field = array[itr]
+            else:
+                input_field = array
                 
-    def check_attributes(self):
-        """
-        a function to check if we have all the necessary mesh definitions before continuing
-        """
-
-        missing = []
-
-        for attr in ["nx", "ny", "xMin", "xMax", "yMin", "yMax", "zMin", "zMax"]:
-
-            if hasattr(self, attr) == False:
-                missing.append(attr)
-
-        if len(missing) > 0:
-            raise Warning(
-                "You do not have the required attributes: {}".format(missing))
-
+            wfr =  wavefront_from_array(input_field, nx=pulse_properties['nx'], ny=pulse_properties['ny'],
+                                        nz=pulse_properties['nz'],
+                                        dx=(pulse_properties['xMin']-pulse_properties['xMax'])/pulse_properties['nx'],
+                                        dy=(pulse_properties['yMin']-pulse_properties['yMax'])/pulse_properties['ny'],
+                                        dz=(pulse_properties['yMin']/pulse_properties['nz']),                                    
+                                        ekev=pulse_properties['ekev'],
+                                        pulse_duration=pulse_properties['pulse duration'],
+                                        source_properties = pulse_properties)
+            wfr.scale_beam_energy(pulse_properties['pulse energy'])
+            
+            wfr.store_hdf5("test.h5")
 
 
 class SA1_Source(Source):
-
-    def __init__(self, ekev, q, S=4, test_mode = False, stochastic = False, **kwargs):
+    """
+    fixed case of the SA1 source
+    """    
+    
+    def __init__(self, ekev, q, stochastic = False, **kwargs):
         """
-        :param S: sampling factor
+        initialisation function. 
+        """
+        super().__init__(**kwargs)
+
+        self.source_properties['stochastic'] = stochastic
+        self.source_properties.update(kwargs)
+        
+        
+        self.source_properties['ekev'] = ekev
+        self.source_properties['q'] = q 
+        
+        for item in self.source_properties:
+            print(item, type(self.source_properties[item]))
+            if type(item) == list:
+                self.source_properties[item] = np.asarray(self.source_properties[item])
+                  
+        self.source_properties.pop('mesh')
+        if 'z0' in kwargs:
+            self.source_properties['z0'] = kwargs['z0'] 
+        else:
+            self.source_properties['z0'] = 0
+        
+    
+    @property
+    def ekev(self):
+        """
+        return photon beam energy
+        """
+        return self.source_properties['ekev']
+    
+    
+    @property
+    def q(self):
+        """
+        return photon beam charge
+        """
+        return self.source_properties['q']
+    
+    def set_empirical_values(self):
+        
+        
+        
+        if self.source_properties['stochastic'] is True:      
+            self.source_properties['divergence']  = np.random.uniform(low=analytical_pulse_divergence(self.ekev, 'lower'), high=analytical_pulse_divergence(self.ekev, 'upper'))
+        else:
+            self.source_properties['divergence'] = analytical_pulse_divergence(self.ekev, 'mean')
+
+        self.source_properties['pulse energy'] = analytical_pulse_energy(self.q, self.ekev)
+        self.source_properties['fwhm'] = 2*self.source_properties['z0']*np.tan(self.source_properties['divergence'])*analytical_pulse_width(self.ekev) + analytical_pulse_width(self.ekev)
+        self.source_properties['pulse duration'] = analytical_pulse_duration(self.q)
+
+    
+    def generate_beam_envelope(self, pulse_properties):
+        """
+        a function to generate the SA1 photon wavefield envelope at the source
+        this can be extended at a later date to include perturbations, i.e the zernike polynomials.
+        """
+        pprint(pulse_properties)
+        return complex_gaussian_envelope(pulse_properties['nx'], pulse_properties['ny'],
+                                         pulse_properties['xMin'], pulse_properties['xMax'],
+                                         pulse_properties['yMin'], pulse_properties['yMax'],
+                                         pulse_properties['divergence'],
+                                         pulse_properties['divergence'],
+                                         pulse_properties['ekev'])
+
+    def generator(self, N = 1):
+        """
+        this is the emission process, and generates N wavefronts according to the rules given by the source paramters file.
+        
+        currently, it will only support cases where the input dictionary has values in the form of a single value or list.
         """
         
-        if 'observation_point' in kwargs:
-            z = kwargs['observation_point'] 
-        else:
-            z = 0
+        self.set_empirical_values()
+        self.build_properties()
         
+        for itr in range(self._control):
+            pulse_properties = {item:self.source_properties[item][0] for item in self.source_properties}
         
-        self.q = q
-        self.S = S
-        self.wavelength = ekev2wav(ekev)
+            efield = self.generate_beam_envelope(pulse_properties)[:,:,np.newaxis]*self.get_temporal_profile(pulse_properties)
         
-        divergence = analytical_pulse_divergence(ekev, 'mean')
-        #divergence = np.random.uniform(low=analytical_pulse_divergence(
-        #    ekev, 'lower'), high=analytical_pulse_divergence(ekev, 'upper'))
-        #print("Expected Divergence: {}".format(divergence))
+            self.generate(efield)
+
+            
+ 
         
-        energy = analytical_pulse_energy(q, ekev)
-        
-        if test_mode == True:
-            fwhm = 500e-06
-        else:
-            fwhm = 2*z*np.tan(divergence)*analytical_pulse_width(ekev) + analytical_pulse_width(ekev)
-        #print("Expected Size: {}".format(fwhm))
-
-        pulse_duration = analytical_pulse_duration(q)
-        #print("Expected Duration: {}".format(pulse_duration))
-
-        super().__init__(ekev=ekev, fwhm=fwhm, divergence=divergence,
-                         pulse_duration=pulse_duration,
-                         zDomain='frequency', k=ekev2k(ekev),
-                         energy=energy, zMin=-pulse_duration/2, zMax=pulse_duration/2,
-                         **kwargs)
-
-        self.get_wfr()
-
-        #print(self.wfr.get_spatial_resolution())
-
-    #@timing
-
-    def get_temporal_profile(self, sigma=4, refresh=False):
+    def get_temporal_profile(self, pulse_properties, sigma=4, refresh=False):
         ### note this gets and sets - should be changed
-        if hasattr(self, "temporal_profile") == False:
+    
+        n_samples, sampling_interval_t = temporal_sampling_requirements(
+            pulse_properties['pulse duration'], VERBOSE=True, S=4)
 
-            n_samples, sampling_interval_t = temporal_sampling_requirements(
-                self.pulse_duration, VERBOSE=True, S=self.S)
-
-            n_samples *= sigma
-
-            self.temporal_profile = generate_temporal_SASE_pulse(pulse_time=self.pulse_duration,
-                                                                 n_samples=n_samples,
-                                                                 sigma=sigma)
-        elif refresh == True:
-            """
-            this option allows for the temporal profile
-            """
-
-            self.temporal_profile = generate_temporal_SASE_pulse(pulse_time=self.pulse_duration,
-                                                                 n_samples=self.nz,
-                                                                 sigma=sigma)
-
-        return self.temporal_profile
-
-    def get_wfr(self):
-
-        if hasattr(self, "wfr") == False:
-
-            env = complex_gaussian_envelope(self.nx, self.ny,
-                                            self.xMin, self.xMax, self.yMin, self.yMax,
-                                            self.fwhm,
-                                            self.divergence,
-                                            self.ekev)
-
-            #sampling_interval_w = 1/sampling_interval_t
-
-            self.get_temporal_profile()
-
-            env = env[:, :, np.newaxis]*self.temporal_profile
-
-            self.wfr = wavefront_from_array(env, nx=self.nx, ny=self.ny,
-                                            nz=len(self.temporal_profile), dx=(self.xMax-self.xMin)/self.nx,
-                                            dy=(self.yMax-self.yMin)/self.ny, dz=(self.pulse_duration/len(self.temporal_profile)),
-                                            ekev=self.ekev, pulse_duration=self.pulse_duration)
-
-            self.wfr.scale_beam_energy(self.energy)
-
-            return self.wfr
-        else:
-            return self.wfr
-
+        n_samples *= sigma
+        self.source_properties['nz'] = n_samples * np.ones(self._control).astype(type(n_samples))
+        
+        return generate_temporal_SASE_pulse(pulse_time=pulse_properties['pulse duration'],
+                                                             n_samples=n_samples,
+                                                             sigma=sigma)
+        
 
 class Source_WPG(Source):
 
@@ -375,11 +439,15 @@ def generate_coherent_source_wavefront(nx, ny, fwhm, divergence):
 if __name__ == '__main__':
 
     from felpy.model.mesh import Mesh
-    m = Mesh(nx=512, ny=512, xMin=-1, xMax=1, yMin=1, yMax=1)
+    m = Mesh(nx=512, ny=512, xMin=-1, xMax=1, yMin=-1, yMax=1, nz = 10)
 
-    src = SA1_Source(5.0, 0.25, mesh=m)
-
-
+    src = SA1_Source(5.0, 0.2, mesh=m)
+    src.set_empirical_values()
+    pprint(src.source_properties)
+    src.generator()
+    from felpy.model.wavefront import Wavefront
+    wfr = Wavefront()
+    wfr.load_hdf5("./test.h5")
 # =============================================================================
 #     nx = ny = 512
 #     xMin = yMin = -300e-06
