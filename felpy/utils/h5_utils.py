@@ -14,88 +14,65 @@ __status__ = "Developement"
 """
 
 import h5py
-import types
 import numpy as np
+import datetime
+
+class obj:
+
+    def __init__(self):
+        self.created = str(datetime.datetime.now())
+        self.author = "twguest"
+        pass
 
 
-def blank_object():
+def write_h5(fname, obj):
     """
-    construct a blank python object
-    """
-      
-    obj = types.SimpleNamespace()
-    
-    return obj
+    write a python object to hdf5 file
 
-    
-def create_h5(sdir):
-    """ 
-    create a h5 file
-    
-    :param sdir: save directory (incl. filename) of .h5 file
-    """    
-    with h5py.File(sdir + ".hdf5", 'w') as f:
-        f.close()
-        
- 
-        
-def create_cxi_format(sdir):
+    :param fname: filename for h5 writing
+    :param obj: object to be written
     """
-    create a .h5 file in the CXI format
-    
-    :param sdir: save directory (incl. filename) of .h5 file
-    """
-    
-    create_h5(sdir)
-    
-    with h5py.File(sdir + ".hdf5", 'w') as f:
-        
-        f.create_group("/entry_1/")
-        
-        f.create_group("/entry_1/data_1/")
-        
-        f.create_dataset("/entry_1/data_1/data",
-                         data = [])
+    with h5py.File(fname, 'w') as f:
+        for item in vars(obj).items():
 
-        f.create_group("/entry_1/instrument_1/")
-        
-        f.create_group("/entry_1/instrument_1/detector_1/")
-        
-        f.create_dataset("/entry_1/instrument_1/detector_1/x_pixel_size",
-                         data = [])      
-        
-        f.create_dataset("/entry_1/instrument_1/detector_1/y_pixel_size",
-                         data = [])   
-        
-        f.create_dataset("/entry_1/instrument_1/detector_1/basis_vectors",
-                         data = [])   
-        
-        f.create_dataset("/entry_1/instrument_1/detector_1/mask",
-                         data = [])   
-        
-        f.create_dataset("/entry_1/instrument_1/detector_1/distance",
-                         data = [])        
-       
-        f.create_group("/entry_1/source_1/")
-        
-        f.create_dataset("/entry_1/instrument_1/source_1/energy",
-                         data = [])        
-        
-        f.create_dataset("/entry_1/instrument_1/source_1/wavelength",
-                         data = [])   
-        
-        f.create_group("/entry_1/sample_1/")
-        
-        f.create_group("/entry_1/sample_1/geometry/")
-        
-        f.create_dataset("/entry_1/sample_1/geometry/translation",
-                         data = [])      
-    
-        f.close()
-        
-        
+            f.create_dataset(item[0], data = item[1])
+
+
+def laod_h5(fname):
+    """
+    read a hdf5 file to a python object
+
+    :param fname: filename for h5 writing
+    """
+    o = obj()
+
+    with h5py.File(fname, 'r') as f:
+        for key in f.keys():
+            setattr(o, key, f[key].value)
+
+
+    return o
+
+
+
 if __name__ == '__main__':
-    
-    sdir = "/tmp/practice_file"
-    
-    create_cxi_format(sdir)
+
+
+    ### test
+
+    pyobj = obj()
+
+    ### create some random object components
+
+    pyobj.a = "a"
+    pyobj.b = [1,2,3,4,5]
+    pyobj.c = np.random.rand(5,5)
+    pyobj.d = np.random.rand(5,5) #+ np.random.rand(5,5)*1j
+
+    ### test object to h5
+
+    object2h5("testObject.h5", pyobj)
+
+    ### test h5 to object
+
+    obj = h52object("testObject.h5")

@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+
+import h5py_wrapper as h5w
+
 from pprint import pprint
 from numpy import fft
 
@@ -35,6 +38,7 @@ class Source:
 
             
         self.metadata = {}
+        self.metadata['pulses'] = []
         
         self.source_properties = {}
         self.source_properties.update(kwargs)
@@ -60,11 +64,28 @@ class Source:
     def build_properties(self):
         
         g = self._control
+        
         for item in self.source_properties:
-            ### DEBUG
-            print(item)
-            self.source_properties[item] *= np.ones(g).astype(type(self.source_properties[item]))
             
+            if isinstance(self.source_properties[item], np.ndarray):
+                
+                if self.source_properties[item].shape[0] == g:
+                    pass
+                else:
+                    self.source_properties[item] = np.repeat(self.source_properties[item], g)
+                    
+            elif type(self.source_properties[item]) is list:
+                
+                if len(self.source_properties[item]) == g:
+                    pass
+                else:
+                    self.source_properties[item]*=np.ones(g).astype(type(self.source_properties[item][0]))
+            
+            else:
+                self.source_properties[item] = np.repeat(self.source_properties[item], g)
+                   
+
+            ########### HERE IS PROBLEM
     
     def set_property(self, property_name, value):
         """
@@ -91,29 +112,51 @@ class Source:
         return self.source_properties[property_name]
     
     
-    def generate(self, array):
+    def generate(self, array, pulse_properties, outdir):
         
-        for itr in range(self._control):
-            pulse_properties = {item:self.source_properties[item][0] for item in self.source_properties}
-            
-            if array.ndim == 4:
-                input_field = array[itr]
-            else:
-                input_field = array
-                
-            wfr =  wavefront_from_array(input_field, nx=pulse_properties['nx'], ny=pulse_properties['ny'],
-                                        nz=pulse_properties['nz'],
-                                        dx=(pulse_properties['xMin']-pulse_properties['xMax'])/pulse_properties['nx'],
-                                        dy=(pulse_properties['yMin']-pulse_properties['yMax'])/pulse_properties['ny'],
-                                        dz=(pulse_properties['yMin']/pulse_properties['nz']),                                    
-                                        ekev=pulse_properties['ekev'],
-                                        pulse_duration=pulse_properties['pulse duration'],
-                                        source_properties = pulse_properties)
-            wfr.scale_beam_energy(pulse_properties['pulse energy'])
-            
-            wfr.store_hdf5("test.h5")
 
 
+            
+        wfr =  wavefront_from_array(array, nx=pulse_properties['nx'], ny=pulse_properties['ny'],
+                                    nz=pulse_properties['nz'],
+                                    dx=(pulse_properties['xMin']-pulse_properties['xMax'])/pulse_properties['nx'],
+                                    dy=(pulse_properties['yMin']-pulse_properties['yMax'])/pulse_properties['ny'],
+                                    dz=(pulse_properties['yMin']/pulse_properties['nz']),                                    
+                                    ekev=pulse_properties['ekev'],
+                                    pulse_duration=pulse_properties['pulse duration'],
+                                    source_properties = pulse_properties)
+        wfr.scale_beam_energy(pulse_properties['pulse energy'])
+        
+        self.metadata['pulses'].append(outdir)
+        
+        wfr.store_hdf5(outdir)
+
+    def store_hdf5(self, outdir):
+        """
+        function to write source data to a hdf5 file
+        
+        :param outdir: outdir of ".h5" file
+        :type: str
+        """
+        
+        if ".h5" or ".hdf5" in outdir:
+            pass
+        else: outdir+".h5"
+        
+        h5w.save(outdir, self.metadata, path = 'metadata/')
+        h5w.save(outdir, self.source_properties, path = 'source_properties/')
+        
+    def load_hdf5(self, indir):
+        """
+        function to read data from a hdf5 file
+        
+        :param indir: directory to read ".h5" file from
+        :type: str
+        """
+        self.metadata = h5w.load(indir,  path = 'metadata/')
+        self.source_properties = h5w.load(indir,  path = 'source_properties/')
+    
+        
 class SA1_Source(Source):
     """
     fixed case of the SA1 source
@@ -130,14 +173,15 @@ class SA1_Source(Source):
         
         
         self.source_properties['ekev'] = ekev
-        self.source_properties['q'] = q 
+        self.source_properties['q'] = np.asarray(q) 
         
         for item in self.source_properties:
-            print(item, type(self.source_properties[item]))
-            if type(item) == list:
+
+            if type(self.source_properties[item]) == list:
                 self.source_properties[item] = np.asarray(self.source_properties[item])
                   
         self.source_properties.pop('mesh')
+        
         if 'z0' in kwargs:
             self.source_properties['z0'] = kwargs['z0'] 
         else:
@@ -178,7 +222,7 @@ class SA1_Source(Source):
         a function to generate the SA1 photon wavefield envelope at the source
         this can be extended at a later date to include perturbations, i.e the zernike polynomials.
         """
-        pprint(pulse_properties)
+
         return complex_gaussian_envelope(pulse_properties['nx'], pulse_properties['ny'],
                                          pulse_properties['xMin'], pulse_properties['xMax'],
                                          pulse_properties['yMin'], pulse_properties['yMax'],
@@ -186,22 +230,26 @@ class SA1_Source(Source):
                                          pulse_properties['divergence'],
                                          pulse_properties['ekev'])
 
-    def generator(self, N = 1):
+    def generator(self, outdir, N = 1):
         """
         this is the emission process, and generates N wavefronts according to the rules given by the source paramters file.
         
         currently, it will only support cases where the input dictionary has values in the form of a single value or list.
+        
+        :param
         """
         
-        self.set_empirical_values()
-        self.build_properties()
-        
-        for itr in range(self._control):
-            pulse_properties = {item:self.source_properties[item][0] for item in self.source_properties}
-        
-            efield = self.generate_beam_envelope(pulse_properties)[:,:,np.newaxis]*self.get_temporal_profile(pulse_properties)
-        
-            self.generate(efield)
+        for n in range(N):
+            self.set_empirical_values()
+            self.build_properties()
+            
+            for itr in range(self._control):
+                pulse_properties = {item:self.source_properties[item][0] for item in self.source_properties}
+                tp = self.get_temporal_profile(pulse_properties)
+                pulse_properties['nz'] = len(tp)
+                efield = self.generate_beam_envelope(pulse_properties)[:,:,np.newaxis]*tp
+            
+                self.generate(efield, pulse_properties, outdir = outdir + "_{:02}_{:04}.h5".format(n,itr))
 
             
  
@@ -441,13 +489,14 @@ if __name__ == '__main__':
     from felpy.model.mesh import Mesh
     m = Mesh(nx=512, ny=512, xMin=-1, xMax=1, yMin=-1, yMax=1, nz = 10)
 
-    src = SA1_Source(5.0, 0.2, mesh=m)
+    src = SA1_Source([5.1, 6.0, 7.0], [0.2], mesh=m)
     src.set_empirical_values()
-    pprint(src.source_properties)
-    src.generator()
+
+    src.generator("./test")
+    src.store_hdf5("./source")
     from felpy.model.wavefront import Wavefront
     wfr = Wavefront()
-    wfr.load_hdf5("./test.h5")
+    #wfr.load_hdf5("./test.h5")
 # =============================================================================
 #     nx = ny = 512
 #     xMin = yMin = -300e-06
