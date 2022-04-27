@@ -617,6 +617,10 @@ class Wavefront(WPG_Wavefront):
         return np.max(self.get_intensity().sum(-1))
     
     @property
+    def source_properties(self):
+        return self.custom_fields['source_properties']
+    
+    @property
     def metadata(self):
         return self.custom_fields['metadata']
     
