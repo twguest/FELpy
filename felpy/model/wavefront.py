@@ -604,13 +604,13 @@ class Wavefront(WPG_Wavefront):
     @property
     def com(self):
         """ 
-        return the center of mass
+        return the center of mass, tuple - (comx, comy)
         """
         cx, cy = self.dx*self.nx//2, self.dy*self.ny//2
         
-        return (get_com(self.get_intensity().sum(-1)
+        return np.flip((get_com(self.get_intensity().sum(-1)
                         )-np.asarray([self.nx/2, self.ny//2])
-                )*np.asarray([self.dx, self.dy])
+                )*np.asarray([self.dx, self.dy]))
     
     @property
     def peak_intensity(self):
@@ -624,24 +624,6 @@ class Wavefront(WPG_Wavefront):
     def metadata(self):
         return self.custom_fields['metadata']
     
-    def get_x_profile(self, method = 'com'):
-        """ 
-        return a one-dimensional line profile along the x-axis
-        
-        :param method: determines how the line-profile is determined    
-        """
-        
-        if method == 'com':
-            x_profile = self.get_intensity().sum(-1)[:, int(self.ny//2 + self.com[1]//self.dy)]
-        elif method == 'avg':
-            x_profile = self.get_intensity().sum(-1).mean(1)
-        elif method == 'c':
-            x_profile = self.get_intensity().sum(-1)[:, self.ny//2]
-        
-        return x_profile
-            
-            
-    
     def get_y_profile(self, method = 'com'):
         """ 
         return a one-dimensional line profile along the x-axis
@@ -650,11 +632,29 @@ class Wavefront(WPG_Wavefront):
         """
         
         if method == 'com':
-            y_profile = self.get_intensity().sum(-1)[int(self.nx//2 + self.com[0]//self.dx),:]
+            x_profile = self.get_intensity().sum(-1)[:, int(self.nx//2 + self.com[0]//self.dx)]
+        elif method == 'avg':
+            x_profile = self.get_intensity().sum(-1).mean(1)
+        elif method == 'c':
+            x_profile = self.get_intensity().sum(-1)[:, self.nx//2]
+        
+        return x_profile
+            
+            
+    
+    def get_x_profile(self, method = 'com'):
+        """ 
+        return a one-dimensional line profile along the x-axis
+        
+        :param method: determines how the line-profile is determined    
+        """
+        
+        if method == 'com':
+            y_profile = self.get_intensity().sum(-1)[int(self.ny//2 + self.com[1]//self.dy),:]
         elif method == 'avg':
             y_profile = self.get_intensity().sum(-1).mean(0)
         elif method == 'c':
-            y_profile = self.get_intensity().sum(-1)[self.nx//2, :]
+            y_profile = self.get_intensity().sum(-1)[self.ny//2, :]
         
         return y_profile
     

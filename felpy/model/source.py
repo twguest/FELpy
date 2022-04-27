@@ -10,7 +10,7 @@ from numpy import fft
 from wpg import srwlib
 
 from copy import copy
-
+from felpy.model.optics.tilt import wavefront_tilt
 from felpy.utils.opt_utils import ekev2k, geometric_focus
 from felpy.backend.wpg_converters import wavefront_from_array
 from felpy.model.src.coherent import modify_beam_divergence
@@ -143,8 +143,8 @@ class Source:
             pass
         else: outdir+".h5"
         
-        h5w.save(outdir, self.metadata, path = 'metadata/', )
-        h5w.save(outdir, self.source_properties, path = 'source_properties/')
+        h5w.save(outdir, self.metadata, path = 'metadata/', write_mode = 'a')
+        h5w.save(outdir, self.source_properties, path = 'source_properties/', write_mode = 'a')
         
     def load_hdf5(self, indir):
         """
@@ -173,24 +173,26 @@ class SA1_Source(Source):
     fixed case of the SA1 source
     """    
     
-    def __init__(self, ekev, q, stochastic = False, **kwargs):
+    def __init__(self, ekev, q, theta_x = 0, theta_y = 0, stochastic = False, **kwargs):
         """
         initialisation function. 
         """
         super().__init__(**kwargs)
-
+        
         self.source_properties['stochastic'] = stochastic
         self.source_properties.update(kwargs)
         
         
         self.source_properties['ekev'] = ekev
-        self.source_properties['q'] = np.asarray(q) 
+        self.source_properties['q'] = q 
+        self.source_properties['theta_x'] = theta_x
+        self.source_properties['theta_y'] = theta_y
         
         for item in self.source_properties:
 
             if type(self.source_properties[item]) == list:
                 self.source_properties[item] = np.asarray(self.source_properties[item])
-                  
+                
         self.source_properties.pop('mesh')
         
         if 'z0' in kwargs:
@@ -241,6 +243,10 @@ class SA1_Source(Source):
                                          pulse_properties['divergence'],
                                          pulse_properties['ekev'])
 
+
+
+
+
     def generator(self, outdir, N = 1):
         """
         this is the emission process, and generates N wavefronts according to the rules given by the source paramters file.
@@ -259,7 +265,14 @@ class SA1_Source(Source):
                 pulse_properties = {item:self.source_properties[item][itr] for item in self.source_properties}
                 tp = self.get_temporal_profile(pulse_properties)
                 pulse_properties['nz'] = len(tp)
-                efield = self.generate_beam_envelope(pulse_properties)[:,:,np.newaxis]*tp
+                tilt = wavefront_tilt(np.meshgrid(np.linspace(pulse_properties['xMin'], pulse_properties['xMax'], pulse_properties['nx']),
+                                                  np.linspace(pulse_properties['yMin'], pulse_properties['yMax'], pulse_properties['ny'])),
+                                     2*np.pi*np.sin(pulse_properties['theta_x'])/ekev2wav(pulse_properties['ekev']),
+                                     2*np.pi*np.sin(pulse_properties['theta_y'])/ekev2wav(pulse_properties['ekev']))
+                
+                
+                efield = self.generate_beam_envelope(pulse_properties)[:,:,np.newaxis]*tp*tilt[:,:,np.newaxis]
+                
             
                 self.generate(efield, pulse_properties, outdir = outdir + "_{:02}_{:04}.h5".format(n,itr))
 
@@ -499,94 +512,42 @@ def generate_coherent_source_wavefront(nx, ny, fwhm, divergence):
 if __name__ == '__main__':
 
     from felpy.model.mesh import Mesh
-    m = Mesh(nx=512, ny=512, xMin=-1, xMax=1, yMin=-1, yMax=1, nz = 10)
+    import os
+    
+    m = Mesh(nx=512, ny=256, xMin=-300e-06, xMax=300e-06, yMin=-300e-06, yMax=300e-06, nz = 10)
+    theta_x = [-3e-06, -2e-06, -1e-06, 0, 1e-06, 2e-06,3e-06]
+    
+    
+    src = SA1_Source([5], [0.2], mesh=m, theta_x = theta_x)
+    
+    src.generator("../data/tmp/test")
+    
+    try:
+        src.store_hdf5("../data/tmp/source.h5")
+    except(KeyError):
+        os.remove("../data/tmp/source.h5")
+        src.store_hdf5("../data/tmp/source.h5")
 
-    src = SA1_Source([5.1, 6.0, 7.0], [0.2], mesh=m)
-    src.set_empirical_values()
-
-    src.generator("./test")
-    src.store_hdf5("./source")
+    src = Source()
+    src.load_hdf5("../data/tmp/source.h5")
     from felpy.model.wavefront import Wavefront
+    from wpg.wpg_uti_wf import plot_intensity_map
     wfr = Wavefront()
-    #wfr.load_hdf5("./test.h5")
-# =============================================================================
-#     nx = ny = 512
-#     xMin = yMin = -300e-06
-#     yMax = xMax = -1*xMin
-#     fwhm = 5e-06
-#     divergence = 5e-06
-#     ekev = 10
-#
-#     env = complex_gaussian_envelope(nx, ny,
-#                                     xMin, xMax, yMin, yMax,
-#                                     fwhm,
-#                                     divergence,
-#                                     ekev)
-#
-#     pulse_time = 55e-15
-#     sigma = 4
-#     S = 4
-#     Seff = S/sigma
-#
-#     n_samples, sampling_interval_t = temporal_sampling_requirements(pulse_time, VERBOSE = False, S = S)
-#     sampling_interval_w = 1/sampling_interval_t
-#
-#     n_samples *= sigma
-#     #n_samples = 10
-#     t = np.arange(-pulse_time, pulse_time, pulse_time/n_samples)
-#
-#     temporal_profile = generate_temporal_SASE_pulse(pulse_time = pulse_time,
-#                                                     n_samples = n_samples,
-#                                                     sigma = sigma)
-#     env = env[:,:,np.newaxis]*temporal_profile
-#
-#     wfr = wavefront_from_array(env, nx = nx, ny = ny,
-#                               nz = n_samples, dx = (xMax-xMin)/nx,
-#                               dy = (yMax-yMin)/ny, dz = (pulse_time/n_samples),
-#                               ekev = ekev, pulse_duration = pulse_time)
-#
-#     print(wfr.get_divergence())
-#
-#     #modify_beam_divergence(wfr, wfr.get_fwhm()[0], divergence)
-#
-#     plot_intensity_map(wfr)
-#
-#
-#     plot_intensity_map(wfr)
-# =============================================================================
-    #srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
-# =============================================================================
-#
-#     # =============================================================================
-#     #     plot_intensity_map(wfr)
-#     #     print(wfr.get_divergence())
-#     #     plot_intensity_map(wfr)
-#     #
-#     #     #print(wfr.get_spatial_resolution())
-#     #     modify_beam_divergence(wfr, fwhm, divergence)
-#     #     #print(wfr)
-#     #
-#     #     #env = env[:,:,np.newaxis] * temporal_profile
-#     # =============================================================================
-# =============================================================================
-# =============================================================================
-#
-#
-# if __name__ == '__main__':
-#
-#     from wpg.wpg_uti_wf import plot_intensity_map, plot_intensity_qmap
-#
-#     nx = 512
-#     ny = 512
-#
-#     xMin = yMin = -400e-06
-#     xMax = yMax =  400e-06
-#
-#     #for fwhm in np.linspace(50e-06, 150e-06, 10):
-#
-#
-#     from felpy.experiments.source_diagnostics import scan_source_divergence
-#
-#     data = scan_source_divergence(ekev = np.arange(5,10), q = [0.1], n = 1)
-#
-# =============================================================================
+    
+    from felpy.model.beamline import Beamline
+    from wpg.optical_elements import Drift
+    from felpy.model.tools import propagation_parameters
+    from matplotlib import pyplot as plt
+    
+    bl = Beamline()
+    bl.append(Drift(50), propagation_parameters(1,1,1,1,mode = 'fresnel'))
+    
+    for w in src.pulses:
+        
+        wfr.load_hdf5(w)
+        bl.propagate(wfr)
+        plt.plot(wfr.x_axis, wfr.get_x_profile(), label = "{} $\mu$ rad".format(wfr.source_properties['theta_x']*1e6))
+        #plot_intensity_map(wfr)
+        print(wfr.com)
+    
+    plt.legend()
