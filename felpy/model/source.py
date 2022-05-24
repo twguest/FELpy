@@ -131,7 +131,7 @@ class Source:
         
         wfr.store_hdf5(outdir)
 
-    def store_hdf5(self, outdir):
+    def store_hdf5(self, outdir, overwrite = False):
         """
         function to write source data to a hdf5 file
         
@@ -143,8 +143,8 @@ class Source:
             pass
         else: outdir+".h5"
         
-        h5w.save(outdir, self.metadata, path = 'metadata/', write_mode = 'a')
-        h5w.save(outdir, self.source_properties, path = 'source_properties/', write_mode = 'a')
+        h5w.save(outdir, self.metadata, path = 'metadata/', write_mode = 'a', overwrite_dataset = overwrite)
+        h5w.save(outdir, self.source_properties, path = 'source_properties/', write_mode = 'a', overwrite_dataset = overwrite)
         
     def load_hdf5(self, indir):
         """

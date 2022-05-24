@@ -131,7 +131,10 @@ class Grids:
                 ax.tick_params(axis='both', which='major', labelsize=fontsize)
                 ax.xaxis.label.set_size(fontsize)
                 ax.yaxis.label.set_size(fontsize)
-
+        
+        if hasattr(self, "cbar"):
+            self.cbar.ax.tick_params(labelsize=fontsize)
+            
     def savefig(self, sdir):
         self.fig.savefig(sdir, dpi = 600)
         

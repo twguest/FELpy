@@ -81,8 +81,36 @@ def get_enclosed_energy(ii, dx, dy, efraction = fwhm_area, sdir = None, plot = F
     
     return results, np.max(err)
     
- 
+def n_enclosed_energy(ii, px = 1, py = 1, **kwargs):
+    """
+    a robust method for calculating the enclosed energy of an n-dimensional array
+    
+    under construction
+    """
+    
+    data = np.ones([*ii.shape[2:],3])
 
+    if data.ndim == 2:
+        for pulse in range(data.shape[0]):
+            results = get_enclosed_energy(ii[:,:,pulse], px, py)
+            data[pulse,0] = results[0][0]
+            data[pulse,1] = results[0][1]
+            data[pulse,2] = results[1] 
+                
+
+                
+            
+    elif data.ndim == 3:
+        for pulse in range(data.shape[0]):
+            for train in range(data.shape[1]):
+                results = get_enclosed_energy(ii[:,:,pulse,train], px, py)
+                data[pulse,train,0] = results[0][0]
+                data[pulse,train,1] = results[0][1]
+                data[pulse,train,2] = results[1]
+
+                
+            
+    return data
 if __name__ == '__main__':
     from scipy.ndimage import gaussian_filter
     ii = np.zeros([50,50])
