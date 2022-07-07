@@ -1,7 +1,7 @@
 from scipy import optimize
 from felpy.utils.maths.fit_funcs import gaussian
 from felpy.utils.maths.constants import sigma_to_fwhm
-
+import numpy as np
 
 def fit_gaussian(x, data, VERBOSE = True, **kwargs):
     """
@@ -25,6 +25,31 @@ def fit_gaussian(x, data, VERBOSE = True, **kwargs):
     
     return params, params_covariance
 
+def fit_cov_ellipse(cov, centre, nstd, **kwargs):
+    """
+    Return a matplotlib Ellipse patch representing the covariance matrix
+    cov centred at centre and scaled by the factor nstd.
+    
+    via: https://scipython.com/book/chapter-7-matplotlib/examples/bmi-data-with-confidence-ellipses/
+    
+
+    """
+
+    # Find and sort eigenvalues and eigenvectors into descending order
+    eigvals, eigvecs = np.linalg.eigh(cov)
+    order = eigvals.argsort()[::-1]
+    eigvals, eigvecs = eigvals[order], eigvecs[:, order]
+
+    # The anti-clockwise angle to rotate our ellipse by 
+    vx, vy = eigvecs[:,0][0], eigvecs[:,0][1]
+    theta = np.arctan2(vy, vx)
+
+    # Width and height of ellipse to draw
+    width, height = 2 * nstd * np.sqrt(eigvals)
+    params = [centre, width, height, theta]
+
+    
+    return params
 
 
 if __name__ == '__main__':

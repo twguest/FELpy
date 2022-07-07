@@ -19,6 +19,10 @@ def gaussian(x, a, x0, sigma,c):
     return a * np.exp(-(x-x0)**2/(2*sigma**2)) + c
 
 
+def parabola(t, a, t0, b):
+    return -a*(t-t0)**2+b
+
+
 if __name__ == '__main__':
     pass
 
