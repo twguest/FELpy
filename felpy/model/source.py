@@ -34,6 +34,7 @@ class Source:
     note: this could be much more general as to not take ekev and fwhm
     """
 
+
     def __init__(self, **kwargs):
 
             
@@ -269,8 +270,10 @@ class SA1_Source(Source):
         
 
 class Source_WPG(Source):
-
-    def __init__(self, wfr, **kwargs):
+    """
+    Empty-type class to build a source definition from a wpg wavefront
+    """
+    def __init__(self, wfr):
 
         self.wfr = wfr
 
@@ -287,7 +290,7 @@ class Source_WPG(Source):
                  yMin=yMin, yMax=yMax,
                  zMin=zMin, zMax=zMax)
 
-        super().__init__(mesh=m, **kwargs, ekev=ekev)
+        super().__init__(mesh=m)
 
 
 def gaussian_profile(x, x0, width):

@@ -20,7 +20,7 @@ from matplotlib import pyplot as plt
 import matplotlib as mpl
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import os
-
+import string
 from sklearn.preprocessing import minmax_scale as norm
 from felpy.utils.os_utils import mkdir_p
 from felpy.analysis.statistics.univariate import mean_intensity
@@ -76,6 +76,34 @@ def exfel_cmap():
 
     return cmap  
 
+def add_colorbar(mappable, ax, fig,
+                 orientation = 'vertical',
+                 cmap = 'bone',
+                 vmin = 0,
+                 vmax = 1,
+                 size = '5%',
+                 pad = 0.25,
+                 clabel = "",
+                 fontsize = 16,
+                 labelpad = 0.05):
+    """
+    add a colorbar to an axis
+    """
+    divider = make_axes_locatable(ax)
+    
+    if orientation == 'horizontal':
+        cax = divider.new_vertical(size = size,
+                                    pad = pad,
+                                    pack_start = True)
+    if orientation == 'vertical':
+        cax = divider.new_horizontal(size = size,
+                                     pad = pad,
+                                     pack_start = False)
+    fig.add_axes(cax)
+    cbar = fig.colorbar(mappable, cax = cax, orientation = orientation, cmap = cmap)
+    cbar.set_label(clabel, fontsize = fontsize, labelpad = labelpad)
+    return cbar
+
 class Grids:
     
     def __init__(self, fig_width = 400., global_aspect = 1, scale = 1, context = 'paper'):
@@ -86,7 +114,7 @@ class Grids:
         inches_per_pt = 1.0/72.27               # Convert pt to inches
         fig_width = fig_width_pt*inches_per_pt  # width in inches
         self.fig_size = [fig_width,fig_width/global_aspect]
-
+        self.fontsize = 16
 
     def label(axis):
         pass
@@ -101,36 +129,54 @@ class Grids:
         im=cm.ScalarMappable(norm=normalizer, cmap = cmap)
         
         
-        
-        if self.n*self.m > 1:
-            self.cbar = self.fig.colorbar(im, ax=self.axes.ravel().tolist(), pad = pad, orientation = orientation)
-        else:
-            self.cbar = self.fig.colorbar(im, ax=self.axes, pad = pad, orientation = orientation)
+        if type(self.axes) == np.ndarray:
+            if len(self.axes.flatten()) > 1:
+                self.cbar = self.fig.colorbar(im, ax=self.axes.ravel().tolist(), pad = pad, orientation = orientation)
+            else:
+                self.cbar = self.fig.colorbar(im, ax=self.axes, pad = pad, orientation = orientation)
+    
+            self.cbar.set_label(clabel, fontsize = fontsize)
 
-        self.cbar.set_label(clabel, fontsize = fontsize)
         
+        elif type(self.axes) == dict:
+            aa = [self.axes[key] for key in self.axes.keys()]
+            self.cbar = self.fig.colorbar(im, ax=aa, pad = pad, orientation = orientation)
+            self.cbar.set_label(clabel, fontsize = fontsize)
+            
         if tick_values != None and tick_labels != None:
             self.cbar.set_ticks(tick_values)
             self.cbar.set_ticklabels(tick_labels)
-    
+            
+            
+            
     def get_axes(self):
-        if self.n*self.m == 1:
-            return self.axes
-        else:
-            return self.axes.flatten()
+        
+        if type(self.axes) == np.ndarray:
+            a = self.axes.flatten()
+        elif type(self.axes) == dict:
+            a = self.axes
+        return a
     
     def set_fontsize(self, fontsize = 16):
         
-        if self.m*self.n == 1: 
-            self.axes.tick_params(axis='both', which='major', labelsize=fontsize)
-            self.axes.xaxis.label.set_size(fontsize)
-            self.axes.yaxis.label.set_size(fontsize)
-        else:
-            for ax in self.get_axes():
-
-                ax.tick_params(axis='both', which='major', labelsize=fontsize)
-                ax.xaxis.label.set_size(fontsize)
-                ax.yaxis.label.set_size(fontsize)
+        self.fontsize = fontsize 
+        
+        if type(self.axes) == np.ndarray:
+            if len([*self.axes]) == 1: 
+                self.axes.tick_params(axis='both', which='major', labelsize=fontsize)
+                self.axes.xaxis.label.set_size(fontsize)
+                self.axes.yaxis.label.set_size(fontsize)
+            else:
+                for ax in self.axes.flatten():
+                    ax.tick_params(axis='both', which='major', labelsize=fontsize)
+                    ax.xaxis.label.set_size(fontsize)
+                    ax.yaxis.label.set_size(fontsize)
+                    
+        elif type(self.axes) == dict:
+            for key in self.axes.keys():
+                self.axes[key].tick_params(axis='both', which='major', labelsize=fontsize)
+                self.axes[key].xaxis.label.set_size(fontsize)
+                self.axes[key].yaxis.label.set_size(fontsize)
 
     def savefig(self, sdir):
         self.fig.savefig(sdir, dpi = 600)
@@ -169,8 +215,6 @@ class Grids:
                 axes.set_aspect('auto')
                 
  
-        
-        
         fig.text(-0.015, 0.5, ylabel, va='center', rotation='vertical', fontsize= fontsize)
         fig.text(0.475, 0, xlabel, ha='center', fontsize = fontsize)
        
@@ -181,7 +225,71 @@ class Grids:
 
         self.fig = fig
         self.axes = axes
+        
+        
+    def create_mosaic(self, mosaic, title = None, xlabel = None, ylabel = None,
+                            resolution = 100, fontsize = 12, sharex = False, sharey = False, **kwargs):
+    
+        self.mosaic = mosaic
+        
+        if 'width_ratios' in kwargs:
+            width_ratios = kwargs['width_ratios']
+        else:
+            width_ratios = None
+        
+        if 'height_ratios' in kwargs:
+            height_ratios = kwargs['height_ratios']
+        else:
+            height_ratios = None
+        
+        fig, axes = plt.subplot_mosaic(mosaic,
+                                 figsize = self.fig_size,
+                                 dpi = resolution,
+                                 sharex = sharex, sharey = sharey, gridspec_kw={'width_ratios': width_ratios,
+                                                                                'height_ratios': height_ratios})
+    
 
+            
+        fig.text(-0.015, 0.5, ylabel, va='center', rotation='vertical', fontsize= fontsize)
+        fig.text(0.475, 0, xlabel, ha='center', fontsize = fontsize)
+       
+        fig.subplots_adjust(right=0.5)
+        
+        fig.suptitle(title)    
+        fig.tight_layout()
+
+        self.fig = fig
+        self.axes = axes
+        
+    def annotate(self, characters = string.ascii_lowercase, color = 'black', ha = 'left', va = 'bottom', bg = None, fontsize = 16):
+        """
+        in progress
+        
+        annotation function for sets of figures
+        """
+        
+        if type(self.get_axes()) == np.ndarray:
+            for itr in range(self.get_axes().shape[0]):
+                ax = self.get_axes()[itr]
+                ax.annotate(characters[itr],
+                            horizontalalignment = ha,   
+                            verticalalignment = va,
+                            xy = (ax.get_xlim()[0],ax.get_ylim()[1]),
+                            c = color,
+                            fontsize = fontsize)
+                
+        elif type(self.axes) == dict:
+            
+            for itr, key in enumerate([*self.axes.keys()]):
+                ax = self.get_axes()[key]
+
+                ax.annotate(key,
+                            horizontalalignment = ha,   
+                            verticalalignment = va,
+                            xy = (ax.get_xlim()[0],ax.get_ylim()[1]),
+                            c = color,
+                            fontsize = fontsize)
+                
 def colorbar_plot(dataset,
                   mesh = None,
                   label = None,
@@ -807,41 +915,10 @@ def contour_plot(x,y,z,
 
 if __name__ == '__main__':
     
-    from scipy.ndimage import gaussian_filter
-    #matplotlib.rcParams.update({'font.size': 22})
-# =============================================================================
-#     ii = gaussian_filter(np.random.rand(250,250,3),8)
-#     triple_colorbar(ii, cmap = 'bone')
-#     
-#     ii = np.random.rand(250,250,2)
-#     double_colorbar(ii)
-# 
-#     
-#     ii = np.random.rand(250,250,4)
-#     small_colorbar_grid(ii)
-# =============================================================================
-    CMAP = 'hsv'
-    ii = gaussian_filter(np.random.rand(2000,780,3),8)
-    plots = Grids(fig_width = 400, global_aspect = 1.5)
-    plots.create_grid(n = 1, m = 3, xlabel = "x", ylabel = "y")
-    plots.axes[0].imshow(ii[:,:,0], cmap = CMAP)
-    plots.axes[1].imshow(ii[:,:,1], cmap = CMAP)
-    plots.axes[2].imshow(ii[:,:,2], cmap = CMAP)
+    grid = Grids()
+    grid.create_mosaic(mosaic = [['a','a','a'],['b','c','d']], sharex = True)
+    grid.set_fontsize(15)
+    grid.add_global_colorbar(clabel = 'trey', fontsize = 15)
+    grid.annotate()
     
-    plots.add_global_colorbar("treys colorbar", cmap = CMAP)
-    
-    
-    n = 2
-    m = 2
-    
-    CMAP = 'hsv'
-    plots = Grids(fig_width = 400, global_aspect = 1.5)
-    plots.create_grid(n = n, m = m, xlabel = "x", ylabel = "y",)
-    
-    idx = np.unravel_index(np.arange(n*m), [n,m])
-    
-    plots.axes[idx[0][0], idx[0][1]].plot(np.arange(20))
-    
-    plots.axes[idx[0][0], idx[0][1]].set_xlabel("trey")
-    plots.pad(3)
     

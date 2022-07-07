@@ -37,7 +37,7 @@ def _check_arg(x, xname):
         raise ValueError('%s must be one-dimensional.' % xname)
     
 
-def window(arr, nrows, ncols):
+def window_2D(arr, nrows, ncols):
     """
     Return an array of shape (n, nrows, ncols) where
     n * nrows * ncols = arr.size
@@ -68,6 +68,8 @@ def checkRoot(n):
         BOOL = False
     return BOOL
 
+
+
 def get_windows(arr, n):
     """
     useful wrapper for window - returns n windows, where sqrt(n) % 0 must be true
@@ -83,7 +85,7 @@ def get_windows(arr, n):
     BOOL = checkRoot(n)
     
     if BOOL:
-        w = window(arr, int(arr.shape[0]//np.sqrt(n)), int(arr.shape[1]//np.sqrt(n)))
+        w = window_2D(arr, int(arr.shape[0]//np.sqrt(n)), int(arr.shape[1]//np.sqrt(n)))
     elif not BOOL:
         sys.exit("sqrt(n) is not an even integer value")
     

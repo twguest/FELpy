@@ -5,12 +5,41 @@ from wpg import srwlib
 from wpg.srw import srwlpy as srwl
 from wpg.wpg_uti_wf import plot_intensity_map
 
+import pandas as pd
+
 class Beamline(WPG_Beamline):
     
     def __init__(self, _srwl_wf = None):
         super().__init__(_srwl_wf)
+      
+    @property
+    def index(self):
+        index = {}
         
-
+        for itr, a in enumerate(self.propagation_options[0]['optical_elements']):
+            
+            try:
+                index[a.name] = itr
+            except(AttributeError):
+                index['Element {}'.format(itr)] = itr
+            
+        return index
+    
+    def print_element(self, oe_name):
+        print(self.propagation_options[0]['optical_elements'][self.index[oe_name]].__dict__)
+    
+    def print_propagation_parameters(self, oe_name):
+        print(self.propagation_options[0]['propagation_parameters'][self.index[oe_name]])
+        
+    def replace_element(self,oe_name, el):
+        """ 
+        replace an optical element labelled oe_name w/ a pre-defined element oe.
+        """
+        self.propagation_options[0]['propagation_parameters'][self.index[oe_name]] = el
+    
+    def edit_element_property(self, oe_name, prop, value):
+        self.propagation_options[0]['optical_elements'][self.index[oe_name]].__dict__[prop] = value
+    
     def propagate_sequential(self, wfr, return_intensity = False, return_mesh = False, savedir = "", checkpoints = []):
         """
         Propagate sequentially through each optical element in beamline.
@@ -60,8 +89,10 @@ if __name__ == '__main__':
     from felpy.model.tools import propagation_parameters
     from wpg.optical_elements import Drift
     wfr = construct_SA1_pulse(512,512,2,5.0,1)
-    print(wfr.params.wDomain)
-    wfr.plot()
+
     bl = Beamline()
-    bl.append(Drift(10), propagation_parameters(2,1,2,1,'quadratic'))
-    bl.propagate_sequential(wfr)
+    D = Drift(10)
+    D.name = 'd'
+    bl.append(D, propagation_parameters(2,1,2,1,'quadratic'))
+    bl.append(Drift(1), propagation_parameters(1,1,1,1,'quadratic'))
+    #bl.propagate_sequential(wfr)

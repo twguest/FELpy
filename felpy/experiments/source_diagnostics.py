@@ -12,7 +12,7 @@ __email__ = "trey.guest@xfel.eu"
 
 import numpy as np
  
-from felpy.model.source import SA1_Source
+from felpy.model.source import SA1
 from felpy.utils.vis_utils import Grids
 
 from wpg.wpg_uti_wf import plot_intensity_map
@@ -99,7 +99,7 @@ def scan_source_energy(ekev, q):
     for i, e in tqdm(enumerate(ekev)):
         for k, Q in enumerate(q):
             
-            src = SA1_Source(ekev = e, q = Q, nx = 512, ny = 512)
+            src = SA1(ekev = e, q = Q, nx = 512, ny = 512)
 
             data[i,k] = get_pulse_energy(src.wfr)
             
@@ -123,7 +123,7 @@ def scan_source_size(ekev, q = 0.25):
     
     
     for i, e in tqdm(enumerate(ekev)):
-        src = SA1_Source(ekev = e, q = q, nx = 1024, ny = 1024, S = 1)
+        src = SA1(ekev = e, q = q, nx = 1024, ny = 1024, S = 1)
         data[i] = src.get_fwhm()[0][0]
     
     return data
@@ -136,7 +136,7 @@ def scan_source_divergence(ekev, q, n = 10):
         for i, e in enumerate(ekev):
             for k, Q in enumerate(q):
                     
-                src = SA1_Source(ekev = e, q = Q, nx = 512, ny = 512,
+                src = SA1(ekev = e, q = Q, nx = 512, ny = 512,
                                  xMin = -300e-06, xMax = 300e-06, yMin= -300e-06, yMax= 300e-06, S = 1)
                 
                 data[i,:,k,j] = src.get_divergence()[0]
@@ -148,7 +148,7 @@ def scan_source_divergence(ekev, q, n = 10):
 if __name__ == '__main__':
 # =============================================================================
 #     
-#     src = SA1_Source(ekev = 5.2, q = 0.25, nx = 512, ny = 512,
+#     src = SA1(ekev = 5.2, q = 0.25, nx = 512, ny = 512,
 #                      xMin = -400e-06, xMax = 400e-06, yMin= -400e-06, yMax= 400e-06)
 #     
 # =============================================================================
