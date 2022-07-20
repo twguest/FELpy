@@ -124,9 +124,9 @@ class Source:
                                     dy=(pulse_properties['yMin']-pulse_properties['yMax'])/pulse_properties['ny'],
                                     dz=(pulse_properties['yMin']/pulse_properties['nz']),                                    
                                     ekev=pulse_properties['ekev'],
-                                    pulse_duration=pulse_properties['pulse duration'],
+                                    pulse_duration=pulse_properties['pulse_duration'],
                                     source_properties = pulse_properties)
-        wfr.scale_beam_energy(pulse_properties['pulse energy'])
+        wfr.scale_beam_energy(pulse_properties['pulse_energy'])
         
         self.metadata['pulses'].append(outdir)
         
@@ -157,13 +157,16 @@ class Source:
         self.metadata = h5w.load(indir,  path = 'metadata/')
         self.source_properties = h5w.load(indir,  path = 'source_properties/')
     
+    @property
+    def pulses(self):
+        return self.metadata['pulses']
         
 class SA1_Source(Source):
     """
     fixed case of the SA1 source
     """    
     
-    def __init__(self, ekev, q, stochastic = False, **kwargs):
+    def __init__(self, ekev, stochastic = False, **kwargs):
         """
         initialisation function. 
         """
@@ -174,7 +177,6 @@ class SA1_Source(Source):
         
         
         self.source_properties['ekev'] = ekev
-        self.source_properties['q'] = np.asarray(q) 
         
         for item in self.source_properties:
 
@@ -183,6 +185,8 @@ class SA1_Source(Source):
                   
         self.source_properties.pop('mesh')
         
+
+                
         if 'z0' in kwargs:
             self.source_properties['z0'] = kwargs['z0'] 
         else:
@@ -206,15 +210,19 @@ class SA1_Source(Source):
     
     def set_empirical_values(self):
     
-        
-        if hasattr(self.source_properties,'divergence') is False:      
+        if 'divergence' or'fwhm' or 'pulse_duration' or 'pulse_energy' not in self.source_properties.keys():
+            if 'q' not in self.source_properties.keys():
+                    raise Exception("Please provide a beam charge")         
+                    
+                    
+        if 'divergence' not in self.source_properties.keys():      
             self.source_properties['divergence'] = analytical_pulse_divergence(self.ekev, 'mean')
-        if hasattr(self,'pulse energy') is False:
-            self.source_properties['pulse energy'] = analytical_pulse_energy(self.q, self.ekev)
-        if hasattr(self,'fwhm') is False:
+        if 'pulse_energy' not in self.source_properties.keys():
+            self.source_properties['pulse_energy'] = analytical_pulse_energy(self.q, self.ekev)
+        if 'fwhm' not in self.source_properties.keys():
             self.source_properties['fwhm'] = 2*self.source_properties['z0']*np.tan(self.source_properties['divergence'])*analytical_pulse_width(self.ekev) +analytical_pulse_width(self.ekev)
-        if hasattr(self,'pulse duration') is False:
-            self.source_properties['pulse duration'] = analytical_pulse_duration(self.q)
+        if 'pulse_duration' not in self.source_properties.keys():
+            self.source_properties['pulse_duration'] = analytical_pulse_duration(self.q)
 
     
     def generate_beam_envelope(self, pulse_properties):
@@ -226,7 +234,7 @@ class SA1_Source(Source):
         return complex_gaussian_envelope(pulse_properties['nx'], pulse_properties['ny'],
                                          pulse_properties['xMin'], pulse_properties['xMax'],
                                          pulse_properties['yMin'], pulse_properties['yMax'],
-                                         pulse_properties['divergence'],
+                                         pulse_properties['fwhm'],
                                          pulse_properties['divergence'],
                                          pulse_properties['ekev'])
 
@@ -258,12 +266,12 @@ class SA1_Source(Source):
         ### note this gets and sets - should be changed
     
         n_samples, sampling_interval_t = temporal_sampling_requirements(
-            pulse_properties['pulse duration'], VERBOSE=True, S=4)
+            pulse_properties['pulse_duration'], VERBOSE=True, S=4)
 
         n_samples *= sigma
         self.source_properties['nz'] = n_samples * np.ones(self._control).astype(type(n_samples))
         
-        return generate_temporal_SASE_pulse(pulse_time=pulse_properties['pulse duration'],
+        return generate_temporal_SASE_pulse(pulse_time=pulse_properties['pulse_duration'],
                                                              n_samples=n_samples,
                                                              sigma=sigma)
         
@@ -489,15 +497,20 @@ def generate_coherent_source_wavefront(nx, ny, fwhm, divergence):
 if __name__ == '__main__':
 
     from felpy.model.mesh import Mesh
-    m = Mesh(nx=512, ny=512, xMin=-1, xMax=1, yMin=-1, yMax=1, nz = 10)
-
-    src = SA1_Source([5.1, 6.0, 7.0], [0.2], mesh=m)
-    src.set_empirical_values()
-
-    src.generator("./test")
-    src.store_hdf5("./source")
     from felpy.model.wavefront import Wavefront
-    wfr = Wavefront()
+    from wpg.wpg_uti_wf import plot_intensity_map
+    
+    m = Mesh(nx=512, ny=512, xMin=-450e-06, xMax=450e-06, yMin=-450e-06, yMax= 450e-06, nz = 10)
+
+    src = SA1_Source(ekev = 9.2, q = 0.25, mesh=m,  pulse_energy = [5e-06], fwhm = 100e-06)
+    src.generator("/home/guestt/Documents/tmp_dir", N = 1)
+    
+    for p in src.pulses:
+        wfr = Wavefront()
+        wfr.load_hdf5(p)
+        print(wfr.divergence)
+        plot_intensity_map(wfr)
+        print(src.__dict__)
     #wfr.load_hdf5("./test.h5")
 # =============================================================================
 #     nx = ny = 512

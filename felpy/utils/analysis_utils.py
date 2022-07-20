@@ -91,3 +91,37 @@ def get_windows(arr, n):
     
     if w is not None:
         return w
+    
+def odd_even(N):
+    """
+    check if a number is odd or even
+    """
+    
+    if N % 2 == 0:
+        ans = "even"
+    elif N % 2 == 1:
+        ans = 'odd'
+    return ans
+ 
+
+def window_2D(N, **kwargs):
+    """ 
+    generate a 2D window function
+    
+    :param N: window width - if no other keyword value submitted, then the array is assumed to be square
+    
+    :kwarg M: window height, if none, assumed to be equal to N
+    :kwarg window: window method, e.g. numpy.hamming, scipy.signal.windows.hamm, etc, if none, assumed uniform.
+    
+    :returns: 2D numpy array of NxM dimensions
+    """
+    if 'M' in kwargs:
+        M = kwargs['M']
+    else:
+        M = N
+    if 'window' in kwargs:
+        window = kwargs['window']
+    else:
+        window = np.ones
+        
+    return np.sqrt(np.outer(np.abs(window(N)),np.abs(window(M))))

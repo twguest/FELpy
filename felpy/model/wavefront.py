@@ -308,7 +308,7 @@ class Wavefront(WPG_Wavefront):
         self.set_electric_field_representation('a')
         div_x, div_y = self.fwhm
         self.set_electric_field_representation('c')
-        return 1.66*div_x, 1.66*div_y
+        return (1.66*div_x)/2, (1.66*div_y)/2
     
     @property
     def pulse_energy(self):

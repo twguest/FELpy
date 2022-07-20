@@ -11,9 +11,7 @@ from scipy.ndimage.filters import gaussian_filter
 from math import pi as pi
 from math import floor as floor
 
-from felpy.experiments.speckle_tracking import frankoChellappa as fc
-
-
+ 
 
 import numpy as np
  
@@ -109,14 +107,24 @@ def process_all(Is,Ir, sigma =1, alpha = .1):
     alpha=np.finfo(np.float32).eps
     dx, dy = optical_flow(Is, dI, alpha=alpha, sig_scale=sigma)
     
-    phi = fc.frankotchellappa(dx, dy, False)
     phi3 = kottler(dx, dy)
     phi2 = LarkinAnissonSheppard(dx, dy)
 
 
-    return {'dx': dx, 'dy': dy, 'phi': phi, 'phi2': phi2,'phi3': phi3}
+    return {'dx': dx, 'dy': dy,   'phi2': phi2,'phi3': phi3}
 
 
 
 if __name__ == "__main__":
-    pass
+    shift_x = 1
+    shift_y = -5
+    from matplotlib import pyplot as plt
+    arr1 = np.zeros([101,101])+np.random.rand(101,101)*1000
+    arr1[50,50] = 1
+    arr1 = gaussian_filter(arr1, 2)
+    from phase_retrieval.correlation import shift_image
+    
+    arr2 = shift_image(arr1, shift_x, shift_y)
+    
+    res = process_all(arr1, arr2, sigma = 100, alpha = 10)
+    plt.imshow(res['phi2'])
