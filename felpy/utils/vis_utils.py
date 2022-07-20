@@ -128,21 +128,24 @@ class Grids:
         normalizer=Normalize(vmin, vmax)
         im=cm.ScalarMappable(norm=normalizer, cmap = cmap)
         
-        
         if type(self.axes) == np.ndarray:
             if len(self.axes.flatten()) > 1:
                 self.cbar = self.fig.colorbar(im, ax=self.axes.ravel().tolist(), pad = pad, orientation = orientation)
             else:
                 self.cbar = self.fig.colorbar(im, ax=self.axes, pad = pad, orientation = orientation)
     
-            self.cbar.set_label(clabel, fontsize = fontsize)
 
-        
+
+            
         elif type(self.axes) == dict:
             aa = [self.axes[key] for key in self.axes.keys()]
             self.cbar = self.fig.colorbar(im, ax=aa, pad = pad, orientation = orientation)
-            self.cbar.set_label(clabel, fontsize = fontsize)
-            
+        else:
+            self.cbar = self.fig.colorbar(im, ax=self.axes, pad = pad, orientation = orientation)
+
+        self.cbar.set_label(clabel, fontsize = fontsize)
+        self.cbar.set_label(clabel, fontsize = fontsize)
+
         if tick_values != None and tick_labels != None:
             self.cbar.set_ticks(tick_values)
             self.cbar.set_ticklabels(tick_labels)
@@ -177,7 +180,15 @@ class Grids:
                 self.axes[key].tick_params(axis='both', which='major', labelsize=fontsize)
                 self.axes[key].xaxis.label.set_size(fontsize)
                 self.axes[key].yaxis.label.set_size(fontsize)
-
+    
+        else:
+            self.axes.tick_params(axis='both', which='major', labelsize=fontsize)
+            self.axes.xaxis.label.set_size(fontsize)
+            self.axes.yaxis.label.set_size(fontsize)
+        
+        if hasattr(self, "cbar"):
+            self.cbar.ax.tick_params(labelsize=fontsize)
+            
     def savefig(self, sdir):
         self.fig.savefig(sdir, dpi = 600)
         

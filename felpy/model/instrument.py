@@ -37,7 +37,6 @@ from felpy.model.beamlines.exfel_spb.params import get_params
 from felpy.model.tools import propagation_parameters
 from wpg.srwlib import srwl_opt_setup_surf_height_2d as MirPl
 
-from felpy.utils.vis_utils import colorbar_plot
 from felpy.utils.np_utils import get_mesh
 
 import seaborn as sns

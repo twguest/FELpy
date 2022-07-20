@@ -205,17 +205,16 @@ class SA1_Source(Source):
         return self.source_properties['q']
     
     def set_empirical_values(self):
+    
         
-        
-        
-        if self.source_properties['stochastic'] is True:      
-            self.source_properties['divergence']  = np.random.uniform(low=analytical_pulse_divergence(self.ekev, 'lower'), high=analytical_pulse_divergence(self.ekev, 'upper'))
-        else:
+        if hasattr(self.source_properties,'divergence') is False:      
             self.source_properties['divergence'] = analytical_pulse_divergence(self.ekev, 'mean')
-
-        self.source_properties['pulse energy'] = analytical_pulse_energy(self.q, self.ekev)
-        self.source_properties['fwhm'] = 2*self.source_properties['z0']*np.tan(self.source_properties['divergence'])*analytical_pulse_width(self.ekev) + analytical_pulse_width(self.ekev)
-        self.source_properties['pulse duration'] = analytical_pulse_duration(self.q)
+        if hasattr(self,'pulse energy') is False:
+            self.source_properties['pulse energy'] = analytical_pulse_energy(self.q, self.ekev)
+        if hasattr(self,'fwhm') is False:
+            self.source_properties['fwhm'] = 2*self.source_properties['z0']*np.tan(self.source_properties['divergence'])*analytical_pulse_width(self.ekev) +analytical_pulse_width(self.ekev)
+        if hasattr(self,'pulse duration') is False:
+            self.source_properties['pulse duration'] = analytical_pulse_duration(self.q)
 
     
     def generate_beam_envelope(self, pulse_properties):
