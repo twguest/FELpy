@@ -189,6 +189,14 @@ class Mesh:
         if axes not in options:
             raise Warning("We're not sure what axes you require")
     
+    @property
+    def meshgrid(self):
+        """
+        returns a 2D numpy style meshgrid
+        """
+        return np.meshgrid(self.get_array(0), self.get_array(1))
+    
+    
     def __update__(self, **kwargs):
         """
         update the attributes of the mesh via various methods

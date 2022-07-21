@@ -185,6 +185,15 @@ class Grids:
             self.axes.tick_params(axis='both', which='major', labelsize=fontsize)
             self.axes.xaxis.label.set_size(fontsize)
             self.axes.yaxis.label.set_size(fontsize)
+<<<<<<< HEAD
+=======
+        else:
+            for ax in self.get_axes():
+
+                ax.tick_params(axis='both', which='major', labelsize=fontsize)
+                ax.xaxis.label.set_size(fontsize)
+                ax.yaxis.label.set_size(fontsize)
+>>>>>>> 89f3bf75c52b7d37ab9f5451bc6dd4ca1264f394
         
         if hasattr(self, "cbar"):
             self.cbar.ax.tick_params(labelsize=fontsize)
