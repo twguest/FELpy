@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 
 import numpy as np
@@ -30,7 +31,7 @@ FWHM2E2 = 1.66
 class Source:
     """
     generalised source class
-
+rei
     note: this could be much more general as to not take ekev and fwhm
     """
 
@@ -94,7 +95,7 @@ class Source:
         
         :param property_name: name of the proeprty to be stored in dict 
         :type: str
-        
+        (
         :param value: value of the property
         :type: single value or list of values.
         """
@@ -134,7 +135,7 @@ class Source:
 
     def store_hdf5(self, outdir, overwrite = False):
         """
-        function to write source data to a hdf5 file
+        function to write source data( to a hdf5 file
         
         :param outdir: outdir of ".h5" file
         :type: str
@@ -157,12 +158,9 @@ class Source:
         self.metadata = h5w.load(indir,  path = 'metadata/')
         self.source_properties = h5w.load(indir,  path = 'source_properties/')
     
-<<<<<<< HEAD
     @property
     def pulses(self):
         return self.metadata['pulses']
-=======
-    
     @property
     def pulses(self):
         """ 
@@ -171,20 +169,16 @@ class Source:
         return self.metadata['pulses']
     
     
-    
-    
->>>>>>> 89f3bf75c52b7d37ab9f5451bc6dd4ca1264f394
-        
+   
+  
 class SA1_Source(Source):
     """
     fixed case of the SA1 source
     """    
+
     
-<<<<<<< HEAD
-    def __init__(self, ekev, stochastic = False, **kwargs):
-=======
     def __init__(self, ekev, q, theta_x = 0, theta_y = 0, stochastic = False, **kwargs):
->>>>>>> 89f3bf75c52b7d37ab9f5451bc6dd4ca1264f394
+
         """
         initialisation function. 
         """
@@ -195,12 +189,10 @@ class SA1_Source(Source):
         
         
         self.source_properties['ekev'] = ekev
-<<<<<<< HEAD
-=======
+
         self.source_properties['q'] = q 
         self.source_properties['theta_x'] = theta_x
         self.source_properties['theta_y'] = theta_y
->>>>>>> 89f3bf75c52b7d37ab9f5451bc6dd4ca1264f394
         
         for item in self.source_properties:
 
@@ -259,7 +251,7 @@ class SA1_Source(Source):
                                          pulse_properties['xMin'], pulse_properties['xMax'],
                                          pulse_properties['yMin'], pulse_properties['yMax'],
                                          pulse_properties['fwhm'],
-                                         pulse_properties['divergence'],
+                                         2*pulse_properties['divergence'],
                                          pulse_properties['ekev'])
 
 
@@ -440,6 +432,31 @@ def wavefront_to_wavefield(spatial_wfr, temporal_profile=1):
     return wfr
 
 
+def complex_gaussian_beam(x,y,i,s0,sz,div,tilt_x = 0, tilt_y = 0,x0 = 0, y0 = 0):
+    """
+    Analytical model for a complex gaussian source
+    
+    :param x: horizontal coordinates
+    :param y: vertical coordinates
+    :param i: on-axis beam intensity
+    :param s0: waist fwhm 
+    :param sz: fwhm @ a distance z from the source
+    :param div: beam divergence
+    :param tilt_x: horizontal tilt wavevector
+    :param tilt_y: vertical tilt wavevector
+    :param x0: horizontal shift 
+    :param y0: vertical shift
+    """
+
+    R = -div/sz
+
+    a = np.sqrt(i)*(sz/s0)
+    b = -((x-x0)**2+(y-y0)**2)/sz**2
+    c = ((x-x0)**2+(y-y0)**2)/R
+    d = tilt_x*x+tilt_y*y
+
+    return a*np.exp(b-1j*(c*d))
+
 def gaussian_envelope(nx, ny,
                       xMin, xMax,
                       yMin, yMax,
@@ -533,7 +550,7 @@ def generate_coherent_source_wavefront(nx, ny, fwhm, divergence):
 if __name__ == '__main__':
 
     from felpy.model.mesh import Mesh
-<<<<<<< HEAD
+
     from felpy.model.wavefront import Wavefront
     from wpg.wpg_uti_wf import plot_intensity_map
     
@@ -627,10 +644,11 @@ if __name__ == '__main__':
 #
 #     from felpy.experiments.source_diagnostics import scan_source_divergence
 #
-#     data = scan_source_divergence(ekev = np.arange(5,10), q = [0.1], n = 1)
+#     data = scan_source_divergence(e(kev = np.arange(5,10), q = [0.1], n = 1)
 #
 # =============================================================================
-=======
+
+
     import os
     
     m = Mesh(nx=512, ny=256, xMin=-300e-06, xMax=300e-06, yMin=-300e-06, yMax=300e-06, nz = 10)
@@ -670,4 +688,3 @@ if __name__ == '__main__':
         print(wfr.com)
     
     plt.legend()
->>>>>>> 89f3bf75c52b7d37ab9f5451bc6dd4ca1264f394

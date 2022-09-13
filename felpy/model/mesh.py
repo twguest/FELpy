@@ -69,7 +69,7 @@ class Mesh:
         
             
         self.set_attributes()
-        self.check_attributes()
+        #self.check_attributes()
     
     def __str__(self):
         print("")

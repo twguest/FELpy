@@ -338,14 +338,14 @@ class Instrument(base_class):
             self.NVE.name = self.params["NVE"]["name"]
             
             NVE_error = np.loadtxt(self.params['NVE_error']['mirror profile'].replace("../../",""))
-            NVE_error[1:,1:] = gaussian_filter1d(NVE_error[1:,1:],20)
+            #NVE_error[1:,1:] = gaussian_filter1d(NVE_error[1:,1:],20)
             
             self.NVE_error = MirPl(NVE_error,
                             _dim = self.params['NVE_error']['orientation'],
                             _ang = self.params['NVE_error']['incidence angle'], ### + self.params['NVE']['incidence angle'],
                             _refl = self.params['NVE_error']['transmission'],
                             _x = self.params['NVE_error']['xc'], _y = self.params['NVE_error']['yc'],
-                            _amp_coef = 1e-10)
+                            _amp_coef = 1e-11)
 
             self.NVE_error.name = self.params['NVE_error']['name']
 
@@ -354,7 +354,7 @@ class Instrument(base_class):
                 _ang = self.params['NHE_error']['incidence angle'], ###+self.params['NHE']['incidence angle'],
                 _refl = self.params['NHE_error']['transmission'],
                 _x = self.params['NHE_error']['xc'], _y = self.params['NHE_error']['yc'],
-                _amp_coef = 1e-10)
+                _amp_coef = 1e-11)
 
 
 

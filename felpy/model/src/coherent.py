@@ -30,7 +30,6 @@ from scipy.constants import c
 from matplotlib import pyplot as plt
 
 
-import wpg.srwlpy
 from felpy.utils.opt_utils import ekev2wav
 from felpy.model.wavefront import Wavefront
 from wpg.wpg_uti_wf import look_at_q_space, calculate_fwhm, calc_pulse_energy

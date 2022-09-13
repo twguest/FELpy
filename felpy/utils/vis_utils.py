@@ -185,15 +185,6 @@ class Grids:
             self.axes.tick_params(axis='both', which='major', labelsize=fontsize)
             self.axes.xaxis.label.set_size(fontsize)
             self.axes.yaxis.label.set_size(fontsize)
-<<<<<<< HEAD
-=======
-        else:
-            for ax in self.get_axes():
-
-                ax.tick_params(axis='both', which='major', labelsize=fontsize)
-                ax.xaxis.label.set_size(fontsize)
-                ax.yaxis.label.set_size(fontsize)
->>>>>>> 89f3bf75c52b7d37ab9f5451bc6dd4ca1264f394
         
         if hasattr(self, "cbar"):
             self.cbar.ax.tick_params(labelsize=fontsize)
@@ -309,86 +300,39 @@ class Grids:
                             xy = (ax.get_xlim()[0],ax.get_ylim()[1]),
                             c = color,
                             fontsize = fontsize)
-                
-def colorbar_plot(dataset,
-                  mesh = None,
-                  label = None,
-                  title = None,
-                  xlabel = None,
-                  ylabel = None,
-                  clabel = "",
-                  context = 'paper',
-                  cmap = 'bone',
-                  normalise = True,
-                  scale = 1,
-                  aspect = 'auto',
-                  sdir = None, 
-                  lognorm = False):
-    
+
+
+import ipywidgets as widgets
+from ipywidgets import interactive, FloatSlider, IntSlider, HBox, Label
+
+def single_plot(pulse,train, scale = 2, global_aspect = 1.25):
     """ 
-    plot a 2D datasetay with a colorbar (x,y)
-    
-    :param corr: 2D correlation datasetay (via get_correlation)
-    :param mesh: coordinate mesh [np datasetay]
-    :param sdir: save directory for output .png
-    :param label: figure label
-    :param title: figure title
-    :param cmap: figure color map
+    for use with viewer and mhz viewer class
     """
+    grid = Grids(scale = scale, global_aspect = global_aspect)
+    grid.create_mosaic([['a']])
+    grid.axes['a'].imshow(image[:,:,pulse,train],vmin=0, cmap= 'afmhot', extent = [np.min(mesh[1])*1e3, np.max(mesh[1])*1e3,
+                                   np.min(mesh[0])*1e3, np.max(mesh[0])*1e3])
     
-    sns.set_context(context)
+    grid.axes['a'].set_xlabel("x (mm)")
+    grid.axes['a'].set_ylabel("y (mm)")
     
-    if normalise:
-        dataset = norm(dataset)
-        vmin, vmax = 0,1
-    else: 
-        vmin, vmax = np.min(dataset), np.max(dataset)
+    grid.add_global_colorbar(cmap = 'afmhot', clabel = "Intensity", fontsize = 22)
+    grid.set_fontsize(22)
+
+
+def mhz_viewer(image, mesh, scale = 2, global_aspect = 1.25):
+
+    a = widgets.IntSlider(min=0, max= image.shape[-2]-1, step=1, value = 10, description='Pulse #:', continous_update = True, orientation='horizontal')
+    b = widgets.IntSlider(min=0, max=image.shape[-1]-1, step=1, value = 10, description='Train #:', continous_update = True, orientation='horizontal')
+    a.style.handle_color="white"
+    b.style.handle_color="white"
+    widgetsDisplay = widgets.HBox([a,b])
+
+    interactive_plot = widgets.interactive_output(single_plot, {'pulse': a,'train': b})
+
+    display(widgetsDisplay, interactive_plot)
     
-    if mesh is not None:
-        extent = [np.min(mesh[1])*scale, np.max(mesh[1])*scale,
-                  np.min(mesh[0])*scale, np.max(mesh[0])*scale]
-    else:
-        extent = None
-    
-    if lognorm == True:
-        lognorm = matplotlib.colors.LogNorm()
-        vmin += 1e-100
-    else: 
-        lognorm = None
-        
-    fig, ax1 = plt.subplots(figsize = fig_size)
-    
-    img = ax1.imshow(dataset,
-                     cmap = cmap,
-                     extent = extent,
-                     vmin = vmin, vmax = vmax,
-                     aspect = aspect, 
-                     norm = lognorm)
-    
-
-    divider = make_axes_locatable(ax1)
-    cax = divider.append_axes('right', size='7.5%', pad=0.05)
-
-    cbar = fig.colorbar(img, cax)
-
-    ax1.set_title(title)
-    ax1.set_xlabel(xlabel)
-    ax1.set_ylabel(ylabel)
-
-    cbar.set_label(clabel)
-    ax1.annotate(label, horizontalalignment = 'left',   
-                    verticalalignment = 'bottom',
-                    xy = (0,1),
-                    c = 'white')
-   
-    if sdir is None:
-        fig.show()
-    else:
-        fig.savefig(sdir + ".png")
-
-    plt.show()
-
-
 
 
 

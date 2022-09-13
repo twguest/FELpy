@@ -28,7 +28,7 @@ from scipy.constants import h, c, e
 from felpy.analysis.scalar.centroid import get_com
 from felpy.analysis.complex.coherence import get_coherence_time
 
-from felpy.utils.vis_utils import colorbar_plot
+
 from felpy.utils.np_utils import get_mesh
 from felpy.model.tools import radial_profile
 from datetime import datetime
@@ -89,8 +89,8 @@ class Wavefront(WPG_Wavefront):
         self.data.arrEhor[:,:,:,1] += (complex_converter(carr)[:,:,:,1]).astype(np.float32)
         
     def save_tif(self, outdir):
-        imgReal = self.get_intensity()
-        imageio.imwrite(outdir + ".tif", imgReal)
+        ii = self.get_intensity().sum(-1)
+        imageio.imwrite(outdir + ".tif", ii)
  
     def get_spatial_resolution(self, VERBOSE = False):
         

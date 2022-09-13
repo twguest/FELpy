@@ -12,7 +12,7 @@ __email__ = "trey.guest@xfel.eu"
 
 import numpy as np
  
-from felpy.model.source import SA1
+from felpy.model.source import SA1_Source
 from felpy.utils.vis_utils import Grids
 
 from wpg.wpg_uti_wf import plot_intensity_map

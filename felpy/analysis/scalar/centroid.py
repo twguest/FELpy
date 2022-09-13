@@ -10,7 +10,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from os import listdir
 from scipy.ndimage import center_of_mass
 
-
+import pandas as pd
 
 
 def get_com(arr):
@@ -49,151 +49,33 @@ def get_com(arr):
 
     return centroid
 
-
-
-
-def plot_centroid(centroid, arg = None, clabel = None):
+def com_to_h5(image, outdir, px = 1, py = 1):
+    """ 
+    wrapper function to write center-of-mass outputs to a h5 file
     
-    """
-    utility for plotting distribution of beam centroids w/ respect to
-    i) the train they come from, ii) their position in the train.
-    
-    If centroid is 2 dimensional, all pulses will be assumed to be of the same
-    train and will be colored with respect to their position in the train. 
-    
-    If centroid is 3 dimensional, pulses will be colored depending on their position
-    within their train.
-    
-    If arg is supplied, items will be colored depending on arg (ie., time, energy,
-    freckle dist. on my body...) and trains will be denoted by marker shape
-    
-    :param centroid: beam centroids [2D or 3D np array]
-    :param arg: optional argument [np array of shape (centroid.shape[0], 1, centroid.shape[-1])]
+    :param image: image to be analysed
+    :param outdir: directory of h5 file
+    :param px: horizontal pixel size (m)
+    :paray py: vertical pixel size (m)
     """
     
-    sns.set_style("white")
-    
-    
-    fig, ax1 = plt.subplots()
+    dict_com_x = {}
+    dict_com_y = {}
 
-   
-    if centroid.ndim == 2:
-       
-        cmap = mpl.cm.jet
-        
-        if arg is None:
-            
-            norm = mpl.colors.Normalize(vmin = 0, vmax = centroid.shape[0])
-            m = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
-            cmap = m.get_cmap()
-            
-            arg = np.linspace(0, centroid.shape[0], centroid.shape[0])
-            
-            im1 = ax1.scatter(centroid[:, 0]*1e6, centroid[:,2], d[:,1]*1e6,
-                        c = arg,
-                        s = 16)
-            
-            ax1.set_title("Centroid Position", fontsize = 16)
-            
-            ax1.set_xlabel("x [$\mu$m]", fontsize = 14)
-            ax1.set_ylabel("y [$\mu$m]", fontsize = 14)
-            
-            divider = make_axes_locatable(ax1)
-            cax = divider.append_axes('right', size='7.5%', pad=0.05)
-            
-            cbar = fig.colorbar(im1, cax = cax)
-            cbar.set_label("Position in Train", fontsize = 14)
+    com = get_com(image)
 
-        else:
-            norm = mpl.colors.Normalize(vmin = 0, vmax = np.max(arg))
-            m = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
-            cmap = m.get_cmap()
-            
-            im1 = ax1.scatter(centroid[:, 0], centroid[:,1],
-                  c = arg,
-                  cmap = cmap,
-                  s = 16)    
-            
-            
-            divider = make_axes_locatable(ax1)
-            cax = divider.append_axes('right', size='7.5%', pad=0.05)
 
-            cbar = fig.colorbar(im1, cax = cax)
-            
-            ax1.set_title("Centroid Position", fontsize = 16)
-            
-            if clabel != None:
-                cbar.set_label(clabel, fontsize = 16)
-                
-        plt.show()
-        
-        
-            
-    elif centroid.ndim == 3:
-        
-        cmap = mpl.cm.jet    
-        
-        if arg is None:
-            
-            norm = mpl.colors.Normalize(vmin = 0, vmax = 256)
-            m = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
-            cmap = m.get_cmap()
-            
-            t = normalise(np.linspace(0, centroid.shape[-1],centroid.shape[-1]), lim = (0, 1))
-            
-            for train in range(centroid.shape[-1]):
-                
- 
-                im1 = ax1.scatter(centroid[:, 0, train]*1e6, centroid[:,1, train]*1e6,
-                                  c = cmap(np.linspace(t[train],t[train], centroid.shape[0])),
-                                  cmap = cmap,
-                                  s = 16)
-            
-            ax1.set_title("Centroid Position", fontsize = 16)
-            
-            ax1.set_xlabel("x [$\mu$m]", fontsize = 14)
-            ax1.set_ylabel("y [$\mu$m]", fontsize = 14)
-            
-            divider = make_axes_locatable(ax1)
-            cax = divider.append_axes('right', size='7.5%', pad=0.05)
-            cbar = fig.colorbar(im1, cax = cax)
-            cbar.mappable.set_clim([0,centroid.shape[-1]])
-            cbar.mappable.set_cmap(cmap)
-            cbar.set_label("Train Number", fontsize = 14)
-            
-            
-        else:
-            norm = mpl.colors.Normalize(vmin = 0, vmax = 256)
-            m = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
-            cmap = m.get_cmap()
-            
-            narg = normalise(arg, (10,500))
-            
-            t = normalise(np.linspace(0, centroid.shape[-1],centroid.shape[-1]), lim = (0, 1))
+    for itr in range(image.shape[-1]):
 
-            for train in range(centroid.shape[-1]):
-                
- 
-                im1 = ax1.scatter(centroid[:, 0, train]*1e6, centroid[:,1, train]*1e6,
-                                  c = cmap(np.linspace(t[train],t[train], centroid.shape[0])),
-                                  cmap = cmap,
-                                  s = narg[train,:],
-                                  alpha = 0.60)
-            
-            ax1.set_title("Centroid Position", fontsize = 16)
-            1
-            ax1.set_xlabel("x [$\mu$m]", fontsize = 14)
-            ax1.set_ylabel("y [$\mu$m]", fontsize = 14)
-            
-            divider = make_axes_locatable(ax1)
-            cax = divider.append_axes('right', size='7.5%', pad=0.05)
-            cbar = fig.colorbar(im1, cax = cax)
-            cbar.mappable.set_clim([0,centroid.shape[-1]])
-            cbar.mappable.set_cmap(cmap)
-            cbar.set_label("Train Number", fontsize = 14)
-                
-        plt.show()
-        
+        dict_com_x['Train {}'.format(itr)] = com[:,0,itr]*px
+        dict_com_y['Train {}'.format(itr)] = com[:,1,itr]*py
+
+
+    df_x = pd.DataFrame.from_dict(dict_com_x)
+    df_y = pd.DataFrame.from_dict(dict_com_y)
+
+    df_x.to_hdf(outdir, key = "com_x")
+    df_y.to_hdf(outdir, key = "com_y")
 
 
 if __name__ == '__main__':
