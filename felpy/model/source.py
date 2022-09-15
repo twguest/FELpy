@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import numpy as np
@@ -161,6 +161,7 @@ rei
     @property
     def pulses(self):
         return self.metadata['pulses']
+        
     @property
     def pulses(self):
         """ 
@@ -169,15 +170,131 @@ rei
         return self.metadata['pulses']
     
     
-   
-  
-class SA1_Source(Source):
+class LinearGaussian(Source):
+    """
+    A model of a gaussian beam w/ linear photon statistics
+    """    
+    
+    def __init__(self, ekev, mesh, x, y, i, s0, sz, div,
+                tilt_x = 0, tilt_y = 0, x0 = 0, y0 = 0,
+                pulse_duration = 100e-15, **kwargs):
+
+        """
+        initialisation function. 
+        
+        :param ekev: photon energy in keV
+        :param mesh: felpy style mesh file defining xMin, xMax, yMin, yMax, nx, ny
+        :param x: horizontal coordinates
+        :param y: vertical coordinates
+        :param i: on-axis beam intensity
+        :param s0: waist fwhm 
+        :param sz: fwhm @ a distance z from the source
+        :param div: beam divergence
+        :param tilt_x: horizontal tilt wavevector
+        :param tilt_y: vertical tilt wavevector
+        :param x0: horizontal shift 
+        :param y0: vertical shift
+        :param pulse_duration: temporal duration of the pulse
+        """
+        super().__init__(**kwargs)
+        
+        self.source_properties.update(kwargs)
+       
+        
+        self.source_properties['ekev'] = ekev
+        self.source_properties['i'] = i
+        self.source_properties['s0'] = s0
+        self.source_properties['sz'] = sz/FWHM2E2
+        self.source_properties['sz'] = sz
+        self.source_properties['div'] = div
+        self.source_properties['tilt_x'] = tilt_x
+        self.source_properties['tilt_y'] = tilt_y
+        self.source_properties['x0'] = x0
+        self.source_properties['y0'] = y0
+        self.source_properties['pulse_duration'] = pulse_duration
+        self.source_properties['pulse_energy'] = i
+
+        for item in self.source_properties:
+
+            if type(self.source_properties[item]) == list:
+                self.source_properties[item] = np.asarray(self.source_properties[item])
+                
+        self.source_properties.update(mesh.get_attributes())
+        
+        
+        if 'z0' in kwargs:
+            self.source_properties['z0'] = kwargs['z0'] 
+        else:
+            self.source_properties['z0'] = 0
+        
+
+    def generate_beam_envelope(self, pulse_properties):
+        """
+        a function to generate a gaussian photon field based on the source properties
+
+        this can be extended at a later date to include perturbations, i.e the zernike polynomials.
+        """
+
+        xx, yy = np.meshgrid(np.linspace(pulse_properties['xMin'], pulse_properties['xMax'], pulse_properties['nx']), np.linspace(pulse_properties['yMin'], pulse_properties['yMax'], pulse_properties['ny']))
+        
+        return complex_gaussian_beam(x = xx, y = yy,
+        i = self.source_properties['i'], s0 = self.source_properties['s0'],
+        sz = self.source_properties['sz'], div = self.source_properties['div'],
+        tilt_x = self.source_properties['tilt_x'], tilt_y = self.source_properties['tilt_y'],
+        x0 = self.source_properties['x0'], y0 = self.source_properties['y0'])
+
+
+
+
+
+    def generator(self, outdir, N = 1):
+        """
+        this is the emission process, and generates N wavefronts according to the rules given by the source paramters file.
+        
+        currently, it will only support cases where the input dictionary has values in the form of a single value or list.
+        
+        :param
+        """
+        
+        for n in range(N):
+
+            self.build_properties()
+
+            for itr in range(self._control):
+                pulse_properties = {item:self.source_properties[item][itr] for item in self.source_properties}
+                tp = self.get_temporal_profile(pulse_properties)
+                pulse_properties['nz'] = len(tp)
+ 
+                
+                efield = self.generate_beam_envelope(pulse_properties)[:,:,np.newaxis]*tp
+                
+            
+                self.generate(efield, pulse_properties, outdir = outdir + "_{:02}_{:04}.h5".format(n,itr))
+
+            
+ 
+        
+    def get_temporal_profile(self, pulse_properties, sigma=4, refresh=False):
+        ### note this gets and sets - should be changed
+    
+        n_samples, sampling_interval_t = temporal_sampling_requirements(
+            pulse_properties['pulse_duration'], VERBOSE=True, S=4)
+
+        n_samples *= sigma
+        self.source_properties['nz'] = n_samples * np.ones(self._control).astype(type(n_samples))
+        
+        return generate_temporal_SASE_pulse(pulse_time=pulse_properties['pulse_duration'],
+                                                             n_samples=n_samples,
+                                                             sigma=sigma)
+        
+
+class SA1_Source(LinearGaussian):
     """
     fixed case of the SA1 source
     """    
 
     
-    def __init__(self, ekev, q, theta_x = 0, theta_y = 0, stochastic = False, **kwargs):
+    def __init__(self, ekev, q, theta_x = 0, theta_y = 0, **kwargs):
 
         """
         initialisation function. 
@@ -206,8 +323,16 @@ class SA1_Source(Source):
         if 'z0' in kwargs:
             self.source_properties['z0'] = kwargs['z0'] 
         else:
-            self.source_properties['z0'] = 0
-        
+            self.source_properties['z0'] = 0,
+
+        if 'divergence' not in self.source_properties.keys():      
+            self.source_properties['divergence'] = analytical_pulse_divergence(self.ekev, 'mean')
+        if 'pulse_energy' not in self.source_properties.keys():
+            self.source_properties['pulse_energy'] = analytical_pulse_energy(self.q, self.ekev)
+        if 'fwhm' not in self.source_properties.keys():
+            self.source_properties['fwhm'] = 2*self.source_properties['z0']*np.tan(self.source_properties['divergence'])*analytical_pulse_width(self.ekev) +analytical_pulse_width(self.ekev)
+        if 'pulse_duration' not in self.source_properties.keys():
+            self.source_properties['pulse_duration'] = analytical_pulse_duration(self.q)
     
     @property
     def ekev(self):
@@ -223,85 +348,14 @@ class SA1_Source(Source):
         return photon beam charge
         """
         return self.source_properties['q']
-    
-    def set_empirical_values(self):
-    
-        if 'divergence' or'fwhm' or 'pulse_duration' or 'pulse_energy' not in self.source_properties.keys():
-            if 'q' not in self.source_properties.keys():
-                    raise Exception("Please provide a beam charge")         
-                    
-                    
-        if 'divergence' not in self.source_properties.keys():      
-            self.source_properties['divergence'] = analytical_pulse_divergence(self.ekev, 'mean')
-        if 'pulse_energy' not in self.source_properties.keys():
-            self.source_properties['pulse_energy'] = analytical_pulse_energy(self.q, self.ekev)
-        if 'fwhm' not in self.source_properties.keys():
-            self.source_properties['fwhm'] = 2*self.source_properties['z0']*np.tan(self.source_properties['divergence'])*analytical_pulse_width(self.ekev) +analytical_pulse_width(self.ekev)
-        if 'pulse_duration' not in self.source_properties.keys():
-            self.source_properties['pulse_duration'] = analytical_pulse_duration(self.q)
-
-    
-    def generate_beam_envelope(self, pulse_properties):
-        """
-        a function to generate the SA1 photon wavefield envelope at the source
-        this can be extended at a later date to include perturbations, i.e the zernike polynomials.
-        """
-
-        return complex_gaussian_envelope(pulse_properties['nx'], pulse_properties['ny'],
-                                         pulse_properties['xMin'], pulse_properties['xMax'],
-                                         pulse_properties['yMin'], pulse_properties['yMax'],
-                                         pulse_properties['fwhm'],
-                                         2*pulse_properties['divergence'],
-                                         pulse_properties['ekev'])
-
-
-
-
-
-    def generator(self, outdir, N = 1):
-        """
-        this is the emission process, and generates N wavefronts according to the rules given by the source paramters file.
-        
-        currently, it will only support cases where the input dictionary has values in the form of a single value or list.
-        
-        :param
-        """
-        
-        for n in range(N):
-            self.set_empirical_values()
-
-            self.build_properties()
-
-            for itr in range(self._control):
-                pulse_properties = {item:self.source_properties[item][itr] for item in self.source_properties}
-                tp = self.get_temporal_profile(pulse_properties)
-                pulse_properties['nz'] = len(tp)
-                tilt = wavefront_tilt(np.meshgrid(np.linspace(pulse_properties['xMin'], pulse_properties['xMax'], pulse_properties['nx']),
-                                                  np.linspace(pulse_properties['yMin'], pulse_properties['yMax'], pulse_properties['ny'])),
-                                     2*np.pi*np.sin(pulse_properties['theta_x'])/ekev2wav(pulse_properties['ekev']),
-                                     2*np.pi*np.sin(pulse_properties['theta_y'])/ekev2wav(pulse_properties['ekev']))
-                
-                
-                efield = self.generate_beam_envelope(pulse_properties)[:,:,np.newaxis]*tp*tilt[:,:,np.newaxis]
-                
-            
-                self.generate(efield, pulse_properties, outdir = outdir + "_{:02}_{:04}.h5".format(n,itr))
-
-            
  
-        
-    def get_temporal_profile(self, pulse_properties, sigma=4, refresh=False):
-        ### note this gets and sets - should be changed
-    
-        n_samples, sampling_interval_t = temporal_sampling_requirements(
-            pulse_properties['pulse_duration'], VERBOSE=True, S=4)
+                    
+                    
 
-        n_samples *= sigma
-        self.source_properties['nz'] = n_samples * np.ones(self._control).astype(type(n_samples))
-        
-        return generate_temporal_SASE_pulse(pulse_time=pulse_properties['pulse_duration'],
-                                                             n_samples=n_samples,
-                                                             sigma=sigma)
+
+
+
+
         
 
 class Source_WPG(Source):
