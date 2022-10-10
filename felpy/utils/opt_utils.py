@@ -7,9 +7,9 @@ FELPY
 __author__ = "Trey Guest"
 __credits__ = ["Trey Guest"]
 __license__ = "EuXFEL"
-__version__ = "0.1.1"
+__version__ = "0.2.1"
 __maintainer__ = "Trey Guest"
-__email__ = "twguest@students.latrobe.edu.au"
+__email__ = "trey.guest@xfel.eu"
 __status__ = "Developement"
 """
 
@@ -20,6 +20,13 @@ from scipy.constants import c,h,e
 def wrap_phase(phase):
     return (np.pi * phase % (2 * np.pi) - np.pi)
 
+def k2theta(dx, ekev):
+    k = (2*np.pi)/ekev2wav(ekev)
+    kx = (1/dx)/(np.pi*2)
+
+    return np.arcsin(ekev2wav(ekev)*kx)
+
+    
 def get_phase_shift(OPD, wav):
     return (2*np.pi*OPD)/wav
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from felpy.model.core.instrument import Instrument
+from felpy.model.instrument import Instrument
 
 def plot_image_surfaces():
     

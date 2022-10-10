@@ -7,9 +7,9 @@ FELPY
 __author__ = "Trey Guest"
 __credits__ = ["Trey Guest"]
 __license__ = "EuXFEL"
-__version__ = "0.1.1"
+__version__ = "0.2.1"
 __maintainer__ = "Trey Guest"
-__email__ = "twguest@students.latrobe.edu.au"
+__email__ = "trey.guest@xfel.eu"
 __status__ = "Developement"
 """
 
@@ -37,7 +37,7 @@ def _check_arg(x, xname):
         raise ValueError('%s must be one-dimensional.' % xname)
     
 
-def window(arr, nrows, ncols):
+def window_2D(arr, nrows, ncols):
     """
     Return an array of shape (n, nrows, ncols) where
     n * nrows * ncols = arr.size
@@ -68,6 +68,8 @@ def checkRoot(n):
         BOOL = False
     return BOOL
 
+
+
 def get_windows(arr, n):
     """
     useful wrapper for window - returns n windows, where sqrt(n) % 0 must be true
@@ -83,9 +85,43 @@ def get_windows(arr, n):
     BOOL = checkRoot(n)
     
     if BOOL:
-        w = window(arr, int(arr.shape[0]//np.sqrt(n)), int(arr.shape[1]//np.sqrt(n)))
+        w = window_2D(arr, int(arr.shape[0]//np.sqrt(n)), int(arr.shape[1]//np.sqrt(n)))
     elif not BOOL:
         sys.exit("sqrt(n) is not an even integer value")
     
     if w is not None:
         return w
+    
+def odd_even(N):
+    """
+    check if a number is odd or even
+    """
+    
+    if N % 2 == 0:
+        ans = "even"
+    elif N % 2 == 1:
+        ans = 'odd'
+    return ans
+ 
+
+def window_2D(N, **kwargs):
+    """ 
+    generate a 2D window function
+    
+    :param N: window width - if no other keyword value submitted, then the array is assumed to be square
+    
+    :kwarg M: window height, if none, assumed to be equal to N
+    :kwarg window: window method, e.g. numpy.hamming, scipy.signal.windows.hamm, etc, if none, assumed uniform.
+    
+    :returns: 2D numpy array of NxM dimensions
+    """
+    if 'M' in kwargs:
+        M = kwargs['M']
+    else:
+        M = N
+    if 'window' in kwargs:
+        window = kwargs['window']
+    else:
+        window = np.ones
+        
+    return np.sqrt(np.outer(np.abs(window(N)),np.abs(window(M))))

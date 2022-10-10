@@ -25,8 +25,8 @@ from wpg import srwlib
 
 from wpg.srwlib import SRWLOptD as Drift
 
-from felpy.model.core.wavefront import Wavefront
-from felpy.model.core.beamline import Beamline
+from felpy.model.wavefront import Wavefront
+from felpy.model.beamline import Beamline
 
 from wpg.wpg_uti_wf import calc_pulse_energy, calculate_fwhm, get_axial_power_density
 from wpg.wpg_uti_wf import plot_intensity_map as plotIntensity

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 from felpy.model.beamlines.methods import get_beamline_object
-from felpy.model.source.coherent import construct_SA1_pulse
+from felpy.model.src.coherent import construct_SA1_pulse
 
 
 if __name__ == '__main__':

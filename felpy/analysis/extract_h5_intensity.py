@@ -17,7 +17,7 @@ from wpg.wavefront import Wavefront
 from labwork.about import logs, dCache 
 
 =======
-from felpy.model.core.wavefront import Wavefront
+from felpy.model.wavefront import Wavefront
 >>>>>>> 108cfb9b6fc97d3841ee1db54862523eee5b184e
 
 indir = dCache + "NanoKB-Pulse/source/"

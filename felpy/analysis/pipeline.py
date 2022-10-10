@@ -78,7 +78,7 @@ from model.coherence import run as coherence
 from model.enclosedEnergy import run as beamSize
 from model.energyStatistics import getPulseEnergy
 
-from felpy.model.core.wavefront import Wavefront
+from felpy.model.wavefront import Wavefront
 
 from wpg.wpg_uti_wf import get_centroid
 

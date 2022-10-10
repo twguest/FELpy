@@ -6,8 +6,8 @@ a script to test the com functions
 
 import numpy as np
 
-from felpy.analysis.optics.scalar.enclosed_energy_DEPR import get_enclosed_energy as depr
-from felpy.analysis.optics.scalar.enclosed_energy import get_enclosed_energy as get_enclosed_energy
+from felpy.analysis.scalar.enclosed_energy_DEPR import get_enclosed_energy as depr
+from felpy.analysis.enclosed_energy import get_enclosed_energy as get_enclosed_energy
 
 from felpy.utils.os_utils import timing
 

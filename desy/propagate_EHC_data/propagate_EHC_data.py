@@ -3,8 +3,8 @@
 
 import sys
 
-from felpy.model.core.wavefront import Wavefront
-from felpy.model.core.beamline import Beamline
+from felpy.model.wavefront import Wavefront
+from felpy.model.beamline import Beamline
 from wpg.optical_elements import Drift
 from felpy.model.tools import propagation_parameters
 from felpy.utils.os_utils import mkdir_p

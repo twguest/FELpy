@@ -7,7 +7,7 @@ import json
 from datetime import datetime
 
 from felpy.model.beamlines.exfel_spb.methods import get_beamline_object
-from felpy.model.core.beamline import Beamline
+from felpy.model.beamline import Beamline
 from felpy.utils.job_utils import batch_launcher
 
 from labwork.about import dCache, logs

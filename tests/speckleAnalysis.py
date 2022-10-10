@@ -138,7 +138,7 @@ def autocovariance2D(roi):
     
     return acov
 
-def gaussian_func(x, a, x0, sigma,c):
+def gaussian(x, a, x0, sigma,c):
     """
     gaussian function for fitting
     """
@@ -155,7 +155,7 @@ def fitExponent(acov, ax, sigmaGuess = 1):
     """
     
 
-    params, params_covariance = optimize.curve_fit(gaussian_func, ax, acov[:len(acov)-1],
+    params, params_covariance = optimize.curve_fit(gaussian, ax, acov[:len(acov)-1],
                                                    p0=[1,0,sigmaGuess,0])
 
     return params
@@ -224,7 +224,7 @@ def getFeatureSize(ii, nWindows = 16, px = None, bPlot = False):
             
             cid = np.random.randint(0,len(clist))
             ax2.plot(ax, acov[:acov.shape[0]-1], c = clist[cid])
-            ax2.plot(ax, gaussian_func(ax, *params), linestyle = '--', c = clist[cid])
+            ax2.plot(ax, gaussian(ax, *params), linestyle = '--', c = clist[cid])
        
     cors = cors.reshape([int(np.sqrt(nWindows)),int(np.sqrt(nWindows))])
     

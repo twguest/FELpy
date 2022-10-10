@@ -4,6 +4,8 @@ labwork/
 __pycache__/
 *.py[cod]
 *$py.class
+*.h5
+*.tif
 
 # C extensions
 *.so
@@ -136,7 +138,7 @@ dmypy.json
 # Pyre type checker
 
 *.png
-
+*.gif
 *.hdf5
 *.jpeg
 *.jpg
@@ -158,3 +160,9 @@ dmypy.json
 
 
 /felpy/examples/**/*.npy
+
+felpy/data/spb/mirror_surface/hom2_mir_real.dat
+
+felpy/data/spb/mirror_surface/nhe_mir_real.dat
+
+felpy/data/spb/mirror_surface/nve_mir_real.dat
