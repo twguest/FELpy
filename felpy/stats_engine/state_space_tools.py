@@ -185,11 +185,12 @@ def confidence_ellipse(arr, nstd = 2):
     return cov 
 
 
-def plot_covariance_ellipse(arr, cov = None, grid = None, N = 0, axis = 0, link_dots = False, add_colorbar = True):
+def plot_covariance_ellipse(arr, cov = None, grid = None, N = 0, axis = 0, link_dots = False, scatter = True,
+                            add_colorbar = True, fontsize = 18):
     """
     plot the covariance ellipse of a given array
 
-    :param arr:
+    :param arr: 2D array describing scatter points for covariance ellipse
     :param cov:
     :param grid:
     :param N:
@@ -207,7 +208,7 @@ def plot_covariance_ellipse(arr, cov = None, grid = None, N = 0, axis = 0, link_
         grid.pad(4)
     
     if add_colorbar:
-        grid.add_global_colorbar(vmin = 0, vmax = arr.shape[-1], cmap = 'rainbow', clabel = "Train No.", fontsize = 22)
+        grid.add_global_colorbar(vmin = 0, vmax = arr.shape[-1], cmap = 'rainbow', clabel = "Train No.", fontsize = fontsize)
     
     
     
@@ -228,8 +229,9 @@ def plot_covariance_ellipse(arr, cov = None, grid = None, N = 0, axis = 0, link_
         coordinates = sequential_pairs(arr, n = N)
         N0 = coordinates[:, 0]
         N1 = coordinates[:, 1]
-
-        ax.scatter(N0[m], N1[m], color = c)
+        
+        if scatter:
+            ax.scatter(N0[m], N1[m], color = c)
     
     if link_dots:
         ax.plot(coordinates[:,0],coordinates[:,1], linewidth = 0.25)
