@@ -30,8 +30,10 @@ from felpy.model.beamline import Beamline
 from wpg import srwlib
 from wpg.srwlib import SRWLOptD as Drift
 from wpg.srwlib import SRWLOptA as Aperture
-from wpg.srwlib import SRWLOptT
+from wpg.srwlib import SRWLOptT, SRWLOptMirEl
+
 from wpg.optical_elements import Mirror_elliptical as MirEl
+
 
 from felpy.model.instrument import Instrument as base_class
 
@@ -40,7 +42,9 @@ from felpy.model.materials.mirror_surface import genMirrorSurface, generate_mirr
 from felpy.model.materials.load_refl import get_refl, load_refl
 from felpy.model.src.coherent import construct_SA1_wavefront
 from wpg.optical_elements import calculateOPD
+
 from felpy.model.beamlines.exfel_spb.params import get_params
+
 from felpy.model.tools import propagation_parameters
 from wpg.srwlib import srwl_opt_setup_surf_height_2d as MirPl
 from scipy.ndimage import gaussian_filter1d
@@ -291,27 +295,77 @@ class Instrument(base_class):
             self.NKB_PSlit.name = self.params["NKB_PSlit"]['name']
 
 
-            self.NHE = MirEl(orient = self.params['NHE']["orientation"], p = self.params['NHE']["distance from source"], q = self.params['NHE']["distance to focus"],
-                    thetaE = self.params['NHE']["design angle"], theta0 = self.params['NHE']["incidence angle"],
-                    _x = self.params["NHE"]["xc"],
-                    _y = self.params["NHE"]["yc"],
-                    length = self.params['NHE']["length"],
-                    roll = self.params['NHE']["roll"],
-                    yaw = self.params['NHE']["yaw"],
-                    _refl = self.params['NHE']["reflectivity"],
-                    _ext_in = self.params['NHE']["_ext_in"], _ext_out = self.params['NHE']["_ext_out"])
+            # self.NHE = MirEl(orient = self.params['NHE']["orientation"], p = self.params['NHE']["distance from source"], q = self.params['NHE']["distance to focus"],
+            #         thetaE = self.params['NHE']["design angle"], theta0 = self.params['NHE']["incidence angle"],
+            #         _x = self.params["NHE"]["xc"],
+            #         _y = self.params["NHE"]["yc"],
+            #         length = self.params['NHE']["length"],
+            #         roll = self.params['NHE']["roll"],
+            #         yaw = self.params['NHE']["yaw"],
+            #         _refl = self.params['NHE']["reflectivity"],
+            #         _ext_in = 0, _ext_out = 0)
+
+            distance = 0
+
+            self.NHE = SRWLOptMirEl(_p=self.params['NHE']["distance from source"],
+                                    _q=self.params['NHE']["distance to focus"],
+                                    _ang_graz=self.params['NHE']["incidence angle"],
+                                    _r_sag=1.e+30,
+                                    _size_tang=self.params['NHE']["length"],
+                                    _size_sag=1.e+40,
+                                    _ap_shape='r',
+                                    _sim_meth=1,
+                                    _npt=2024,
+                                    _nps=2024,
+                                    _treat_in_out=0,
+                                    _ext_in=0,
+                                    _ext_out=1,
+                                    _nvx=np.cos(self.params['NHE']["incidence angle"]),
+                                    _nvy=np.sin(self.params['NHE']["roll"]),
+                                    _nvz=-np.sin(self.params['NHE']["incidence angle"]),
+                                    _tvx=-np.sin(self.params['NHE']["incidence angle"]),
+                                    _tvy=0,
+                                    _x=np.tan(self.params['NHE']["yaw"])*distance,
+                                    _y=0,
+                                    _refl=self.params['NHE']["reflectivity"])
+
+
 
             self.NHE.name = self.params["NHE"]["name"]
 
-            self.NVE = MirEl(orient = self.params['NVE']["orientation"], p = self.params['NVE']["distance from source"], q = self.params['NVE']["distance to focus"],
-                    thetaE = self.params['NVE']["design angle"], theta0 = self.params['NVE']["incidence angle"],
-                    _x = self.params["NVE"]["xc"],
-                    _y = self.params["NVE"]["yc"],
-                    length = self.params['NVE']["length"],
-                    roll = self.params['NVE']["roll"],
-                    yaw = self.params['NVE']["yaw"],
-                    _refl = self.params['NVE']["reflectivity"],
-                    _ext_in = self.params['NVE']["_ext_in"], _ext_out = self.params['NVE']["_ext_out"])
+            # self.NVE = MirEl(orient = self.params['NVE']["orientation"], p = self.params['NVE']["distance from source"], q = self.params['NVE']["distance to focus"],
+            #         thetaE = self.params['NVE']["design angle"], theta0 = self.params['NVE']["incidence angle"],
+            #         _x = self.params["NVE"]["xc"],
+            #         _y = self.params["NVE"]["yc"],
+            #         length = self.params['NVE']["length"],
+            #         roll = self.params['NVE']["roll"],
+            #         yaw = self.params['NVE']["yaw"],
+            #         _refl = self.params['NVE']["reflectivity"],
+            #         _ext_in = self.params['NVE']["_ext_in"], _ext_out = self.params['NVE']["_ext_out"])
+
+
+
+            self.NVE = SRWLOptMirEl(_p=self.params['NVE']["distance from source"],
+                                    _q=self.params['NVE']["distance to focus"],
+                                    _ang_graz=self.params['NVE']["incidence angle"],
+                                    _r_sag=1.e+23,
+                                    _size_tang=self.params['NVE']["length"],
+                                    _size_sag=1.e+40,
+                                    _ap_shape='r',
+                                    _sim_meth=1,
+                                    _npt=2024,
+                                    _nps=2024,
+                                    _treat_in_out=0,
+                                    _ext_in=0,
+                                    _ext_out=0,
+                                    _nvx=np.sin(self.params['NVE']["roll"]),
+                                    _nvy=np.cos(self.params['NVE']["incidence angle"]),
+                                    _nvz=-np.sin(self.params['NVE']["incidence angle"]),
+                                    _tvx=0,
+                                    _tvy=-np.sin(self.params['NVE']["incidence angle"]),
+                                    _x=0,
+                                    _y=np.tan(self.params['NVE']["yaw"])*distance,
+                                    _refl=self.params['NVE']["reflectivity"])
 
             self.NVE.name = self.params["NVE"]["name"]
             
@@ -497,3 +551,6 @@ class Instrument(base_class):
     def rebuild(self, focus = 'nano'):
         self.build_elements(focus)
         self.build_beamline(focus)
+
+if __name__ == '__main__':
+    pass
