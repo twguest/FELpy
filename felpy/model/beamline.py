@@ -36,8 +36,15 @@ class Beamline(WPG_Beamline):
         """ 
         replace an optical element labelled oe_name w/ a pre-defined element oe.
         """
-        self.propagation_options[0]['propagation_parameters'][self.index[oe_name]] = el
+        self.propagation_options[0]['optical_elements'][self.index[oe_name]] = el
     
+    def remove_element(self, oe_name):
+        """
+        remove an optical element from a beamline        
+        """
+        self.propagation_options[0]['propagation_parameters'][self.index[oe_name]]
+        self.propagation_options[0]['optical_elements'][self.index[oe_name]]
+
     def edit_element_property(self, oe_name, prop, value):
         self.propagation_options[0]['optical_elements'][self.index[oe_name]].__dict__[prop] = value
     
