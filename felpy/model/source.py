@@ -398,9 +398,13 @@ class SA1_Source(LinearGaussian):
             self.source_properties['div'] = analytical_pulse_divergence(ekev, 'mean')
 
 
-        self.source_properties['sz'] =  (analytical_pulse_width(ekev) + (2*z*np.tan(self.source_properties['div'])))
-        self.source_properties['sz'] /= FWHM2E2
+        self.source_properties['sz'] =  self.source_properties['s0'] + (z*analytical_pulse_divergence(ekev, 'mean')*2)
         
+        self.source_properties['fwhm (source)'] = self.source_properties['s0']   
+        self.source_properties['fwhm (z)'] = self.source_properties['sz']   
+
+        self.source_properties['sz'] /= FWHM2E2
+        self.source_properties['s0'] /= FWHM2E2   
         if theta_x is list:
             self.source_properties['theta_x'] = [-t for t in theta_x]
         else:
@@ -414,7 +418,10 @@ class SA1_Source(LinearGaussian):
         ### geometry approximation:
         self.source_properties['x0'] = x0 + np.tan(theta_x)*z
         self.source_properties['y0'] = y0 + np.tan(theta_y)*z
+        
+        
 
+        
         if 'pulse_duration' not in kwargs:
             self.source_properties['pulse_duration'] = analytical_pulse_duration(q)
  

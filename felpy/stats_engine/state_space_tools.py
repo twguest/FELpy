@@ -57,15 +57,14 @@ def solution_from_df(df, pulse, val, method = None, dim = 'x'):
     
     std = abs(upper-lower)/(2*df['Sigma'][pulse])
      
-    if method is None:
+    if method is None or 'normal':
         sol = np.random.normal(loc = (upper+lower)/2, scale = std)
-
-        #sol = np.random.normal(loc = (upper+lower)/2, scale = std)
-        
+    if method == 'uniform':
+        sol = np.random.uniform(low = lower, high = upper)
 
     return sol
 
-def statengine_covariance_ellipse(arr, M = 1, nstd = 2, constraint = None, initial_condition = 0):
+def statengine_covariance_ellipse(arr, M = 1, nstd = 2, constraint = None, initial_condition = 0, method = None):
     """
     dataframe containing covariance arrays in format of .extract_elliptical_stats output
 
@@ -80,19 +79,25 @@ def statengine_covariance_ellipse(arr, M = 1, nstd = 2, constraint = None, initi
     df_input = extract_elliptical_stats(arr, nstd = 2)
 
     outputs = {}
-
+    
     if constraint is None:
 
         for m in range(M):
+
             output = []
             
-            if type(initial_condition) == float or int:
+            if type(initial_condition) == float or type(initial_condition) == int:
                 output.append(initial_condition)
-            elif type(initial_condition) == list:
+
+            elif type(initial_condition) == np.ndarray or type(initial_condition) == list:
                 output.append(initial_condition[m])
 
+            else:
+                print("Initial Condition type not recognised")
+                
             for n in range(arr.shape[0]-1):
-                output.append(solution_from_df(df_input, pulse = n, val = output[n], method = None, dim = 'x'))
+
+                output.append(solution_from_df(df_input, pulse = n, val = output[n], method = method, dim = 'x'))
 
             outputs['{}'.format(m)] = output
 

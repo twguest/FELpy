@@ -552,5 +552,8 @@ class Instrument(base_class):
         self.build_elements(focus)
         self.build_beamline(focus)
 
+    def remove_element(self, el_name):
+        self.bl.remove_element(el_name)
+        
 if __name__ == '__main__':
     pass

@@ -2,8 +2,8 @@ from felpy.model.beamline import Beamline
 from wpg.optical_elements import Drift
 from felpy.model.tools import propagation_parameters
 from felpy.model.beamlines.exfel_spb.methods import setup_spb
- 
-
+from felpy.model.beamlines.exfel_spb.exfel_spb import Instrument
+from felpy.model.materials.load_refl import load_refl, get_refl
 
 def spb_to_m2(ekev, theta = 5e-03, z = 0):
     """
@@ -60,3 +60,90 @@ def get_drift_beamline(z = 1, propagation_parameters = propagation_parameters(1,
     bl.append(D, propagation_parameters)
     
     return bl
+
+
+def setup_spb(parameter_file = "../../../data/params/spb-sfx_nkb_FAST.json", options = 'nano', ekev = 5.0,
+              apertures = True, surface = 'real', crop = None,
+              theta_HOM = 2.3e-03, theta_KB = 3.5e-03,
+              save_params = False):
+
+    """
+    return desired beamline
+    """
+
+
+    spb = Instrument(parameter_file = parameter_file)
+
+
+
+    mirrors = spb.mirrors
+
+    spb.mirror_profiles(surface = surface, aperture = apertures)
+
+    for mirror in mirrors:
+
+        if mirror in spb.focus:
+            spb.adjust_mirror(mirror,
+            ekev,
+            theta_KB)
+
+        else:
+            spb.adjust_mirror(mirror,
+            ekev,
+            theta_HOM)
+
+
+    if ekev <= 7.5:
+        material = "B4C"
+    else:
+        material = "Ru"
+
+    if apertures == False: ## aperture claus
+
+        for mirror in mirrors:
+
+            spb.params[mirror]["dx"] = 5
+            spb.params[mirror]["dy"] = 5
+            spb.params[mirror]["mirror profile"] = generate_infinite_mirror()
+    
+        for focus in spb.focus:
+            
+            spb.params[focus]["design angle"] = np.pi/3 ### [A]s ## fix for now, should onkly accept elliptical mirrors
+            spb.params[focus]["incidence angle"] = np.pi/3 ### should be for elliptical mirror surfaces
+
+
+            
+            
+    for mirror in mirrors:
+        if mirror in spb.focus:
+            spb.params[mirror]['reflectivity'] = get_refl(load_refl(material), ekev, theta_KB)
+        else:
+            spb.params[mirror]['reflectivity'] = get_refl(load_refl(material), ekev, theta_HOM)
+
+    ### TO-DO: make a choice as to wether edits to the beamline will be via params or via beamline object
+    ### TO-DO: eventually, exfel_spb should be a sub-class of the Instrument class (formally)
+    ### TO-DO: a front-end script to load and label mirrors that ships to a json file would be useful.
+
+
+
+    spb.build_elements(focus = options)
+    spb.build_beamline(focus = options)
+    
+    if apertures == False and surface == 'flat':
+        spb.remove_element("NVE_error")
+        spb.remove_element("NHE_error")
+        spb.remove_element("NKB_PSlit")
+        
+
+    if save_params:
+        spb.export_params()
+
+
+    if crop is not None:
+        if type(crop) == list:
+            spb.crop_beamline(*crop)
+        else:
+            spb.crop_beamline(crop)
+
+
+    return spb
