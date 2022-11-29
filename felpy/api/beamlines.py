@@ -62,6 +62,33 @@ def get_drift_beamline(z = 1, propagation_parameters = propagation_parameters(1,
     return bl
 
 
+
+def direct_beamline(ekev = 5.0, z = 15):
+    
+    print("Setting up SPB/SFX Direct Beamline Configuration")
+    print("Observation Point: {} m downstream of NanoKB Powerslits".format(z))
+    
+    spb = setup_spb(parameter_file = "/gpfs/exfel/data/user/guestt/FELpy/felpy/data/params/spb-sfx_nkb_GM_4.98.json",
+                              theta_KB = 3.5e-03, theta_HOM = 2.5e-03, crop = ["NKB_PSlit"],
+                             apertures = True, surface = True, ekev =  ekev)
+    
+    print("Instrument Setup")
+    
+    spb.edit_propagation_parameters("d1", propagation_parameters(1/4, 1, 1/4, 1 ,mode = 'fraunhofer'))
+    spb.edit_propagation_parameters("HOM1", propagation_parameters(1/2, 1, 1/2, 1 ,mode = 'fresnel'))
+    spb.edit_propagation_parameters("d2", propagation_parameters(1/1, 1, 1/5, 1 ,mode = 'quadratic'))
+    spb.edit_propagation_parameters("HOM2", propagation_parameters(1, 1, 1, 1 ,mode = 'fresnel'))
+    spb.edit_propagation_parameters("d3", propagation_parameters(1.25, 1, 2, 1 ,mode = 'quadratic'))
+    spb.edit_propagation_parameters("NKB_PSlit", propagation_parameters(1, 1, 1, 1 ,mode = 'fresnel'))
+    
+    D = Drift(z)
+    spb.bl.append(D, propagation_parameters(1,1,1,1,mode = 'quadratic'))
+    
+    return spb.bl
+
+
+
+
 def setup_spb(parameter_file = "../../../data/params/spb-sfx_nkb_FAST.json", options = 'nano', ekev = 5.0,
               apertures = True, surface = 'real', crop = None,
               theta_HOM = 2.3e-03, theta_KB = 3.5e-03,

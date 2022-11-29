@@ -4,6 +4,8 @@ import numpy as np
 
 from felpy.model.wavefront import Wavefront
 
+from scipy.constants import h,e
+HE = h/e
 
 def complex_to_wpg(arr): ### converter
     """
@@ -21,7 +23,7 @@ def complex_to_wpg(arr): ### converter
 
 
 
-def wavefront_from_array(cfr,nx,ny,nz,dx,dy,dz,ekev, pulse_duration = 40e-15, sigma = 4, **kwargs):
+def wavefront_from_array(cfr,nx,ny,nz,dx,dy,dz,ekev, pulse_duration = 40e-15, sigma = 4, repres = 'f', **kwargs):
     """
     function to produce a wpg wavefront object instance from a complex valued
     wavefront definition
@@ -41,24 +43,35 @@ def wavefront_from_array(cfr,nx,ny,nz,dx,dy,dz,ekev, pulse_duration = 40e-15, si
     """
     
     # Initialize empty wavefront.
+    
+    
     wfr = Wavefront()
-
+    
+    
     # Setup E-field.
     wfr.data.arrEhor = np.zeros(shape=(nx, ny, nz, 2))
     wfr.data.arrEver = np.zeros(shape=(nx, ny, nz, 2))
-
+    
+    
+    
     wfr.params.wEFieldUnit = 'sqrt(W/mm^2)'
     wfr.params.photonEnergy = ekev * 1000
     wfr.params.wDomain = 'time'
     wfr.params.Mesh.nSlices = nz
     wfr.params.Mesh.nx = nx
     wfr.params.Mesh.ny = ny
-
-
     
     wfr.params.Mesh.sliceMin = -pulse_duration*sigma / 2.
-    wfr.params.Mesh.sliceMax = pulse_duration*sigma / 2.
+    wfr.params.Mesh.sliceMax = pulse_duration*sigma / 2.  
+    
+    wfr.set_electric_field_representation('f')
+    
+ 
 
+ 
+    wfr.params.Mesh.sliceMin = (-pulse_duration*sigma / 2.)/HE
+    wfr.params.Mesh.sliceMax = (+pulse_duration*sigma / 2.)/HE
+        
     range_x = dx*nx
     range_y = dy*ny
 
@@ -69,10 +82,19 @@ def wavefront_from_array(cfr,nx,ny,nz,dx,dy,dz,ekev, pulse_duration = 40e-15, si
 
     wfr.params.Rx = 2
     wfr.params.Ry = 1
-    wfr.data.arrEhor = complex_to_wpg(cfr)
     
-    wfr.set_electric_field_representation('f')
-        
+#     if repres == 't':
+#         cfr = np.fft.fftshift(cfr)
+#     if repres == 'f':
+#         cfr = (np.fft.fft(cfr, axis = -1))
+    
+    wfr.data.arrEhor = complex_to_wpg(cfr)
+ 
+    
+     
+
+
+    
     wfr.custom_fields.update(**kwargs)
        
     return wfr

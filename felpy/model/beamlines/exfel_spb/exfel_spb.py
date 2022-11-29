@@ -518,6 +518,8 @@ class Instrument(base_class):
         :param distance: position from last optical element to screen
         :param screenName: name of the screen element (ie., MKB-scr etc) [str]
         """
+        
+        
         self.crop_beamline(element1 = position)
 
         drift2screen = Drift(distance)

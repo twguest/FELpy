@@ -220,7 +220,7 @@ class Wavefront(WPG_Wavefront):
         
         sets the electric field representation
         
-        :param domain: choice ofangular - 'a', frequency 'f' or time 't' [str]
+        :param domain: choice ofangular - 'a' <-> real-space 'c', frequency 'f' <--> time 't' [str]
         """
         srwlpy.SetRepresElecField(self._srwl_wf, domain)
         
