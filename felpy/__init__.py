@@ -12,3 +12,13 @@ __maintainer__ = "Trey Guest"
 __email__ = "trey.guest@xfel.eu"
 __status__ = "Developement"
 """
+
+
+### import source helpers
+from felpy.model.source import SA1_Source, Source
+
+### import beamline helpers
+from felpy.api.beamlines import direct_beamline
+
+### import other utilities
+from felpy.utils.vis_utils import Grids

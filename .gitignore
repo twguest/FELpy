@@ -4,6 +4,8 @@ labwork/
 __pycache__/
 *.py[cod]
 *$py.class
+*.h5
+*.tif
 
 # C extensions
 *.so
@@ -136,7 +138,7 @@ dmypy.json
 # Pyre type checker
 
 *.png
-
+*.gif
 *.hdf5
 *.jpeg
 *.jpg

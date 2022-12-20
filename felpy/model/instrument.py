@@ -539,5 +539,36 @@ class Instrument:
         """
         edit the propagation parameters of an element by name
         """
+        try:
+            self.params[element_name]["pp"] = new_parameters
+        except(KeyError):
+            pass
+        
         self.bl.propagation_options[0]['propagation_parameters'][self.element_index(element_name)] = new_parameters
 
+    def get_beamline(self):
+        return self.bl
+
+    def load_params(self, file = None):
+        """
+        load beamline parameters from /data/spb/
+        """
+
+        if file is not None:
+            with open(file, "r") as read_file:
+                self.params = json.load(read_file)
+        else:
+            self.params = get_params()
+
+    def export_params(self, sdir = None):
+        """
+        save the current set of beamline parameters in json format
+
+        :param sdir: save directory
+        """
+        if sdir is None:
+            with open(self.fpath + '/data/spb/parameters.json', 'w') as f:
+                json.dump(self.params, f)
+        else:
+            with open(sdir + 'parameters.json', 'w') as f:
+                json.dump(self.params, f)

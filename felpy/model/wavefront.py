@@ -23,9 +23,9 @@ import numpy as np
 from wpg.wpg_uti_wf import calculate_fwhm, calc_pulse_energy
 import seaborn as sns
 from felpy.utils.np_utils import get_mesh
-from felpy.analysis.scalar.enclosed_energy import get_enclosed_energy
+from felpy.analysis.enclosed_energy import get_enclosed_energy
 from scipy.constants import h, c, e
-from felpy.analysis.scalar.centroid import get_com
+from felpy.analysis.centroid import get_com
 from felpy.analysis.complex.coherence import get_coherence_time
 
 
@@ -34,7 +34,7 @@ from felpy.model.tools import radial_profile
 from datetime import datetime
 import os
 from felpy.analysis.energy_spectral_density import power_spectral_density
-from felpy.analysis.scalar.centroid import get_com
+from felpy.analysis.centroid import get_com
 from felpy.utils.maths.fit import fit_gaussian
 from felpy.utils.maths.constants import sigma_to_fwhm
 
@@ -220,7 +220,7 @@ class Wavefront(WPG_Wavefront):
         
         sets the electric field representation
         
-        :param domain: choice ofangular - 'a', frequency 'f' or time 't' [str]
+        :param domain: choice ofangular - 'a' <-> real-space 'c', frequency 'f' <--> time 't' [str]
         """
         srwlpy.SetRepresElecField(self._srwl_wf, domain)
         
@@ -412,8 +412,9 @@ class Wavefront(WPG_Wavefront):
     def get_complex_radial_profile(self):
         """
         Calculate the radial profile of a complex array by azimuthal averaging:
-        
+            $$
             I_{radial}(R) = \int_0^R \frac{I(r)2\pi r}{\pi R^2} dr
+            $$
         
         :param wfr: complex wavefield [np array]
         
@@ -690,10 +691,9 @@ class Wavefront(WPG_Wavefront):
         
         fwhm_y = p[0]/sigma_to_fwhm
         
-        return fwhm_x, fwhm_y
+        return abs(fwhm_x), abs(fwhm_y)    
     
-    
-    def gaussian_fit(self, method = 'com'):
+    def gaussian_fit(self, method = 'com', VERBOSE = True):
         """
         return the properties of a guassian distribution fitted to the
         intensity distribution of the wavefront
@@ -709,12 +709,13 @@ class Wavefront(WPG_Wavefront):
         
         ### fit x
         initial_guess = [self.get_fwhm()[0], self.com[0], imax]
-        px, cox = fit_gaussian(x, ix, p0 = initial_guess, VERBOSE = False)
+        px, cox = fit_gaussian(x, ix, p0 = initial_guess, VERBOSE = VERBOSE)
         
         ### fit y
         initial_guess = [self.get_fwhm()[1], self.com[1], imax]
-        py, coy = fit_gaussian(y, iy, p0 = initial_guess, VERBOSE = False)
-        
+        py, coy = fit_gaussian(y, iy, p0 = initial_guess, VERBOSE = VERBOSE)
+
+
         return px, py
     
 

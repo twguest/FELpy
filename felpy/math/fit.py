@@ -10,7 +10,7 @@ __version__ = "1.0.1"
 __email__ = "twguest@students.latrobe.edu.au"
 """
 
-from scipy.optimize import 
+from scipy import optimise
 
 def fitExponent(acov, ax, sigmaGuess = 1):
     """

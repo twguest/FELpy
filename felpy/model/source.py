@@ -9,7 +9,8 @@ from pprint import pprint
 from numpy import fft
 
 from wpg import srwlib
-
+import uuid
+               
 from copy import copy
 from felpy.model.optics.tilt import wavefront_tilt
 from felpy.utils.opt_utils import ekev2k, geometric_focus
@@ -21,9 +22,13 @@ from wpg.wpg_uti_wf import calc_pulse_energy, plot_intensity_map
 from felpy.model.mesh import Mesh
 from felpy.model.src.SA1 import analytical_pulse_divergence, analytical_pulse_energy, analytical_pulse_width, analytical_pulse_duration
 
-FWHM2RMS = np.sqrt(8*np.log(2))  # FWHM = sqrt(8ln(2))*sigma
-FWHM2E2 = 1.66
 
+import operator
+import functools
+
+
+FWHM2RMS = np.sqrt(8*np.log(2))  # FWHM = sqrt(8ln(2))*sigma
+FWHM2E2 = 5/3 ##2*abs(1/np.sqrt(-2*np.log(0.5))) ##1.66
 
 
 
@@ -86,9 +91,7 @@ rei
             else:
                 self.source_properties[item] = np.repeat(self.source_properties[item], g)
                    
-
-            ########### HERE IS PROBLEM
-    
+ 
     def set_property(self, property_name, value):
         """
         wrapper function to store a source property
@@ -114,10 +117,10 @@ rei
         return self.source_properties[property_name]
     
     
-    def generate(self, array, pulse_properties, outdir):
+    def generate(self, array, pulse_properties, outdir = "./wfr_", save = True):
         
 
-
+        
             
         wfr =  wavefront_from_array(array, nx=pulse_properties['nx'], ny=pulse_properties['ny'],
                                     nz=pulse_properties['nz'],
@@ -127,11 +130,18 @@ rei
                                     ekev=pulse_properties['ekev'],
                                     pulse_duration=pulse_properties['pulse_duration'],
                                     source_properties = pulse_properties)
+        
+        
         wfr.scale_beam_energy(pulse_properties['pulse_energy'])
         
         self.metadata['pulses'].append(outdir)
         
-        wfr.store_hdf5(outdir)
+        if save:
+            wfr.store_hdf5(outdir)
+        else:
+            return wfr
+
+
 
     def store_hdf5(self, outdir, overwrite = False):
         """
@@ -176,8 +186,8 @@ class LinearGaussian(Source):
     """    
     
     def __init__(self, ekev, mesh, x, y, i, s0, sz, div,
-                tilt_x = 0, tilt_y = 0, x0 = 0, y0 = 0,
-                pulse_duration = 100e-15, **kwargs):
+                theta_x = 0, theta_y = 0, x0 = 0, y0 = 0,
+                pulse_duration = 100e-15, coherence_time = 20e-15, **kwargs):
 
         """
         initialisation function. 
@@ -190,8 +200,8 @@ class LinearGaussian(Source):
         :param s0: waist fwhm 
         :param sz: fwhm @ a distance z from the source
         :param div: beam divergence
-        :param tilt_x: horizontal tilt wavevector
-        :param tilt_y: vertical tilt wavevector
+        :param theta_x: horizontal tilt wavevector
+        :param theta_y: vertical tilt wavevector
         :param x0: horizontal shift 
         :param y0: vertical shift
         :param pulse_duration: temporal duration of the pulse
@@ -203,17 +213,22 @@ class LinearGaussian(Source):
         
         self.source_properties['ekev'] = ekev
         self.source_properties['i'] = i
-        self.source_properties['s0'] = s0
+        self.source_properties['s0'] = s0 
         self.source_properties['sz'] = sz/FWHM2E2
-        self.source_properties['sz'] = sz
         self.source_properties['div'] = div
-        self.source_properties['tilt_x'] = tilt_x
-        self.source_properties['tilt_y'] = tilt_y
+        if theta_x is list:
+            self.source_properties['theta_x'] = [-t for t in theta_x]
+        else:
+            self.source_properties['theta_x'] = theta_x
+        if theta_y is list:
+            self.source_properties['theta_y'] = [-t for t in theta_y]
+        else:
+            self.source_properties['theta_y'] = theta_y        
         self.source_properties['x0'] = x0
         self.source_properties['y0'] = y0
         self.source_properties['pulse_duration'] = pulse_duration
         self.source_properties['pulse_energy'] = i
-
+        self.source_properties['coherence_time'] = coherence_time
         for item in self.source_properties:
 
             if type(self.source_properties[item]) == list:
@@ -237,17 +252,17 @@ class LinearGaussian(Source):
 
         xx, yy = np.meshgrid(np.linspace(pulse_properties['xMin'], pulse_properties['xMax'], pulse_properties['nx']), np.linspace(pulse_properties['yMin'], pulse_properties['yMax'], pulse_properties['ny']))
         
-        return complex_gaussian_beam(x = xx, y = yy,
-        i = self.source_properties['i'], s0 = self.source_properties['s0'],
-        sz = self.source_properties['sz'], div = self.source_properties['div'],
-        tilt_x = self.source_properties['tilt_x'], tilt_y = self.source_properties['tilt_y'],
-        x0 = self.source_properties['x0'], y0 = self.source_properties['y0'])
+        return complex_gaussian_beam(x = xx, y = yy, ekev = pulse_properties['ekev'],
+        i = pulse_properties['i'], s0 = pulse_properties['s0'],
+        sz = pulse_properties['sz'], div = pulse_properties['div'],
+        theta_x = pulse_properties['theta_x'], theta_y = pulse_properties['theta_y'],
+        x0 = pulse_properties['x0'], y0 = pulse_properties['y0'])
 
 
 
 
 
-    def generator(self, outdir, N = 1):
+    def generator(self, outdir = "", filename = None, N = 1, save = True):
         """
         this is the emission process, and generates N wavefronts according to the rules given by the source paramters file.
         
@@ -256,20 +271,58 @@ class LinearGaussian(Source):
         :param
         """
         
+        wavefronts = [] ### N*self._control length list of wavefronts
+
+            
+
         for n in range(N):
 
             self.build_properties()
 
             for itr in range(self._control):
+
                 pulse_properties = {item:self.source_properties[item][itr] for item in self.source_properties}
                 tp = self.get_temporal_profile(pulse_properties)
-                pulse_properties['nz'] = len(tp)
- 
                 
-                efield = self.generate_beam_envelope(pulse_properties)[:,:,np.newaxis]*tp
+                if 'nz' in pulse_properties:
+                    pass
+                else:
+                    pulse_properties['nz'] = len(tp)
+
+                tilt = wavefront_tilt(np.meshgrid(np.linspace(pulse_properties['xMin'], pulse_properties['xMax'], pulse_properties['nx']),
+                                                np.linspace(pulse_properties['yMin'], pulse_properties['yMax'], pulse_properties['ny'])),
+                                    2*np.pi*np.sin(pulse_properties['theta_x'])/ekev2wav(pulse_properties['ekev']),
+                                    2*np.pi*np.sin(pulse_properties['theta_y'])/ekev2wav(pulse_properties['ekev']))
                 
-            
-                self.generate(efield, pulse_properties, outdir = outdir + "_{:02}_{:04}.h5".format(n,itr))
+                
+                spherical = spherical_phase(nx = pulse_properties['nx'],
+                ny= pulse_properties['ny'], 
+                xMin= pulse_properties['xMin'], 
+                xMax= pulse_properties['xMax'], 
+                yMin= pulse_properties['yMin'], 
+                yMax= pulse_properties['yMax'], 
+                fwhm= pulse_properties['sz'], 
+                divergence= pulse_properties['div'], 
+                ekev= pulse_properties['ekev'])
+
+                efield = self.generate_beam_envelope(pulse_properties)[:,:,np.newaxis]*tilt[:,:,np.newaxis]*tp
+                
+                if filename is None:
+                    filename = "wfr_{}.h5".format(uuid.uuid4())
+                                              
+                if ".h5" or ".hdf5" in filename:
+                    pass
+                else: filename+".h5"
+                
+                if save:
+                    self.generate(efield, pulse_properties, outdir = outdir + filename, save = save)
+                    filename = None
+                else:
+                    wavefronts.append(self.generate(efield, pulse_properties, outdir = outdir + filename, save = save))
+                    filename = None
+                    
+        if save is False:
+            return wavefronts
 
             
  
@@ -277,63 +330,135 @@ class LinearGaussian(Source):
     def get_temporal_profile(self, pulse_properties, sigma=4, refresh=False):
         ### note this gets and sets - should be changed
     
-        n_samples, sampling_interval_t = temporal_sampling_requirements(
-            pulse_properties['pulse_duration'], VERBOSE=True, S=4)
-
-        n_samples *= sigma
+        if 'nz' in pulse_properties:
+            n_samples = pulse_properties.get('nz')
+        else:
+            n_samples = 150
+            n_samples *= sigma
+        
         self.source_properties['nz'] = n_samples * np.ones(self._control).astype(type(n_samples))
         
         return generate_temporal_SASE_pulse(pulse_time=pulse_properties['pulse_duration'],
+                                            ekev = pulse_properties['ekev'],
+                                            coherence_time = pulse_properties['coherence_time'],
                                                              n_samples=n_samples,
                                                              sigma=sigma)
         
 
+
+
 class SA1_Source(LinearGaussian):
     """
-    fixed case of the SA1 source
+    Analytical SA1 Source Model
     """    
 
     
-    def __init__(self, ekev, q, theta_x = 0, theta_y = 0, **kwargs):
+    def __init__(self, ekev, q, nx = 512, ny = 512, theta_x = 0, theta_y = 0, x0 = 0, y0 = 0, z0 = 0, mode = 0, coherence_time = 20e-15, **kwargs):
 
         """
         initialisation function. 
-        """
-        super().__init__(**kwargs)
-        
-        self.source_properties['stochastic'] = stochastic
-        self.source_properties.update(kwargs)
-        
-        
-        self.source_properties['ekev'] = ekev
 
-        self.source_properties['q'] = q 
-        self.source_properties['theta_x'] = theta_x
-        self.source_properties['theta_y'] = theta_y
+        :param ekev: photon energy in keV [float or list of floats of length N]
+        :param q: beam charge in nC [float or list of floats of length N]
+        :param nx: number of horizontal grid/mesh points (int)
+        :param ny: number of vertical grid/mesh points (int)
+        :param theta_x: horizontal pointing error [float or list of floats of length N]
+        :param theta_y: vertical pointing error [float or list of floats of length N]
+        :param x0: horizontal beam center [float or list of floats of length N]
+        :param y0: vertical beam center [float or list of floats of length N]
+        :param z0: position from source waist (float64)
+        :param mode: defines how multi-dimensional inputs are treated
         
+        if mode 0: arrays are taken to represent values of successive pulses
+        if mode 1: arrays are taken to represent parameter space to scan over and a meshgrid is created.
+            mode 1 is currently only supported for theta_x, theta_y
+
+        :keyword i: pulse energy (J) [float or list of floats of length N]
+        :keyword div: beam divergence (rad) [float or list of floats of length N]
+        :keyword s0: beam size at waist (m) [float or list of floats of length N]
+        """
+        
+        if mode == 1:
+            theta_x, theta_y, z = np.meshgrid(theta_x, theta_y, z0)
+            theta_x = theta_x.reshape(functools.reduce(operator.mul, theta_x.shape, 1))
+            theta_y = theta_y.reshape(functools.reduce(operator.mul, theta_y.shape, 1))
+        
+
+        self.source_properties = {}
+        
+        self.metadata = {}
+        self.metadata['pulses'] = []
+
+        self.source_properties['ekev'] = ekev
+        self.source_properties['z0'] = z0
+
+        if 'i' in kwargs:
+            self.source_properties['i'] =  kwargs.get('i')
+            self.source_properties['pulse_energy'] = kwargs.get('i')
+        else:
+            self.source_properties['i'] = analytical_pulse_energy(q, ekev) 
+            self.source_properties['pulse_energy'] = analytical_pulse_energy(q, ekev) 
+
+        if 'nz' in kwargs:
+            self.source_properties['nz'] = kwargs.get('nz')
+        
+        if 's0' in kwargs:
+            self.source_properties['s0'] = kwargs.get('s0')
+        else:
+            self.source_properties['s0'] = analytical_pulse_width(ekev) 
+        
+        if 'div' in kwargs:
+            self.source_properties['div'] = kwargs.get('div')
+        else:
+            self.source_properties['div'] = analytical_pulse_divergence(ekev, 'mean')
+        
+        self.source_properties['coherence_time'] = coherence_time
+
+        self.source_properties['sz'] =  self.source_properties['s0'] + (z0*analytical_pulse_divergence(ekev, 'mean')*2)
+        
+        self.source_properties['fwhm (source)'] = self.source_properties['s0']   
+        self.source_properties['fwhm (z)'] = self.source_properties['sz']   
+
+        self.source_properties['sz'] /= FWHM2E2
+        self.source_properties['s0'] /= FWHM2E2   
+        if theta_x is list:
+            self.source_properties['theta_x'] = [-t for t in theta_x]
+        else:
+            self.source_properties['theta_x'] = theta_x
+        
+        if theta_y is list:
+            self.source_properties['theta_y'] = [-t for t in theta_y]
+        else:
+            self.source_properties['theta_y'] = theta_y   
+
+        ### geometry approximation:
+        self.source_properties['x0'] = x0 + np.tan(theta_x)*z0
+        self.source_properties['y0'] = y0 + np.tan(theta_y)*z0
+        
+        
+
+        if 'pulse_duration' in kwargs:
+            self.source_properties['pulse_duration'] = kwargs.get('pulse_duration')
+        else:
+            self.source_properties['pulse_duration'] = analytical_pulse_duration(q)
+ 
         for item in self.source_properties:
 
             if type(self.source_properties[item]) == list:
                 self.source_properties[item] = np.asarray(self.source_properties[item])
-                
-        self.source_properties.pop('mesh')
         
+        ### approximations:
+        # let -xMin = xMax = 1.5w, likewise for vertical coordinates
+        r = 5
+        self.source_properties['xMin'] = -r*FWHM2E2*self.source_properties['sz']+self.source_properties['x0'] 
+        self.source_properties['yMin'] = -r*FWHM2E2*self.source_properties['sz']+self.source_properties['y0']
 
-                
-        if 'z0' in kwargs:
-            self.source_properties['z0'] = kwargs['z0'] 
-        else:
-            self.source_properties['z0'] = 0,
-
-        if 'divergence' not in self.source_properties.keys():      
-            self.source_properties['divergence'] = analytical_pulse_divergence(self.ekev, 'mean')
-        if 'pulse_energy' not in self.source_properties.keys():
-            self.source_properties['pulse_energy'] = analytical_pulse_energy(self.q, self.ekev)
-        if 'fwhm' not in self.source_properties.keys():
-            self.source_properties['fwhm'] = 2*self.source_properties['z0']*np.tan(self.source_properties['divergence'])*analytical_pulse_width(self.ekev) +analytical_pulse_width(self.ekev)
-        if 'pulse_duration' not in self.source_properties.keys():
-            self.source_properties['pulse_duration'] = analytical_pulse_duration(self.q)
-    
+        self.source_properties['xMax'] = r*FWHM2E2*self.source_properties['sz']+self.source_properties['x0']
+        self.source_properties['yMax'] = r*FWHM2E2*self.source_properties['sz']+self.source_properties['y0']
+        
+        self.source_properties['nx'] = nx
+        self.source_properties['ny'] = ny
+        
     @property
     def ekev(self):
         """
@@ -351,12 +476,6 @@ class SA1_Source(LinearGaussian):
  
                     
                     
-
-
-
-
-
-        
 
 class Source_WPG(Source):
     """
@@ -422,8 +541,14 @@ def temporal_sampling_requirements(pulse_time, S=10, VERBOSE=False):
 
     return int(n), temporal_sampling
 
+ 
+def spectral_bw(coherence_time):
+    # return (ekev2wav(ekev)**2)/(c*coherence_time)
+    return 1/(np.pi*coherence_time)
 
-def generate_temporal_SASE_pulse(pulse_time, n_samples=100, sigma=4, t0=0):
+from scipy.constants import h,e
+
+def generate_temporal_SASE_pulse(pulse_time, ekev, coherence_time = 0.3e-15, n_samples=300, sigma=4, t0=0, bPlot = False):
     """
     generate a single SASE pulse
 
@@ -446,47 +571,34 @@ def generate_temporal_SASE_pulse(pulse_time, n_samples=100, sigma=4, t0=0):
     temporal_envelope = (1/np.sqrt(2*np.pi)) * \
         gaussian_profile(t, t0, pulse_time)
 
-    spectral_bw = 1/pulse_time
-    w = 1/t
+    spectral_bw = 1/np.pi*(coherence_time)
+    #w = 1/t
+    w = np.linspace(-spectral_bw*sigma, spectral_bw*sigma, n_samples)
 
     if t0 == 0:
         w0 = t0
     elif t0 != 0:
-        w0 = 1/t0
+        w0 = (h/e)/(ekev*1e3)
 
     spectral_envelope = gaussian_profile(w, w0, spectral_bw)
 
     random_phases = np.random.uniform(-np.pi, np.pi, temporal_envelope.shape)
 
-    E_t = fft.fft(spectral_envelope*np.exp(1j*random_phases))*temporal_envelope
+    E_t = fft.fftshift(fft.fft(spectral_envelope*np.exp(1j*random_phases)))*temporal_envelope
 
+    
+    if bPlot:
+        grid = Grids(scale = 2, global_aspect = 2)
+        grid.create_mosaic([['a','b']], sharex = False, sharey = False)
+        grid.axes['a'].plot(t*1e15, abs(E_t)**2)
+        grid.axes['b'].plot(w, abs(fft.fft(E_t))**2)
+        
+        
     return E_t
 
 
-def wavefront_to_wavefield(spatial_wfr, temporal_profile=1):
-    """
-    this function is primarily a WPG conversion function that takes two wavefields,
-    a spatial and temporal, two define a single WPG array.
 
-    note: in future we might just define a single input wavefront.
-    """
-    new_wfr = spatial_wfr.as_complex_array()[:, :, :]*temporal_profile
-
-    dx, dy = spatial_wfr.get_spatial_resolution()
-    dz = spatial_wfr.get_temporal_resolution()
-
-    wfr = wavefront_from_array(new_wfr,
-                               nx=spatial_wfr.params.Mesh.nx,
-                               ny=spatial_wfr.params.Mesh.ny,
-                               nz=len(temporal_profile),
-                               dx=dx,
-                               dy=dy,
-                               dz=dz,
-                               ekev=spatial_wfr.params.photonEnergy/1000)
-    return wfr
-
-
-def complex_gaussian_beam(x,y,i,s0,sz,div,tilt_x = 0, tilt_y = 0,x0 = 0, y0 = 0):
+def complex_gaussian_beam(x,y,ekev,i,s0,sz,div,theta_x = 0, theta_y = 0,x0 = 0, y0 = 0):
     """
     Analytical model for a complex gaussian source
     
@@ -496,20 +608,27 @@ def complex_gaussian_beam(x,y,i,s0,sz,div,tilt_x = 0, tilt_y = 0,x0 = 0, y0 = 0)
     :param s0: waist fwhm 
     :param sz: fwhm @ a distance z from the source
     :param div: beam divergence
-    :param tilt_x: horizontal tilt wavevector
-    :param tilt_y: vertical tilt wavevector
+    :param theta_x: horizontal tilt wavevector
+    :param theta_y: vertical tilt wavevector
     :param x0: horizontal shift 
     :param y0: vertical shift
     """
 
-    R = -div/sz
+    R = (sz*1.6)/div
 
     a = np.sqrt(i)*(sz/s0)
-    b = -((x-x0)**2+(y-y0)**2)/sz**2
-    c = ((x-x0)**2+(y-y0)**2)/R
-    d = tilt_x*x+tilt_y*y
+    b = -((x-x0)**2+(y-y0)**2)/(2*sz**2)
+    c = ((x-x0)**2+(y-y0)**2)/(4*R)
+     
+    d = theta_x*x+theta_y*y
 
-    return a*np.exp(b-1j*(c*d))
+    k = (2*np.pi/ekev2wav(ekev))
+
+    ### note, removed c and d (tilt)
+    return a*np.exp(b-1j*k*c)
+
+
+
 
 def gaussian_envelope(nx, ny,
                       xMin, xMax,
@@ -564,181 +683,9 @@ def spherical_phase(nx, ny,
     return spherical_phase_term
 
 
-def spherical_phase_sampling():
-    pass
-
-
-def complex_gaussian_envelope(nx, ny,
-                              xMin, xMax,
-                              yMin, yMax,
-                              fwhm, divergence,
-                              ekev, x0=0, y0=0):
-    """
-
-    :param nx: DESCRIPTION
-    :param ny: DESCRIPTION
-    :param dx: DESCRIPTION
-    :param dy: DESCRIPTION
-    :param fwhm: DESCRIPTION
-    :param divergence: DESCRIPTION
-
-    :return gaussian: DESCRIPTION
-
-    """
-
-    gaussian = gaussian_envelope(
-        nx, ny, xMin, xMax, yMin, yMax, fwhm, x0=x0, y0=y0).astype('complex128')
-
-    gaussian *= spherical_phase(nx, ny, xMin, xMax, yMin, yMax,
-                                fwhm, divergence,
-                                ekev, x0=x0, y0=y0)
-
-    return gaussian
-
-
-def generate_coherent_source_wavefront(nx, ny, fwhm, divergence):
-
-    gaussian_1d = gaussian_envelope(nx, ny, fwhm, divergence)
+ 
 
 
 if __name__ == '__main__':
 
-    from felpy.model.mesh import Mesh
-
-    from felpy.model.wavefront import Wavefront
-    from wpg.wpg_uti_wf import plot_intensity_map
-    
-    m = Mesh(nx=512, ny=512, xMin=-450e-06, xMax=450e-06, yMin=-450e-06, yMax= 450e-06, nz = 10)
-
-    src = SA1_Source(ekev = 9.2, q = 0.25, mesh=m,  pulse_energy = [5e-06], fwhm = 100e-06)
-    src.generator("/home/guestt/Documents/tmp_dir", N = 1)
-    
-    for p in src.pulses:
-        wfr = Wavefront()
-        wfr.load_hdf5(p)
-        print(wfr.divergence)
-        plot_intensity_map(wfr)
-        print(src.__dict__)
-    #wfr.load_hdf5("./test.h5")
-# =============================================================================
-#     nx = ny = 512
-#     xMin = yMin = -300e-06
-#     yMax = xMax = -1*xMin
-#     fwhm = 5e-06
-#     divergence = 5e-06
-#     ekev = 10
-#
-#     env = complex_gaussian_envelope(nx, ny,
-#                                     xMin, xMax, yMin, yMax,
-#                                     fwhm,
-#                                     divergence,
-#                                     ekev)
-#
-#     pulse_time = 55e-15
-#     sigma = 4
-#     S = 4
-#     Seff = S/sigma
-#
-#     n_samples, sampling_interval_t = temporal_sampling_requirements(pulse_time, VERBOSE = False, S = S)
-#     sampling_interval_w = 1/sampling_interval_t
-#
-#     n_samples *= sigma
-#     #n_samples = 10
-#     t = np.arange(-pulse_time, pulse_time, pulse_time/n_samples)
-#
-#     temporal_profile = generate_temporal_SASE_pulse(pulse_time = pulse_time,
-#                                                     n_samples = n_samples,
-#                                                     sigma = sigma)
-#     env = env[:,:,np.newaxis]*temporal_profile
-#
-#     wfr = wavefront_from_array(env, nx = nx, ny = ny,
-#                               nz = n_samples, dx = (xMax-xMin)/nx,
-#                               dy = (yMax-yMin)/ny, dz = (pulse_time/n_samples),
-#                               ekev = ekev, pulse_duration = pulse_time)
-#
-#     print(wfr.get_divergence())
-#
-#     #modify_beam_divergence(wfr, wfr.get_fwhm()[0], divergence)
-#
-#     plot_intensity_map(wfr)
-#
-#
-#     plot_intensity_map(wfr)
-# =============================================================================
-    #srwlib.srwl.SetRepresElecField(wfr._srwl_wf, 'f')
-# =============================================================================
-#
-#     # =============================================================================
-#     #     plot_intensity_map(wfr)
-#     #     print(wfr.get_divergence())
-#     #     plot_intensity_map(wfr)
-#     #
-#     #     #print(wfr.get_spatial_resolution())
-#     #     modify_beam_divergence(wfr, fwhm, divergence)
-#     #     #print(wfr)
-#     #
-#     #     #env = env[:,:,np.newaxis] * temporal_profile
-#     # =============================================================================
-# =============================================================================
-# =============================================================================
-#
-#
-# if __name__ == '__main__':
-#
-#     from wpg.wpg_uti_wf import plot_intensity_map, plot_intensity_qmap
-#
-#     nx = 512
-#     ny = 512
-#
-#     xMin = yMin = -400e-06
-#     xMax = yMax =  400e-06
-#
-#     #for fwhm in np.linspace(50e-06, 150e-06, 10):
-#
-#
-#     from felpy.experiments.source_diagnostics import scan_source_divergence
-#
-#     data = scan_source_divergence(e(kev = np.arange(5,10), q = [0.1], n = 1)
-#
-# =============================================================================
-
-
-    import os
-    
-    m = Mesh(nx=512, ny=256, xMin=-300e-06, xMax=300e-06, yMin=-300e-06, yMax=300e-06, nz = 10)
-    theta_x = [-3e-06, -2e-06, -1e-06, 0, 1e-06, 2e-06,3e-06]
-    
-    
-    src = SA1_Source([5], [0.2], mesh=m, theta_x = theta_x)
-    
-    src.generator("../data/tmp/test")
-    
-    try:
-        src.store_hdf5("../data/tmp/source.h5")
-    except(KeyError):
-        os.remove("../data/tmp/source.h5")
-        src.store_hdf5("../data/tmp/source.h5")
-
-    src = Source()
-    src.load_hdf5("../data/tmp/source.h5")
-    from felpy.model.wavefront import Wavefront
-    from wpg.wpg_uti_wf import plot_intensity_map
-    wfr = Wavefront()
-    
-    from felpy.model.beamline import Beamline
-    from wpg.optical_elements import Drift
-    from felpy.model.tools import propagation_parameters
-    from matplotlib import pyplot as plt
-    
-    bl = Beamline()
-    bl.append(Drift(50), propagation_parameters(1,1,1,1,mode = 'fresnel'))
-    
-    for w in src.pulses:
-        
-        wfr.load_hdf5(w)
-        bl.propagate(wfr)
-        plt.plot(wfr.x_axis, wfr.get_x_profile(), label = "{} $\mu$ rad".format(wfr.source_properties['theta_x']*1e6))
-        #plot_intensity_map(wfr)
-        print(wfr.com)
-    
-    plt.legend()
+    test_spherical_phase()

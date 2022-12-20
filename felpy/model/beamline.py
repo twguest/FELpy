@@ -4,6 +4,7 @@ from wpg.beamline import Beamline as WPG_Beamline
 from wpg import srwlib
 from wpg.srw import srwlpy as srwl
 from wpg.wpg_uti_wf import plot_intensity_map
+from felpy.utils.os_utils import mkdir_p
 
 import pandas as pd
 
@@ -35,12 +36,19 @@ class Beamline(WPG_Beamline):
         """ 
         replace an optical element labelled oe_name w/ a pre-defined element oe.
         """
-        self.propagation_options[0]['propagation_parameters'][self.index[oe_name]] = el
+        self.propagation_options[0]['optical_elements'][self.index[oe_name]] = el
     
+    def remove_element(self, oe_name):
+        """
+        remove an optical element from a beamline        
+        """
+        del self.propagation_options[0]['propagation_parameters'][self.index[oe_name]]
+        del self.propagation_options[0]['optical_elements'][self.index[oe_name]]
+
     def edit_element_property(self, oe_name, prop, value):
         self.propagation_options[0]['optical_elements'][self.index[oe_name]].__dict__[prop] = value
     
-    def propagate_sequential(self, wfr, return_intensity = False, return_mesh = False, savedir = "", checkpoints = []):
+    def propagate_sequential(self, wfr, plot = True, save_propagation = False, sdir = "./"):
         """
         Propagate sequentially through each optical element in beamline.
 
@@ -48,12 +56,8 @@ class Beamline(WPG_Beamline):
         :param outdir: save directory
         """
                
-        
-        if return_intensity:
-            intensity = []
-        if return_mesh:
-            mesh = []
-            
+        mkdir_p(sdir)
+         
         for itr in range(len(self.propagation_options[0]['optical_elements'])):
             oe = self.propagation_options[0]['optical_elements'][itr]
             pp = self.propagation_options[0]['propagation_parameters'][itr]
@@ -67,20 +71,17 @@ class Beamline(WPG_Beamline):
              
             
             srwl.PropagElecField(wfr._srwl_wf, bl)
+
+            if plot:   
+                plot_intensity_map(wfr)
+
+            if save_propagation:
+                wfr.store_hdf5(sdir + "{}.h5".format(oe.name))
+                
+                
             
-            if return_intensity:
-                intensity.append(wfr.get_intensity().sum(-1))
-            if return_mesh:
-                mesh.append(wfr.get_mesh())
-                    
-            plot_intensity_map(wfr)
-            
-        if return_intensity:
-            
-            if return_mesh:
-                return intensity, mesh
-            else:
-                return intensity
+        
+ 
             
             
 if __name__ == '__main__':

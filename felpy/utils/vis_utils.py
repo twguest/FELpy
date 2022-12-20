@@ -23,7 +23,8 @@ import os
 import string
 from sklearn.preprocessing import minmax_scale as norm
 from felpy.utils.os_utils import mkdir_p
-from felpy.analysis.statistics.univariate import mean_intensity
+
+
 from mpl_toolkits.mplot3d import Axes3D
 from felpy.utils.np_utils import extent_from_mesh
 import matplotlib 
@@ -49,6 +50,112 @@ fig_size = [fig_width,fig_width/2]
 plt.style.use(['science','ieee'])
 mpl.rcParams['axes.linewidth'] = 1 #set the value globally
 
+
+from mpl_toolkits.axes_grid1.inset_locator import InsetPosition,inset_axes
+import matplotlib 
+from matplotlib import pyplot as plt
+import numpy as np
+
+def complex_array_to_rgb(X, theme='dark', rmax=None):
+    '''
+    via: https://stackoverflow.com/questions/15207255/is-there-any-way-to-use-bivariate-colormaps-in-matplotlib
+
+    Takes an array of complex number and converts it to an array of [r, g, b],
+    where phase gives hue and saturaton/value are given by the absolute value.
+    Especially for use with imshow for complex plots.
+    '''
+    absmax = rmax or np.abs(X).max()
+    Y = np.zeros(X.shape + (3,), dtype='float')
+    Y[..., 0] = np.angle(X) / (2 * np.pi) % 1
+    if theme == 'light':
+        Y[..., 1] = np.clip(np.abs(X) / absmax, 0, 1)
+        Y[..., 2] = 1
+    elif theme == 'dark':
+        Y[..., 1] = 1
+        Y[..., 2] = np.clip(np.abs(X) / absmax, 0, 1)
+    Y = matplotlib.colors.hsv_to_rgb(Y)
+    return Y
+
+
+def grad_to_rgb(angle, absolute):
+    """Get the rgb value for the given `angle` and the `absolute` value
+
+    Parameters
+    ----------
+    angle : float
+        The angle in radians
+    absolute : float
+        The absolute value of the gradient
+    
+    Returns
+    -------
+    array_like
+        The rgb value as a tuple with values [0..1]
+    """
+    global max_abs
+
+    # normalize angle
+    angle = angle % (2 * np.pi)
+
+    if angle < 0:
+        angle += 2 * np.pi
+
+    return matplotlib.colors.hsv_to_rgb((angle / 2 / np.pi, 
+                                         absolute / max_abs, 
+                                         absolute / max_abs))
+
+
+
+def complex_plot(wfr, ax, scale = 1, rmax = None):
+    """ 
+    function to generate a complex-valued plot of a wpg.wavefront
+    
+    :param wfr: felpy.model.wavefront type object to be plotted
+    :param ax: axis to be plotted on
+    :param scale: scale of extent (i.e. 1 corresponds to m, 1e3 to mm, 1e-03 to km)
+    :param rmax: maximum value of intensity colormap
+    """
+    ii = wfr.get_intensity().sum(-1)
+    ph = wfr.get_imag_part().sum(-1)
+
+    rmax = rmax or np.max(ii)
+    
+    data = ii + 1j*ph
+    ax.imshow(complex_array_to_rgb(data, theme = 'dark', rmax = rmax), extent = [scale*l for l in wfr.extent])
+
+
+def add_inset_polar_map(grid, rmax = 1, inset_x = 0.8, inset_y = 0.65, inset_size = 0.5):
+    """ 
+    add a polar colorbar to a currently existing axis
+    saves axes to felpy grid utility 
+
+    :param grid: grid to add colorbar to
+    :param rmax: value corresponding to maximum brightness value
+    """
+    ax = grid.fig.add_subplot(1, 1, 1, projection='polar')
+    
+    n = 200  # the number of secants for the mesh
+    t = np.linspace(0, 2 * np.pi, n)
+    r = np.linspace(0, rmax, n)
+    rg, tg = np.meshgrid(r, t)
+    c = np.array(list(map(grad_to_rgb, tg.T.flatten(), rg.T.flatten())))
+    cv = c.reshape((n, n, 3))
+
+    m = ax.pcolormesh(t, r, cv[:,:,1], color=c, shading='auto')
+
+    m.set_array(None)
+    ax.set_yticklabels([])
+
+    ip = InsetPosition(ax, [inset_x - inset_size / 2,
+                            inset_y - inset_size / 2,
+                            inset_size,
+                            inset_size])
+
+    ax.set_axes_locator(ip)
+    ax.tick_params(colors='white', which='both')
+    ax.set_xticklabels(["0,2$\pi$","$\pi/4$","$\pi$/2", "3$\pi$/4", "$\pi$", "5$\pi$/4", "$3\pi/2$","7$\pi$/4"], fontsize = 10)
+    
+    grid.axes['cb'] = ax
 
 def exfel_cmap():
 
