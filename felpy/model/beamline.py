@@ -48,7 +48,7 @@ class Beamline(WPG_Beamline):
     def edit_element_property(self, oe_name, prop, value):
         self.propagation_options[0]['optical_elements'][self.index[oe_name]].__dict__[prop] = value
     
-    def propagate_sequential(self, wfr, plot = True, save_propagation = False, sdir = "./"):
+    def propagate_sequential(self, wfr, plot = True, save_propagation = False, sdir = "./", VERBOSE = False):
         """
         Propagate sequentially through each optical element in beamline.
 
@@ -71,7 +71,9 @@ class Beamline(WPG_Beamline):
              
             
             srwl.PropagElecField(wfr._srwl_wf, bl)
-
+            
+            if VERBOSE:
+                print(wfr)
             if plot:   
                 plot_intensity_map(wfr)
 

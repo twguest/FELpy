@@ -21,7 +21,7 @@ from felpy.utils.os_utils import timing
 from wpg.wpg_uti_wf import calc_pulse_energy, plot_intensity_map
 from felpy.model.mesh import Mesh
 from felpy.model.src.SA1 import analytical_pulse_divergence, analytical_pulse_energy, analytical_pulse_width, analytical_pulse_duration
-
+from felpy.model.spectra.sase import linear_SASE_spectrum
 
 import operator
 import functools
@@ -120,7 +120,7 @@ rei
     def generate(self, array, pulse_properties, outdir = "./wfr_", save = True):
         
 
-        
+        print(array.shape)
             
         wfr =  wavefront_from_array(array, nx=pulse_properties['nx'], ny=pulse_properties['ny'],
                                     nz=pulse_properties['nz'],
@@ -129,7 +129,8 @@ rei
                                     dz=(pulse_properties['yMin']/pulse_properties['nz']),                                    
                                     ekev=pulse_properties['ekev'],
                                     pulse_duration=pulse_properties['pulse_duration'],
-                                    source_properties = pulse_properties)
+                                    source_properties = pulse_properties,
+                                   elim = [pulse_properties['e_min'], pulse_properties['e_max']])
         
         
         wfr.scale_beam_energy(pulse_properties['pulse_energy'])
@@ -282,7 +283,7 @@ class LinearGaussian(Source):
             for itr in range(self._control):
 
                 pulse_properties = {item:self.source_properties[item][itr] for item in self.source_properties}
-                tp = self.get_temporal_profile(pulse_properties)
+                t, tp, f, fp = self.get_temporal_profile(pulse_properties)
                 
                 if 'nz' in pulse_properties:
                     pass
@@ -304,8 +305,11 @@ class LinearGaussian(Source):
                 fwhm= pulse_properties['sz'], 
                 divergence= pulse_properties['div'], 
                 ekev= pulse_properties['ekev'])
-
-                efield = self.generate_beam_envelope(pulse_properties)[:,:,np.newaxis]*tilt[:,:,np.newaxis]*tp
+                
+                pulse_properties['e_min'] = f[0]
+                pulse_properties['e_max'] = f[-1]
+                
+                efield = self.generate_beam_envelope(pulse_properties)[:,:,np.newaxis]*tilt[:,:,np.newaxis]*fp
                 
                 if filename is None:
                     filename = "wfr_{}.h5".format(uuid.uuid4())
@@ -338,13 +342,9 @@ class LinearGaussian(Source):
         
         self.source_properties['nz'] = n_samples * np.ones(self._control).astype(type(n_samples))
         
-        return generate_temporal_SASE_pulse(pulse_time=pulse_properties['pulse_duration'],
-                                            ekev = pulse_properties['ekev'],
-                                            coherence_time = pulse_properties['coherence_time'],
-                                                             n_samples=n_samples,
-                                                             sigma=sigma)
-        
-
+        t, ET, f, EF = linear_SASE_spectrum(pulse_duration = pulse_properties['pulse_duration'],
+                                    E0 = pulse_properties['ekev']*1e3, dE = pulse_properties['bandwidth'], sigma = 3, n_samples = n_samples)
+        return t, ET, f, EF
 
 
 class SA1_Source(LinearGaussian):
@@ -353,7 +353,7 @@ class SA1_Source(LinearGaussian):
     """    
 
     
-    def __init__(self, ekev, q, nx = 512, ny = 512, theta_x = 0, theta_y = 0, x0 = 0, y0 = 0, z0 = 0, mode = 0, coherence_time = 20e-15, **kwargs):
+    def __init__(self, ekev, q, nx = 512, ny = 512, theta_x = 0, theta_y = 0, x0 = 0, y0 = 0, z0 = 0, mode = 0, bandwidth = 1e-03, **kwargs):
 
         """
         initialisation function. 
@@ -368,6 +368,7 @@ class SA1_Source(LinearGaussian):
         :param y0: vertical beam center [float or list of floats of length N]
         :param z0: position from source waist (float64)
         :param mode: defines how multi-dimensional inputs are treated
+        :param bandwidth: energy bandwidth (fwhm of E**2) in eV
         
         if mode 0: arrays are taken to represent values of successive pulses
         if mode 1: arrays are taken to represent parameter space to scan over and a meshgrid is created.
@@ -412,7 +413,7 @@ class SA1_Source(LinearGaussian):
         else:
             self.source_properties['div'] = analytical_pulse_divergence(ekev, 'mean')
         
-        self.source_properties['coherence_time'] = coherence_time
+        self.source_properties['bandwidth'] = bandwidth
 
         self.source_properties['sz'] =  self.source_properties['s0'] + (z0*analytical_pulse_divergence(ekev, 'mean')*2)
         
@@ -450,11 +451,11 @@ class SA1_Source(LinearGaussian):
         ### approximations:
         # let -xMin = xMax = 1.5w, likewise for vertical coordinates
         r = 5
-        self.source_properties['xMin'] = -r*FWHM2E2*self.source_properties['sz']+self.source_properties['x0'] 
-        self.source_properties['yMin'] = -r*FWHM2E2*self.source_properties['sz']+self.source_properties['y0']
+        self.source_properties['xMin'] = r*FWHM2E2*self.source_properties['sz']+self.source_properties['x0'] 
+        self.source_properties['yMin'] = r*FWHM2E2*self.source_properties['sz']+self.source_properties['y0']
 
-        self.source_properties['xMax'] = r*FWHM2E2*self.source_properties['sz']+self.source_properties['x0']
-        self.source_properties['yMax'] = r*FWHM2E2*self.source_properties['sz']+self.source_properties['y0']
+        self.source_properties['xMax'] = -r*FWHM2E2*self.source_properties['sz']+self.source_properties['x0']
+        self.source_properties['yMax'] = -r*FWHM2E2*self.source_properties['sz']+self.source_properties['y0']
         
         self.source_properties['nx'] = nx
         self.source_properties['ny'] = ny
@@ -546,7 +547,9 @@ def spectral_bw(coherence_time):
     # return (ekev2wav(ekev)**2)/(c*coherence_time)
     return 1/(np.pi*coherence_time)
 
-from scipy.constants import h,e
+from scipy.constants import h,e,c
+
+
 
 def generate_temporal_SASE_pulse(pulse_time, ekev, coherence_time = 0.3e-15, n_samples=300, sigma=4, t0=0, bPlot = False):
     """
@@ -566,15 +569,19 @@ def generate_temporal_SASE_pulse(pulse_time, ekev, coherence_time = 0.3e-15, n_s
     :param VERBOSE: [bool] enables printing and plotting
     """
 
-    t = np.linspace(-pulse_time*sigma, pulse_time*sigma, n_samples)
+    
+
+    
+    spectral_bw = 1/np.pi*(coherence_time)
+    #w = 1/t
+    w = np.linspace(-spectral_bw*sigma, spectral_bw*sigma, n_samples)
+    
+    t = np.linspace(0, 2 * np.pi / (w[1] - w[0]) * (h/e) * c, n_samples)
 
     temporal_envelope = (1/np.sqrt(2*np.pi)) * \
         gaussian_profile(t, t0, pulse_time)
 
-    spectral_bw = 1/np.pi*(coherence_time)
-    #w = 1/t
-    w = np.linspace(-spectral_bw*sigma, spectral_bw*sigma, n_samples)
-
+    
     if t0 == 0:
         w0 = t0
     elif t0 != 0:

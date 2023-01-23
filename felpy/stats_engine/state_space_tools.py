@@ -191,7 +191,7 @@ def confidence_ellipse(arr, nstd = 2):
 
 
 def plot_covariance_ellipse(arr, cov = None, grid = None, N = 0, axis = 0, link_dots = False, scatter = True,
-                            add_colorbar = True, fontsize = 18):
+                            add_colorbar = True, fontsize = 18, ellipse_color = 'b'):
     """
     plot the covariance ellipse of a given array
 
@@ -242,7 +242,7 @@ def plot_covariance_ellipse(arr, cov = None, grid = None, N = 0, axis = 0, link_
         ax.plot(coordinates[:,0],coordinates[:,1], linewidth = 0.25)
 
 
-    ex = Ellipse(xy= cov[N][0], width= cov[N][1], height= cov[N][2],angle=np.degrees(cov[N][3]), fill = None)
+    ex = Ellipse(xy= cov[N][0], width= cov[N][1], height= cov[N][2],angle=np.degrees(cov[N][3]), fill = None, color = ellipse_color)
     ax.add_artist(ex)
 
     return grid

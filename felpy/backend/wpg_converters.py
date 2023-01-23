@@ -23,7 +23,7 @@ def complex_to_wpg(arr): ### converter
 
 
 
-def wavefront_from_array(cfr,nx,ny,nz,dx,dy,dz,ekev, pulse_duration = 40e-15, sigma = 4, repres = 'f', **kwargs):
+def wavefront_from_array(cfr,nx,ny,nz,dx,dy,dz,ekev,elim, sigma = 4, repres = 'f', **kwargs):
     """
     function to produce a wpg wavefront object instance from a complex valued
     wavefront definition
@@ -56,22 +56,14 @@ def wavefront_from_array(cfr,nx,ny,nz,dx,dy,dz,ekev, pulse_duration = 40e-15, si
     
     wfr.params.wEFieldUnit = 'sqrt(W/mm^2)'
     wfr.params.photonEnergy = ekev * 1000
-    wfr.params.wDomain = 'time'
+    wfr.params.wDomain = 'frequency'
     wfr.params.Mesh.nSlices = nz
     wfr.params.Mesh.nx = nx
     wfr.params.Mesh.ny = ny
     
-    wfr.params.Mesh.sliceMin = -pulse_duration*sigma / 2.
-    wfr.params.Mesh.sliceMax = pulse_duration*sigma / 2.  
+    wfr.params.Mesh.sliceMin = elim[0]
+    wfr.params.Mesh.sliceMax = elim[1]
     
-    wfr.set_electric_field_representation('f')
-    
- 
-
- 
-    wfr.params.Mesh.sliceMin = (-pulse_duration*sigma / 2.)/HE
-    wfr.params.Mesh.sliceMax = (+pulse_duration*sigma / 2.)/HE
-        
     range_x = dx*nx
     range_y = dy*ny
 

@@ -1,0 +1,1 @@
+from felpy.model.spectra.sase import linear_SASE_spectrum
