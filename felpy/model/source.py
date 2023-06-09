@@ -118,9 +118,8 @@ rei
     
     
     def generate(self, array, pulse_properties, outdir = "./wfr_", save = True):
-        
 
-        print(array.shape)
+        
             
         wfr =  wavefront_from_array(array, nx=pulse_properties['nx'], ny=pulse_properties['ny'],
                                     nz=pulse_properties['nz'],
@@ -422,6 +421,7 @@ class SA1_Source(LinearGaussian):
 
         self.source_properties['sz'] /= FWHM2E2
         self.source_properties['s0'] /= FWHM2E2   
+        
         if theta_x is list:
             self.source_properties['theta_x'] = [-t for t in theta_x]
         else:

@@ -33,6 +33,7 @@ from PIL import ImageColor
 from matplotlib.colors import Normalize
 import matplotlib.cm as cm
 from matplotlib.colors import ListedColormap,LinearSegmentedColormap
+from tifffile import imsave
 
 exfel_c1 = [i/256 for i in ImageColor.getrgb("#0D1546")]
 exfel_c2 = [i/256 for i in ImageColor.getrgb("#F39200")]
@@ -52,9 +53,35 @@ mpl.rcParams['axes.linewidth'] = 1 #set the value globally
 
 
 from mpl_toolkits.axes_grid1.inset_locator import InsetPosition,inset_axes
-import matplotlib 
-from matplotlib import pyplot as plt
-import numpy as np
+
+
+def transparent_cmap(color = "white"):
+    """
+    define a colormap that ranges from transparent to defined color
+    
+    :param color: color of maxima
+    :returns cmap: custom colormap
+    """
+    
+    c_transparent = matplotlib.colors.colorConverter.to_rgba('black',alpha = 0)
+    c_color = matplotlib.colors.colorConverter.to_rgba(color,alpha = 1)
+    
+    cmap = matplotlib.colors.LinearSegmentedColormap.from_list('rb_cmap',[c_transparent, c_color],512)
+    return cmap
+
+### define transparent-white colormap
+
+### define transparent-red colormap
+c_white = matplotlib.colors.colorConverter.to_rgba('white',alpha = 0)
+c_red= matplotlib.colors.colorConverter.to_rgba('red',alpha = 1)
+cmap_transparent_to_red = matplotlib.colors.LinearSegmentedColormap.from_list('rb_cmap',[c_white,c_red],512)
+
+    
+
+def write_tif(sdir, array, description = None):
+    """ write the array to a save-directory """
+
+    imsave("./proc/v{}.tif".format(run_no), arr1[:,:,0,a].T, description=description)
 
 def complex_array_to_rgb(X, theme='dark', rmax=None):
     '''
@@ -213,16 +240,25 @@ def add_colorbar(mappable, ax, fig,
 
 class Grids:
     
-    def __init__(self, fig_width = 400., global_aspect = 1, scale = 1, context = 'paper'):
+    def __init__(self, fig_width = 400., global_aspect = 1, scale = 1, context = 'paper', journal = None):
         
         sns.set_context(context)
+        
         
         fig_width_pt = 400.0 * scale  # Get this from LaTeX using \showthe\columnwidth
         inches_per_pt = 1.0/72.27               # Convert pt to inches
         fig_width = fig_width_pt*inches_per_pt  # width in inches
+        
+        if journal == 'iucr':
+            
+            journal_width = 8.8 * scale ## cm
+            journal_width_in = journal_width/2.54  # centimeters in inches
+            fig_width = journal_width_in  # width in inches
+
         self.fig_size = [fig_width,fig_width/global_aspect]
         self.fontsize = 16
-
+    
+    
     def label(axis):
         pass
     
@@ -295,7 +331,48 @@ class Grids:
         
         if hasattr(self, "cbar"):
             self.cbar.ax.tick_params(labelsize=fontsize)
-            
+    
+    def corner_text(self, ax,text,loc = 'upper left', pad = 0,color = 'black', fontsize = 16):
+        """ 
+        note, needs to be added as nested function of Grids
+        add corner text to grid
+
+        :param ax: ax identified (str) - key to grid.axes[ax] dict
+        :param text: text to be written
+        :param loc: like legend in mpl - 
+        :param pad: fraction of pad to full axis length (single value or tuple)
+        :param color: text color
+        :param fontsize: text fontsize
+        """
+
+        __LOCS__ = ['lower left', 'upper left', 'lower right', 'upper right'] ### no center yet (cbf)
+
+        assert loc in __LOCS__, "Unkown loc - use: 'lower left', 'upper left', 'lower right' or 'upper right'"
+        assert pad <= 0.25, "We only support small pads"
+        assert type(ax) == str, "Ax should be a string"
+
+        x_range = self.axes[ax].get_xlim()[1] - self.axes[ax].get_xlim()[0]
+        y_range = self.axes[ax].get_ylim()[0] - self.axes[ax].get_ylim()[1]
+
+        if 'lower' in loc:
+            ylim = self.axes[ax].get_ylim()[0]
+            va = 'bottom'
+            ylim -= pad*y_range
+        if 'upper' in loc:
+            ylim = self.axes[ax].get_ylim()[1]
+            va = 'top'
+            ylim += pad*y_range
+        if 'left' in loc:
+            xlim = self.axes[ax].get_xlim()[0]
+            ha = 'left'
+            xlim += pad*x_range
+        if 'right' in loc:
+            xlim = self.axes[ax].get_xlim()[1]
+            ha = 'right'
+            xlim -= pad*x_range
+
+        self.axes[ax].text(xlim,ylim,text,va = va,ha =ha, color = color, fontsize = fontsize)
+
     def savefig(self, sdir):
         self.fig.savefig(sdir, dpi = 600)
         
@@ -346,7 +423,7 @@ class Grids:
         
         
     def create_mosaic(self, mosaic, title = None, xlabel = None, ylabel = None,
-                            resolution = 100, fontsize = 12, sharex = False, sharey = False, **kwargs):
+                            resolution = 100, fontsize = 12, sharex = False, sharey = False, subplot_kw = None, **kwargs):
     
         self.mosaic = mosaic
         
@@ -364,7 +441,7 @@ class Grids:
                                  figsize = self.fig_size,
                                  dpi = resolution,
                                  sharex = sharex, sharey = sharey, gridspec_kw={'width_ratios': width_ratios,
-                                                                                'height_ratios': height_ratios})
+                                                                                'height_ratios': height_ratios}, subplot_kw = subplot_kw)
     
 
             
